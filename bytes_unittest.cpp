@@ -271,3 +271,41 @@ TEST(Utils, toHex){
     EXPECT_EQ("FF", toHex(testBytes4));
 }
 
+TEST(Utils, bytesOperator){
+    std::vector<unsigned char> testv1 = {123,43,23,113,213,32,0};
+    std::vector<unsigned char> testv2 = {89,255,0,189, 11, 67, 254};
+    std::vector<unsigned char> testv12 = {123+89,(43+255)%256,23,(113+189)%256,224,99,254};
+    std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv31 = {1,1,1,1,1,1};
+    std::vector<unsigned char> testv4 = {255,255,255,255,255,255};
+    std::vector<unsigned char> testv42 = {254,254,254,254,254,254};
+    std::vector<unsigned char> testv5 = {};
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    Bytes testBytes5;
+    testBytes1.setBytes(testv1);
+    testBytes2.setBytes(testv2);
+    testBytes3.setBytes(testv3);
+    testBytes4.setBytes(testv4);
+    testBytes5.setBytes(testv5);
+    
+    EXPECT_EQ(testv12, (testBytes1 + testBytes2).getBytes());
+    EXPECT_EQ(testv12, (testBytes2 + testBytes1).getBytes());
+    EXPECT_THROW(testBytes1 + testBytes3, std::length_error);
+    EXPECT_THROW(testBytes1 - testBytes3, std::length_error);
+    EXPECT_THROW(testBytes2 + testBytes3, std::length_error);
+    EXPECT_THROW(testBytes3 - testBytes2, std::length_error);
+    EXPECT_EQ(Bytes(),testBytes5 + testBytes5);
+    EXPECT_EQ(Bytes(),testBytes5 - testBytes5);
+    EXPECT_THROW(testBytes1 + testBytes5, std::length_error);
+    EXPECT_THROW(testBytes5 - testBytes1, std::length_error);
+    EXPECT_EQ(testv3, (testBytes3 + testBytes3).getBytes());
+    EXPECT_EQ(testv3, (testBytes3 - testBytes3).getBytes());
+    EXPECT_EQ(testv4, (testBytes4 + testBytes3).getBytes());
+    EXPECT_EQ(testv4, (testBytes4 - testBytes3).getBytes());
+    EXPECT_EQ(testv31, (testBytes3 - testBytes4).getBytes());
+    EXPECT_EQ(testv3, (testBytes4 - testBytes4).getBytes());
+    EXPECT_EQ(testv42, (testBytes4 + testBytes4).getBytes());
+}
