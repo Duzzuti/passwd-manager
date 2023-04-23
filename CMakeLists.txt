@@ -10,11 +10,19 @@ enable_testing()
 
 include(CTest)
 
-add_executable(passwd-manager-test main_test.cpp bytes_unittest.cpp bytes.cpp)
-target_link_libraries(passwd-manager-test ${GTEST_LIBRARIES} pthread)
-add_executable(passwd-manager main.cpp bytes.cpp)
+#tests
+add_executable(passwd_manager_test_bytes main_test.cpp bytes_unittest.cpp bytes.cpp)
+target_link_libraries(passwd_manager_test_bytes ${GTEST_LIBRARIES} pthread)
 
-add_test(bytes passwd-manager-test)
+add_executable(passwd_manager_test_block main_test.cpp block_unittest.cpp block.cpp bytes.cpp)
+target_link_libraries(passwd_manager_test_block ${GTEST_LIBRARIES} pthread)
+
+
+#executable
+add_executable(passwd_manager main.cpp bytes.cpp block.cpp blockchain.cpp)
+
+add_test(bytes passwd_manager_test_bytes)
+add_test(block passwd_manager_test_block)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
