@@ -19,9 +19,7 @@ Bytes::Bytes(const int len){
 }
 
 void Bytes::print() const noexcept{
-    for(unsigned char byte : this->bytes){
-        std::cout << toHex(byte);
-    }
+    std::cout << toHex(*this);
     std::cout << std::endl;
 }
 
@@ -106,8 +104,16 @@ bool operator==(Bytes b1, Bytes b2){
 
 std::string toHex(const unsigned char byte) noexcept{
     char hex[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    std::string ret;
+    std::string ret{};
     ret += hex[(byte/16) % 16];
     ret += hex[byte % 16];
+    return ret;
+}
+
+std::string toHex(Bytes b) noexcept{
+    std::string ret{};
+    for(unsigned char byte : b.getBytes()){
+        ret += toHex(byte);
+    }
     return ret;
 }

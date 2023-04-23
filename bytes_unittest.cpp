@@ -1,0 +1,273 @@
+#include "gtest/gtest.h"
+#include "bytes.h"
+
+TEST(BytesClass, generatingBytes){
+    //testing constructors
+    EXPECT_EQ(20, Bytes(20).getLen());
+    EXPECT_EQ(200, Bytes(200).getLen());
+    EXPECT_EQ(0, Bytes(0).getLen());
+    EXPECT_EQ(0, Bytes().getLen());
+    EXPECT_THROW(Bytes(-20), std::range_error);
+}
+
+TEST(BytesClass, getter){
+    //testing getters
+    //right size of getter
+    EXPECT_EQ(0, Bytes().getBytes().size());
+    EXPECT_EQ(0, Bytes(0).getBytes().size());
+    EXPECT_EQ(123, Bytes(123).getBytes().size());
+    EXPECT_THROW(Bytes(-1).getBytes().size(), std::range_error);
+
+    //get first bytes optional test
+    EXPECT_TRUE(Bytes().getFirstBytes(0).has_value());
+    EXPECT_TRUE(Bytes(0).getFirstBytes(0).has_value());
+    EXPECT_TRUE(Bytes(12).getFirstBytes(0).has_value());
+    EXPECT_FALSE(Bytes(12).getFirstBytes(13).has_value());
+    EXPECT_FALSE(Bytes().getFirstBytes(1).has_value());
+
+    //get first bytes len test
+    EXPECT_EQ(10, Bytes(12).getFirstBytes(10).value().getLen());
+    EXPECT_EQ(0, Bytes(12).getFirstBytes(0).value().getLen());
+    EXPECT_THROW(Bytes(12).getFirstBytes(-1), std::range_error);
+    
+    //get first bytes value test
+    Bytes testBytes1(30);
+    Bytes testBytes2(20);
+    std::vector<unsigned char> testv1 = {3,123,84,0,255,4,12,98,237,223};
+    std::vector<unsigned char> testv15 = {3,123,84,0,255};
+    Bytes testBytes3 = Bytes();testBytes3.setBytes(testv1);
+    EXPECT_EQ(testBytes1.getFirstBytes(10).value(), testBytes1.getFirstBytes(10).value());
+    EXPECT_EQ(testBytes2.getFirstBytes(12).value(), testBytes2.getFirstBytes(12).value());
+    EXPECT_EQ(testv15, testBytes3.getFirstBytes(5).value().getBytes());
+}
+
+TEST(BytesClass, setter){
+    //testing setters
+    //right size of setter
+    std::vector<unsigned char> testv1 = {123,43,23,123,213,32,0};
+    std::vector<unsigned char> testv2 = {};
+    std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv4 = {255};
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    testBytes1.setBytes(testv1);
+    testBytes2.setBytes(testv2);
+    testBytes3.setBytes(testv3);
+    testBytes4.setBytes(testv4);
+    EXPECT_EQ(testv1, testBytes1.getBytes());
+    EXPECT_EQ(testv2, testBytes2.getBytes());
+    EXPECT_EQ(testv3, testBytes3.getBytes());
+    EXPECT_EQ(testv4, testBytes4.getBytes());
+}
+
+TEST(BytesClass, pop){
+    //testing popFirstBytes
+    //test optionals
+    EXPECT_TRUE(Bytes(13).popFirstBytes(2).has_value());
+    EXPECT_TRUE(Bytes().popFirstBytes(0).has_value());
+    EXPECT_TRUE(Bytes(0).popFirstBytes(0).has_value());
+    EXPECT_TRUE(Bytes(23).popFirstBytes(0).has_value());
+    EXPECT_FALSE(Bytes(13).popFirstBytes(15).has_value());
+    EXPECT_FALSE(Bytes().popFirstBytes(1).has_value());
+    EXPECT_THROW(Bytes(12).getFirstBytes(-1), std::range_error);
+
+    //pop first bytes len test
+    EXPECT_EQ(10, Bytes(12).popFirstBytes(10).value().getLen());
+    EXPECT_EQ(0, Bytes(12).popFirstBytes(0).value().getLen());
+
+    //pop first bytes value test
+    std::vector<unsigned char> testv1 = {123,43,23,113,213,32,0};
+    std::vector<unsigned char> testv12 = {123,43};
+    std::vector<unsigned char> testv1from2 = {23,113,213,32,0};
+    std::vector<unsigned char> testv2 = {};
+    std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv4 = {255};
+    std::vector<unsigned char> testv40 = {};
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    testBytes1.setBytes(testv1);
+    testBytes2.setBytes(testv2);
+    testBytes3.setBytes(testv3);
+    testBytes4.setBytes(testv4);
+
+    EXPECT_EQ(testv12, testBytes1.popFirstBytes(2).value().getBytes());
+    EXPECT_FALSE(testBytes2.popFirstBytes(1).has_value());
+    EXPECT_EQ(0, testBytes3.popFirstBytes(0).value().getLen());
+    EXPECT_EQ(testv4, testBytes4.popFirstBytes(1).value().getBytes());
+    EXPECT_EQ(testv1from2, testBytes1.getBytes());
+    EXPECT_EQ(testv2, testBytes2.getBytes());
+    EXPECT_EQ(testv3, testBytes3.getBytes());
+    EXPECT_EQ(testv40, testBytes4.getBytes());
+
+}
+
+TEST(BytesClass, getfillup){
+    //get and pop first bytes with fill up value test
+
+    //get first bytes len test
+    EXPECT_EQ(10, Bytes(12).getFirstBytesFilledUp(10, 12).getLen());
+    EXPECT_EQ(0, Bytes(0).getFirstBytesFilledUp(0).getLen());
+    EXPECT_EQ(10, Bytes().getFirstBytesFilledUp(10, 255).getLen());
+    EXPECT_EQ(10, Bytes(4).getFirstBytesFilledUp(10).getLen());
+    EXPECT_THROW(Bytes(12).getFirstBytesFilledUp(-1, 0), std::range_error);
+    
+    //get first bytes value test
+    std::vector<unsigned char> testv1 = {123,43,23,113,213,32,0};
+    std::vector<unsigned char> testv12 = {123,43};
+    std::vector<unsigned char> testv1from2 = {23,113,213,32,0};
+    std::vector<unsigned char> testv2 = {};
+    std::vector<unsigned char> testv2f0 = {0,0,0,0,0,0,0,0,0,0,0,0};
+    std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv3f65 = {0,0,0,0,0,0,65,65,65,65};
+    std::vector<unsigned char> testv4 = {255};
+    std::vector<unsigned char> testv40 = {};
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    testBytes1.setBytes(testv1);
+    testBytes2.setBytes(testv2);
+    testBytes3.setBytes(testv3);
+    testBytes4.setBytes(testv4);
+    EXPECT_EQ(testBytes1.getFirstBytesFilledUp(10), testBytes1.getFirstBytesFilledUp(10));
+    EXPECT_EQ(testv2f0, testBytes2.getFirstBytesFilledUp(12).getBytes());
+    EXPECT_EQ(testv3f65, testBytes3.getFirstBytesFilledUp(10, 65).getBytes());
+    EXPECT_EQ(testv4, testBytes4.getFirstBytesFilledUp(1, 90).getBytes());
+}
+
+TEST(BytesClass, popfillup){
+    //pop first bytes len test
+    EXPECT_EQ(10, Bytes(12).popFirstBytesFilledUp(10).getLen());
+    EXPECT_EQ(0, Bytes(12).popFirstBytesFilledUp(0, 16).getLen());
+    EXPECT_EQ(1, Bytes().popFirstBytesFilledUp(1, 16).getLen());
+    EXPECT_EQ(67, Bytes(23).popFirstBytesFilledUp(67, 255).getLen());
+    EXPECT_THROW(Bytes(12).popFirstBytesFilledUp(-1, 0), std::range_error);
+
+    //pop first bytes value test
+    std::vector<unsigned char> testv1 = {123,43,23,113,213,32,0};
+    std::vector<unsigned char> testv12 = {123,43};
+    std::vector<unsigned char> testv1from2 = {23,113,213,32,0};
+    std::vector<unsigned char> testv2 = {};
+    std::vector<unsigned char> testv2f6 = {6,6,6,6,6,6,6,6,6,6};
+    std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv3f255 = {0,0,0,0,0,0,255,255,255,255};
+    std::vector<unsigned char> testv4 = {255};
+    std::vector<unsigned char> testv4f0 = {255,0};
+    std::vector<unsigned char> testv40 = {};
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    testBytes1.setBytes(testv1);
+    testBytes2.setBytes(testv2);
+    testBytes3.setBytes(testv3);
+    testBytes4.setBytes(testv4);
+
+    EXPECT_EQ(testv12, testBytes1.popFirstBytesFilledUp(2, 76).getBytes());
+    EXPECT_EQ(testv2f6, testBytes2.popFirstBytesFilledUp(10, 6).getBytes());
+    EXPECT_EQ(testv3f255, testBytes3.popFirstBytesFilledUp(10, 255).getBytes());
+    EXPECT_EQ(testv4f0, testBytes4.popFirstBytesFilledUp(2, 0).getBytes());
+    
+    
+    EXPECT_EQ(testv1from2, testBytes1.getBytes());
+    EXPECT_EQ(testv2, testBytes2.getBytes());
+    EXPECT_EQ(testv2, testBytes3.getBytes());
+    EXPECT_EQ(testv40, testBytes4.getBytes());
+}
+
+TEST(BytesClass, addByte){
+    std::vector<Bytes> bytes;
+    std::vector<unsigned char> addbytes;
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    bytes.push_back(testBytes1);
+    bytes.push_back(testBytes2);
+    bytes.push_back(testBytes3);
+    bytes.push_back(testBytes4);
+    addbytes.push_back(0);
+    addbytes.push_back(155);
+    addbytes.push_back(16);
+    addbytes.push_back(255);
+    addbytes.push_back(100);
+    addbytes.push_back(230);
+
+    for(Bytes byte : bytes){
+        for(unsigned char addbyte : addbytes){
+            std::string beforeAdd = toHex(byte);
+            byte.addByte(addbyte);
+            EXPECT_EQ(beforeAdd+toHex(addbyte), toHex(byte));
+        }
+    }
+}
+
+TEST(BytesClass, clear){
+    //testing clearing and isEmpty
+    std::vector<unsigned char> testv1 = {123,43,23,113,213,32,0};
+    std::vector<unsigned char> testv2 = {};
+    std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv4 = {255};
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    testBytes1.setBytes(testv1);
+    testBytes2.setBytes(testv2);
+    testBytes3.setBytes(testv3);
+    testBytes4.setBytes(testv4);
+    EXPECT_FALSE(testBytes1.isEmpty());
+    EXPECT_TRUE(testBytes2.isEmpty());
+    EXPECT_FALSE(testBytes3.isEmpty());
+    EXPECT_FALSE(testBytes4.isEmpty());
+
+    testBytes1.clear();
+    testBytes2.clear();
+    testBytes3.clear();
+    testBytes4.clear();
+    EXPECT_EQ(0, testBytes1.getBytes().size());
+    EXPECT_EQ(0, testBytes2.getBytes().size());
+    EXPECT_EQ(0, testBytes3.getBytes().size());
+    EXPECT_EQ(0, testBytes4.getBytes().size());
+    EXPECT_TRUE(testBytes1.isEmpty());
+    EXPECT_TRUE(testBytes2.isEmpty());
+    EXPECT_TRUE(testBytes3.isEmpty());
+    EXPECT_TRUE(testBytes4.isEmpty());
+
+}
+
+
+TEST(Utils, toHex){
+    //testing the byte to hex converter function
+    EXPECT_EQ("00", toHex(0));
+    EXPECT_EQ("10", toHex(16));
+    EXPECT_EQ("0F", toHex(15));
+    EXPECT_EQ("FF", toHex(255));
+    EXPECT_EQ("20", toHex(32));
+    EXPECT_EQ("B2", toHex(178));
+    EXPECT_EQ("E7", toHex(231));
+    EXPECT_EQ("64", toHex(100));
+    EXPECT_EQ("22", toHex(34));
+
+    std::vector<unsigned char> testv1 = {123,43,23,113,213,32,0};
+    std::vector<unsigned char> testv2 = {};
+    std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv4 = {255};
+    Bytes testBytes1(12);
+    Bytes testBytes2 = Bytes();
+    Bytes testBytes3 = Bytes(0);
+    Bytes testBytes4 = Bytes(89);
+    testBytes1.setBytes(testv1);
+    testBytes2.setBytes(testv2);
+    testBytes3.setBytes(testv3);
+    testBytes4.setBytes(testv4);
+    EXPECT_EQ("7B2B1771D52000", toHex(testBytes1));
+    EXPECT_EQ("", toHex(testBytes2));
+    EXPECT_EQ("000000000000", toHex(testBytes3));
+    EXPECT_EQ("FF", toHex(testBytes4));
+}
+

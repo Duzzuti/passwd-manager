@@ -27,5 +27,6 @@ public:
 };
 
 std::string toHex(const unsigned char byte) noexcept;
+std::string toHex(Bytes b) noexcept;
 
 #endif //BYTES_H
