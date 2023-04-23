@@ -102,6 +102,27 @@ bool operator==(Bytes b1, Bytes b2){
     return (b1.bytes == b2.bytes);
 }
 
+Bytes operator+(Bytes b1, Bytes b2){
+    if(b1.getLen() != b2.getLen()){
+        throw std::length_error("bytes have different lengths");
+    }
+    Bytes ret = Bytes();
+    for(int i=0; i < b1.getLen(); i++){
+        ret.addByte(b1.getBytes()[i] + b2.getBytes()[i]);
+    }
+    return ret;
+}
+
+Bytes operator-(Bytes b1, Bytes b2){
+    if(b1.getLen() != b2.getLen()){
+        throw std::length_error("bytes have different lengths");
+    }
+    Bytes ret = Bytes();
+    for(int i=0; i < b1.getLen(); i++){
+        ret.addByte(b1.getBytes()[i] - b2.getBytes()[i]);
+    }
+    return ret;
+}
 
 std::string toHex(const unsigned char byte) noexcept{
     char hex[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
@@ -115,17 +136,6 @@ std::string toHex(Bytes b) noexcept{
     std::string ret{};
     for(unsigned char byte : b.getBytes()){
         ret += toHex(byte);
-    }
-    return ret;
-}
-
-Bytes XOR(Bytes b1, Bytes b2){
-    if(b1.getLen() != b2.getLen()){
-        throw std::length_error("bytes have different lengths");
-    }
-    Bytes ret = Bytes();
-    for(int i=0; i < b1.getLen(); i++){
-        ret.addByte(b1.getBytes()[i] + b2.getBytes()[i]);
     }
     return ret;
 }

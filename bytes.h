@@ -25,10 +25,11 @@ public:
     bool isEmpty() const noexcept;
     void clear() noexcept;
     friend bool operator==(Bytes b1, Bytes b2);
+    friend Bytes operator+(Bytes b1, Bytes b2);
+    friend Bytes operator-(Bytes b1, Bytes b2);
 };
 
 std::string toHex(const unsigned char byte) noexcept;
 std::string toHex(Bytes b) noexcept;
-Bytes XOR(Bytes b1, Bytes b2);
 
 #endif //BYTES_H
