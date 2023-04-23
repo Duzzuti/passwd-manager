@@ -1,6 +1,10 @@
+#cmake
+build
+
+#vs code
+settings.json
 # Prerequisites
 *.d
-
 # Compiled Object files
 *.slo
 *.lo
