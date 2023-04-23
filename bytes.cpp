@@ -3,11 +3,14 @@
 #include "bytes.h"
 
 Bytes::Bytes(){
-    this->bytes.clear();
+    this->clear();
 }
 
 Bytes::Bytes(const int len){
-    this->bytes.clear();
+    if(len < 0){
+        throw std::range_error("The provided len is negative");
+    }
+    this->clear();
     std::random_device rd;
     std::uniform_int_distribution<int> rand(0, 255);
     for(int i=0; i<len; i++){
@@ -49,6 +52,9 @@ std::optional<Bytes> Bytes::popFirstBytes(const int num){
 }
 
 std::optional<Bytes> Bytes::getFirstBytes(const int num) const{
+    if(num < 0){
+        throw std::range_error("The provided len is negative");
+    }
     if(num > this->bytes.size()){
         return {};    
     }
@@ -57,6 +63,45 @@ std::optional<Bytes> Bytes::getFirstBytes(const int num) const{
         ret.addByte(this->bytes[i]);
     }
     return ret;
+}
+
+Bytes Bytes::popFirstBytesFilledUp(const int num, const unsigned char fillup){
+    Bytes firstbytes = this->getFirstBytesFilledUp(num, fillup);
+    if(num < this->bytes.size()){
+        auto first = this->bytes.begin() + num;
+        auto last = this->bytes.end();
+        this->bytes = std::vector<unsigned char>(first, last);
+    }else{
+        this->clear();
+    }
+    return firstbytes;
+}
+
+Bytes Bytes::getFirstBytesFilledUp(const int num, const unsigned char fillup) const{
+    if(num < 0){
+        throw std::range_error("The provided len is negative");
+    }
+    Bytes ret = Bytes();
+    for(int i=0; i<num; i++){
+        if(this->bytes.size() <= i){
+            ret.addByte(fillup);
+        }else{
+            ret.addByte(this->bytes[i]);
+        }
+    }
+    return ret;
+}
+
+bool Bytes::isEmpty() const noexcept{
+    return this->getLen() == 0;
+}
+
+void Bytes::clear() noexcept{
+    this->bytes.clear();
+}
+
+bool operator==(Bytes b1, Bytes b2){
+    return (b1.bytes == b2.bytes);
 }
 
 std::string toHex(const unsigned char byte) noexcept{
