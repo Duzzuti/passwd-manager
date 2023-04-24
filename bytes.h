@@ -18,6 +18,7 @@ public:
     std::vector<unsigned char> getBytes() const noexcept;
     int getLen() const noexcept;
     void addByte(const unsigned char byte) noexcept;
+    void addBytes(const Bytes b1) noexcept;
     std::optional<Bytes> popFirstBytes(const int num);
     std::optional<Bytes> getFirstBytes(const int num) const;
     Bytes popFirstBytesFilledUp(const int num, const unsigned char fillup=0);

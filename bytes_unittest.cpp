@@ -47,6 +47,7 @@ TEST(BytesClass, setter){
     std::vector<unsigned char> testv1 = {123,43,23,123,213,32,0};
     std::vector<unsigned char> testv2 = {};
     std::vector<unsigned char> testv3 = {0,0,0,0,0,0};
+    std::vector<unsigned char> testv31 = {0,0,0,0,0,0,255};
     std::vector<unsigned char> testv4 = {255};
     Bytes testBytes1(12);
     Bytes testBytes2 = Bytes();
@@ -60,6 +61,13 @@ TEST(BytesClass, setter){
     EXPECT_EQ(testv2, testBytes2.getBytes());
     EXPECT_EQ(testv3, testBytes3.getBytes());
     EXPECT_EQ(testv4, testBytes4.getBytes());
+    testBytes1.addBytes(testBytes2);
+    EXPECT_EQ(testv1, testBytes1.getBytes());
+    testBytes2.addBytes(testBytes3);
+    EXPECT_EQ(testv3, testBytes2.getBytes());
+    testBytes2.addBytes(testBytes4);
+    EXPECT_EQ(testv31, testBytes2.getBytes());
+
 }
 
 TEST(BytesClass, pop){

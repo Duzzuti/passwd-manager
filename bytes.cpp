@@ -38,6 +38,12 @@ void Bytes::addByte(const unsigned char byte) noexcept{
     this->bytes.push_back(byte);
 }
 
+void Bytes::addBytes(const Bytes b1) noexcept{
+    for(unsigned char byte : b1.getBytes()){
+        this->addByte(byte);
+    }
+}
+
 std::optional<Bytes> Bytes::popFirstBytes(const int num){
     std::optional<Bytes> firstbytes = this->getFirstBytes(num);
     if(firstbytes.has_value()){
