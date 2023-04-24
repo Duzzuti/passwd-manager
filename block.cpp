@@ -65,7 +65,7 @@ bool Block::isReadyForEncode() const noexcept{
 
 void Block::calcEncoded(){
     if(!this->isReadyForEncode()){
-        throw std::length_error("Block does not have all needed data (block length, data, salt and passwordhash)");
+        throw std::logic_error("Block does not have all needed data (block length, data, salt and passwordhash)");
     }
     this->encoded = this->data + this->salt + this->passwordhash;
 }
@@ -98,7 +98,7 @@ bool Block::isReadyForDecode() const noexcept{
 
 void Block::calcData(){
     if(!this->isReadyForDecode()){
-        throw std::length_error("Block does not have all needed data (block length, encoded, salt and passwordhash)");
+        throw std::logic_error("Block does not have all needed data (block length, encoded, salt and passwordhash)");
     }
     this->data = this->encoded - this->salt - this->passwordhash;
 }

@@ -1,9 +1,11 @@
 #include "bytes.h"
+#include "blockchainBase.h"
 #include "gtest/gtest.h"
 #ifndef BLOCK_H
 #define BLOCK_H
 
 class Block{
+    friend BlockChain;   //access private members
 private:
     int len;
     Bytes data;
