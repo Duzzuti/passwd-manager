@@ -21,7 +21,7 @@ public:
     //encrypt
     Block();
     Block(int len, Bytes data, Bytes salt, Bytes password);
-    Block(const Block&) = delete;
+    //Block(const Block&) = delete;
     void setLen(int len);
     void setData(Bytes data);
     void setPasswordHash(Bytes passwordhash);
