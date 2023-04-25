@@ -1,4 +1,3 @@
-#include <openssl/sha.h>
 #include "sha256.h"
 
 
