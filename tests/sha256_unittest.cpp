@@ -7,7 +7,7 @@ TEST(SHA256Class, att_strings){
     std::vector<Bytes> hashv = std::vector<Bytes>();
     sha256 shaObj = sha256();
     const int max_len = 512;
-    const long iters = 30;
+    const long iters = 50;
     for(int len=4; len < max_len; len++){
         for(long num=0; num < iters; num++){
             std::string tmpstr = gen_random(len);

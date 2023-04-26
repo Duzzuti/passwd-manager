@@ -22,6 +22,12 @@ target_link_libraries(passwd_manager_test_sha256 ${GTEST_LIBRARIES} pthread)
 target_link_libraries(passwd_manager_test_sha256 ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(passwd_manager_test_sha256 PUBLIC ${INCLUDE_DIR})
 
+add_executable(passwd_manager_test_sha384 main_test.cpp sha384_unittest.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/bytes.cpp)
+target_link_libraries(passwd_manager_test_sha384 ${GTEST_LIBRARIES} pthread)
+target_link_libraries(passwd_manager_test_sha384 ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(passwd_manager_test_sha384 PUBLIC ${INCLUDE_DIR})
+
 add_test(bytes passwd_manager_test_bytes)
 add_test(block passwd_manager_test_block)
 add_test(sha256 passwd_manager_test_sha256)
+add_test(sha384 passwd_manager_test_sha384)

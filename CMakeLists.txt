@@ -36,7 +36,7 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif()
 
 
-find_package(GTest REQUIRED)
+#find_package(GTest REQUIRED)
 find_package(OpenSSL REQUIRED)
 enable_testing()
 
