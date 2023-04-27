@@ -3,6 +3,7 @@
 
 TEST(BytesClass, generatingBytes){
     //testing constructors
+    EXPECT_FALSE(Bytes(20) == Bytes(20));
     EXPECT_EQ(20, Bytes(20).getLen());
     EXPECT_EQ(200, Bytes(200).getLen());
     EXPECT_EQ(0, Bytes(0).getLen());

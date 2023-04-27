@@ -1,3 +1,6 @@
+#pragma once
+#ifndef HASH_H
+#define HASH_H
 #include "bytes.h"
 class Hash{
 public:
@@ -7,3 +10,5 @@ public:
     virtual Bytes hash(std::string str) = 0;
     virtual ~Hash() {};
 };
+
+#endif //HASH_H

@@ -1,3 +1,4 @@
+#pragma once
 #include "bytes.h"
 #include "blockchainBase.h"
 #include "gtest/gtest.h"

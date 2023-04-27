@@ -3,7 +3,8 @@
 Bytes sha384::hash(Bytes bytes){
     unsigned char bytesin[bytes.getLen()];
     unsigned char bytesout[this->getHashSize()];
-    std::copy(bytes.getBytes().begin(), bytes.getBytes().end(), bytesin);
+    auto inpbytes = bytes.getBytes();
+    std::copy(inpbytes.begin(), inpbytes.end(), bytesin);
     SHA384(bytesin, bytes.getLen(), bytesout);
     std::vector<unsigned char> v(bytesout, bytesout + sizeof(bytesout) / sizeof(bytesout[0]));
     Bytes ret;

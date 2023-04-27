@@ -1,3 +1,6 @@
+#pragma once
+#ifndef SHA256_H
+#define SHA256_H
 #include <openssl/sha.h>
 #include "hash.h"
 
@@ -7,3 +10,5 @@ public:
     Bytes hash(Bytes bytes);
     Bytes hash(std::string str);
 };
+
+#endif //SHA256_H
