@@ -1,5 +1,6 @@
 #include <random>
 #include "bytes.h"
+#include "rng.h"
 
 Bytes::Bytes(){
     this->clear();
@@ -9,12 +10,7 @@ Bytes::Bytes(const int len){
     if(len < 0){
         throw std::range_error("The provided len is negative");
     }
-    this->clear();
-    std::random_device rd;
-    std::uniform_int_distribution<int> rand(0, 255);
-    for(int i=0; i<len; i++){
-        this->bytes.push_back(rand(rd));
-    }
+    this->setBytes(RNG().get_random_bytes(len));
 }
 
 void Bytes::print() const noexcept{
