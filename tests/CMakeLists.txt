@@ -41,6 +41,12 @@ target_link_libraries(passwd_manager_test_rng ${GTEST_LIBRARIES} pthread)
 target_link_libraries(passwd_manager_test_rng ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(passwd_manager_test_rng PUBLIC ${INCLUDE_DIR})
 
+add_executable(passwd_manager_test_pwfunc main_test.cpp test_utils.cpp pwfunc_unittest.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
+target_link_libraries(passwd_manager_test_pwfunc ${GTEST_LIBRARIES} pthread)
+target_link_libraries(passwd_manager_test_pwfunc ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(passwd_manager_test_pwfunc PUBLIC ${TEST_INCLUDE_DIR})
+target_include_directories(passwd_manager_test_pwfunc PUBLIC ${INCLUDE_DIR})
+
 
 add_test(bytes passwd_manager_test_bytes)
 add_test(block passwd_manager_test_block)
@@ -48,3 +54,4 @@ add_test(sha256 passwd_manager_test_sha256)
 add_test(sha384 passwd_manager_test_sha384)
 add_test(sha512 passwd_manager_test_sha512)
 add_test(rng passwd_manager_test_rng)
+add_test(pwfunc passwd_manager_test_pwfunc)
