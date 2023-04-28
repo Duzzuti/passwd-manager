@@ -4,11 +4,11 @@
 #include <openssl/sha.h>
 #include "hash.h"
 
-class sha512 : Hash{
+class sha512 : public Hash{
 public:
     int getHashSize() const noexcept{return SHA512_DIGEST_LENGTH;}
-    Bytes hash(Bytes bytes);
-    Bytes hash(std::string str);
+    Bytes hash(const Bytes bytes) const;
+    Bytes hash(const std::string str) const;
 };
 
 #endif //SHA512_H

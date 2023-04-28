@@ -1,6 +1,6 @@
 #include "sha256.h"
 
-Bytes sha256::hash(Bytes bytes){
+Bytes sha256::hash(const Bytes bytes) const{
     unsigned char bytesin[bytes.getLen()];
     unsigned char bytesout[this->getHashSize()];
     auto inpbytes = bytes.getBytes();
@@ -12,7 +12,7 @@ Bytes sha256::hash(Bytes bytes){
     return ret;
 }
 
-Bytes sha256::hash(std::string str){
+Bytes sha256::hash(const std::string str) const{
     unsigned char bytesin[str.length()];
     std::copy( str.begin(), str.end(), bytesin );
     unsigned char bytesout[this->getHashSize()];
