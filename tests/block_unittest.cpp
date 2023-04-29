@@ -5,6 +5,7 @@
 
 
 TEST(BlockClass, constructors){
+    //testing the constructors
     Block block1 = Block();
     Block block2 = Block(286, Bytes(286), Bytes(286), Bytes(286));
     Block block3 = Block(Bytes(28));
@@ -24,6 +25,7 @@ TEST(BlockClass, constructors){
 }
 
 TEST(BlockClass, setter){
+    //testing the setters of the Block class
     Block block1 = Block();
     Block block2 = Block(286, Bytes(286), Bytes(286), Bytes(286));
     Block block3 = Block(Bytes(28));
@@ -91,6 +93,7 @@ TEST(BlockClass, setter){
 }
 
 TEST(BlockClass, getter){
+    //testing the getter of the block class
     Block block1 = Block();
     Bytes encoded1(286);
     Bytes encoded2(28);
@@ -112,6 +115,7 @@ TEST(BlockClass, getter){
 }
 
 TEST(BlockClass, clear){
+    //testing the clear method
     Block block1 = Block();
     Block block2 = Block(286, Bytes(286), Bytes(286), Bytes(286));
     Block block3 = Block(Bytes(28));
@@ -138,6 +142,7 @@ TEST(BlockClass, clear){
 }
 
 TEST(BlockClass, encode){
+    //testing encoding in a block
     Bytes data(1);
     Bytes password(1);
     Bytes salt(1);
@@ -182,6 +187,7 @@ TEST(BlockClass, encode){
 }
 
 TEST(BlockClass, decode){
+    //testing decoding in a block
     Bytes encode(1);
     Bytes password(1);
     Bytes salt(1);

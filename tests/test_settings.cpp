@@ -1,5 +1,7 @@
 /*
 please comment out the test modes you dont use
+this module is providing some constants that are used as test settings
+you can set the settings to fast or slow (but more test iterations)
 */
 
 //easy mode (tests are running very short)

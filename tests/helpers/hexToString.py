@@ -1,3 +1,5 @@
+#turns a hex string into a character string (ascii)
+#copys the string in your clipboard
 from tkinter import Tk
 def main():
     hex = "e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a"    #insert hex here
@@ -7,7 +9,7 @@ def main():
     chars = []
     if len(hex) % 2 != 0:
         print("invalid hex")
-        return;
+        return
     for i in range(0, len(hex), 2):
         chars.append(hexchars.index(hex[i])*16 + hexchars.index(hex[i+1]))
 
