@@ -1,46 +1,48 @@
 #pragma once
 #include "bytes.h"
 #include "blockchainBase.h"
-#include "gtest/gtest.h"
 #ifndef BLOCK_H
 #define BLOCK_H
 
 class Block{
-    friend BlockChain;   //access private members
+    /*
+    the block class represents one block of the vlockchain
+    it has data, salt and the passwordhash to compute the encoded data
+    */
+    friend BlockChain;   //the blockchain has to access private members (like getData)
 private:
-    int len;
-    Bytes data;
-    Bytes salt;
-    Bytes passwordhash;
-    Bytes encoded;
+    int len;        //block len in bytes
+    Bytes data;     //plain text data
+    Bytes salt;     //salt to keep the passwordhash secure even if the attacker knows the data
+    Bytes passwordhash; //passwordhash (hash that is derived from the password)
+    Bytes encoded;      //the encoded data
 
 private:
-    Bytes getSalt() const noexcept;
-    Bytes getPasswordHash() const noexcept;
-    Bytes getData() const noexcept;
+    Bytes getSalt() const noexcept;         //getter for the salt bytes
+    Bytes getPasswordHash() const noexcept; //getter for the passwordhash bytes
+    Bytes getData() const noexcept;         //getter for the data bytes
 public:
     //encrypt
-    Block();
-    Block(int len, Bytes data, Bytes salt, Bytes password);
-    //Block(const Block&) = delete;
-    void setLen(int len);
-    void setData(Bytes data);
-    void setPasswordHash(Bytes passwordhash);
-    void setSalt(Bytes salt);
-    int getLen() const noexcept;
-    Bytes getEncoded() const noexcept;
-    bool isReadyForEncode() const noexcept;
-    void calcEncoded();
-    bool isEncoded() const noexcept;
+    Block();    //creates a block with a length of zero (you have to call setLen to use this block)
+    Block(int len, Bytes data, Bytes salt, Bytes password);     //creates a block with all neccessary data to encode
+    void setLen(int len);           //sets the len of the block (note that this only works if no other data is set yet)
+    void setData(Bytes data);       //sets the data of the block (note that the length has to be right)
+    void setPasswordHash(Bytes passwordhash);   //sets the passwordhash of the block (note that the length has to be right)
+    void setSalt(Bytes salt);       //sets the salt of the block (note that the length has to be right)
+    int getLen() const noexcept;    //getter for the block length
+    Bytes getEncoded() const noexcept;      //getter for the encoded bytes
+    bool isReadyForEncode() const noexcept;     //returns true if the block has all data to compute the encoded data
+    void calcEncoded();                         //computes the encoded data
+    bool isEncoded() const noexcept;            //returns true if the data has been encoded
 
     //decrypt
-    Block(Bytes encoded);
-    void setEncoded(Bytes encoded);
-    bool isReadyForDecode() const noexcept;
-    void calcData();
-    bool isDecoded() const noexcept;
+    Block(Bytes encoded);           //creates a block with only encoded data (to decrypt you have to set a passwword hash and a salt)
+    void setEncoded(Bytes encoded);     //setter for encoded data
+    bool isReadyForDecode() const noexcept;     //returns true if the block has all data to decrypt
+    void calcData();                    //decrypt the encoded data to plain data
+    bool isDecoded() const noexcept;    //returns true if the encoded data was decrypted
 
-    void clear() noexcept;
+    void clear() noexcept;          //clears the block data and sets length to zero
 
 };
 
