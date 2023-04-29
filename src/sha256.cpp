@@ -1,24 +1,24 @@
 #include "sha256.h"
 
 Bytes sha256::hash(const Bytes bytes) const{
-    unsigned char bytesin[bytes.getLen()];
-    unsigned char bytesout[this->getHashSize()];
+    unsigned char bytesin[bytes.getLen()];          //input buffer with length of the input
+    unsigned char bytesout[this->getHashSize()];    //output buffer with hashsize length
     auto inpbytes = bytes.getBytes();
-    std::copy(inpbytes.begin(), inpbytes.end(), bytesin);
-    SHA256(bytesin, bytes.getLen(), bytesout);
-    std::vector<unsigned char> v(bytesout, bytesout + sizeof(bytesout) / sizeof(bytesout[0]));
+    std::copy(inpbytes.begin(), inpbytes.end(), bytesin);   //copy the data into the input buffer
+    SHA256(bytesin, bytes.getLen(), bytesout);              //performs the hash
+    std::vector<unsigned char> v(bytesout, bytesout + sizeof(bytesout) / sizeof(bytesout[0]));  //turns the output buffer into a vector
     Bytes ret;
-    ret.setBytes(v);
+    ret.setBytes(v);        //sets the output vector as new bytes in the Bytes object
     return ret;
 }
 
 Bytes sha256::hash(const std::string str) const{
-    unsigned char bytesin[str.length()];
-    std::copy( str.begin(), str.end(), bytesin );
-    unsigned char bytesout[this->getHashSize()];
-    SHA256(bytesin, str.length(), bytesout);
-    std::vector<unsigned char> v(bytesout, bytesout + sizeof(bytesout) / sizeof(bytesout[0]));
+    unsigned char bytesin[str.length()];            //input buffer with length of the input
+    std::copy( str.begin(), str.end(), bytesin );   //copy the string data into the input buffer
+    unsigned char bytesout[this->getHashSize()];    //output buffer with hashsize length
+    SHA256(bytesin, str.length(), bytesout);        //performs the hash
+    std::vector<unsigned char> v(bytesout, bytesout + sizeof(bytesout) / sizeof(bytesout[0]));  //turns the output buffer into a vector
     Bytes ret;
-    ret.setBytes(v);
+    ret.setBytes(v);        //sets the output vector as new bytes in the Bytes object
     return ret;
 }
