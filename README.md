@@ -1,7 +1,6 @@
 # passwd-manager
 this is a simple system that keeps your passwords **secure** and **flexible**
 
-
 ## get ready
 
 Todo 
@@ -47,3 +46,17 @@ This continues for a specific amount of iterations.
 ### how to decrypt
 
 TODO
+
+
+
+## Workflow diagrams:
+### decrypt workflow
+<img src="docs/decrypt.png"
+     alt="Decrypt workflow"
+     style="float: left; margin-right: 10px;"
+ />
+ ###encrypt workflow
+ <img src="docs/encrypt.png"
+     alt="Decrypt workflow"
+     style="float: left; margin-right: 10px;"
+ />
