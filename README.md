@@ -55,7 +55,7 @@ TODO
      alt="Decrypt workflow"
      style="float: left; margin-right: 10px;"
  />
- ###encrypt workflow
+### encrypt workflow
  <img src="docs/encrypt.png"
      alt="Decrypt workflow"
      style="float: left; margin-right: 10px;"
