@@ -35,5 +35,7 @@ public:
 
 std::string toHex(const unsigned char byte) noexcept;   //returns a string (with two chars) that is the hexadecimal representation of the byte
 std::string toHex(Bytes b) noexcept;                    //returns a string (with 2*len chars) that is the hexadecimal representation of the Bytes
+long toLong(const unsigned char byte) noexcept;   //returns a long that is the decimal representation of the byte
+long toLong(Bytes b) noexcept;                    //returns a long that is the decimal representation of the Bytes
 
 #endif //BYTES_H
