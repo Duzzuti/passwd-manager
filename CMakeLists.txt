@@ -57,17 +57,17 @@ set(CMAKE_CXX_STANDARD 17)
 # endif()
 
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  )
+  # For Windows: Prevent overriding the parent project's compiler/linker settings
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable(googletest)
+endif()
 
 #find_package(GTest REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -82,6 +82,12 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
 add_subdirectory(${SRC_DIR})
-add_subdirectory(${TEST_DIR})
+if(NOT WIN32)
+install(TARGETS pman DESTINATION /usr/local/bin)
+else()
+#win32
+endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_subdirectory(${TEST_DIR})
 
-
+endif()
