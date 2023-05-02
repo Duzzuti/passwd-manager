@@ -3,6 +3,7 @@ build
 
 #vs code
 settings.json
+tasks.json
 # Prerequisites
 *.d
 # Compiled Object files
