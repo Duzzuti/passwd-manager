@@ -1,5 +1,7 @@
 #include "filehandler.h"
 
+const std::string FileHandler::extension = ".enc";
+
 void FileHandler::getAppDataDir(){
 #if defined(_WIN32)
     // Get the user's app data directory on Windows

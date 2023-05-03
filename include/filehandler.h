@@ -7,11 +7,14 @@
 #include <string>
 #include <sys/stat.h>
 #include <filesystem>
+#include <fstream>
 
 class FileHandler{
 private:
     std::string appDataDir;
     std::string fileName;
+public:
+    const static std::string extension;
 private:
     void getAppDataDir(); // Get the path to the directory where the application can store data
     void createAppDataDir(); // Create the application data directory if it doesn't exist
