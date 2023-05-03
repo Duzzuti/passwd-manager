@@ -1,16 +1,22 @@
 #include <iostream>
-#include "bytes.h"
+#include "app.h"
 
-int main(int, char**) {
-    Bytes initvector(8);
-    Bytes message(2189);
-    initvector.print();
-    initvector.addByte(76);
-    initvector.print();
-    std::cout << initvector.getLen() << std::endl;
-    initvector.popFirstBytes(6).value().print();
-    initvector.print();
-
-
-    return 0;
+int main(int argc, char *argv[]) {
+    // for (int i = 0; i < argc; i++){
+    //     std::cout << "a"<<argv[i]<<"b" << std::endl;
+    //     if (argv[i] == "-f"){
+    //         if (argc == i){
+    //             std::cout << "break";
+    //             return 1;
+    //         }
+    //         std::cout << "no break";
+    //         i++;
+    //         char* path = argv[i];
+    //         FileHandler FH;
+    //         std::cout << FH.setFilePath(path);
+    //         continue;
+    //     }
+    // }
+    App app;
+    return app.run();
 }
