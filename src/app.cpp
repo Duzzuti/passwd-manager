@@ -1,10 +1,8 @@
 #include "app.h"
-#include "filehandler.h"
 #include "utility.h"
 
 App::App(){
-    FileHandler FH;
-    this->filePath = FH.getFilePath();
+    this->filePath = this->FH.getFilePath();
 }
 
 bool App::run(){
@@ -12,12 +10,12 @@ bool App::run(){
     return true;
 }
 
-void App::printStart() const noexcept{
+void App::printStart(){
     std::cout << "Welcome to the local encryption system" << std::endl;
     if(this->filePath.empty()){
         std::cout << "The current encryption file location is: " << "not set" << std::endl;
         std::cout << "The new file location will be set to the current directory." << std::endl;
-        std::cout << "Please enter the name of the encryption file (if it does not exist it will be created): ";
+        std::cout << "Please enter the name of the encryption file (if it does not exist it will be created in the current location): ";
         std::string filename{};
         getline(std::cin, filename);
         if(!endsWith(filename, FileHandler::extension))filename += FileHandler::extension;
@@ -27,9 +25,12 @@ void App::printStart() const noexcept{
             std::ofstream new_file(filename.c_str());
             std::cout << "New encryption file: " << filename << " created" << std::endl;
         }
-        
-    }else{
-        std::cout << "The current encryption file location is: " << this->filePath << std::endl;
+        this->filePath = std::filesystem::current_path() / std::filesystem::path(filename);
     }
+    if(!this->FH.setFilePath(this->filePath)){  //save the new file path in the appdata
+        //newly created file not found
+        throw std::logic_error("File not found");
+    }
+    std::cout << "The current encryption file location is: " << this->filePath << std::endl;
     
 }
