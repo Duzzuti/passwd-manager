@@ -2,8 +2,16 @@
 this is a simple system that keeps your passwords **secure** and **flexible**
 
 ## get ready
-
-Todo 
+First you need to install cmake.
+<!--For ubuntu:
+```sh 
+sudo apt install cmake
+```-->
+clone this repo and execute in the project directory
+```sh
+cmake -Bbuild
+cmake --build build
+```
 
 ## functionality
 ### basics
