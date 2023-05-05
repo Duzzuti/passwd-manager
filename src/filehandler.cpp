@@ -58,6 +58,10 @@ std::filesystem::path FileHandler::getAppDataFilePath() const noexcept{
     return std::filesystem::path(this->appDataDir) / std::filesystem::path(this->appDataName);
 }
 
+void FileHandler::resetAppData() const noexcept{
+
+}
+
 FileHandler::FileHandler(){
     this->createAppDataDir();
     this->createAppDataFile();

@@ -19,6 +19,10 @@ void App::printStart(){
         std::cout << "Please enter the name of the encryption file (if it does not exist it will be created in the current location): ";
         std::string filename{};
         getline(std::cin, filename);
+        while(filename.empty()){
+            std::cout << "Please enter a valid filename: ";
+            getline(std::cin, filename);
+        }
         if(!endsWith(filename, FileHandler::extension))filename += FileHandler::extension;
         std::ifstream src(filename.c_str(), std::ifstream::in);
         if(!src){
