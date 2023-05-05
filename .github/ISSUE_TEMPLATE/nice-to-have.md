@@ -8,7 +8,10 @@ assignees: ''
 
 ---
 
-### Difficulty: 
-### Location/Files:
-### Current behaviour:
-### Wished behaviour:
+- **Difficulty (1-10):**
+
+- **Location/Files:**
+
+- **Current behaviour:**
+
+- **Wished behaviour:**
