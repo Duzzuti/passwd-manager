@@ -1,5 +1,6 @@
 #include "app.h"
 #include "utility.h"
+#include "pwfunc.h"
 
 App::App(){
     this->filePath = this->FH.getFilePath();
@@ -33,4 +34,20 @@ void App::printStart(){
     }
     std::cout << "The current encryption file location is: " << this->filePath << std::endl;
     
+}
+
+std::string App::askForPasswd() const noexcept{
+    std::string pw;
+    while(true){
+        std::cout << "Please enter the password for this file (if its a new file, this password will be set): ";
+        std::cin >> pw;
+        std::cout << std::endl;
+        if(!PwFunc::isPasswordValid(pw)){
+            std::cout << "Your password contains some illegal chars or is not long enough" << std::endl;
+            //WORK Feedback the exact error to the user //ISSUE
+            continue;
+        }
+        break;
+    }
+    return pw;
 }

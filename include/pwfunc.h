@@ -15,6 +15,8 @@ class PwFunc{
 private:
     const Hash* hash;       //stores the hash function that should be used
 public:
+    static bool isPasswordValid(std::string password) noexcept;
+
     PwFunc() = default;
     PwFunc(const Hash* hash) noexcept;      //sets the hash function
     Bytes chainhash(const std::string password, int iterations=1) const noexcept;       //performs a chainhash

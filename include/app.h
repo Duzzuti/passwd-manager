@@ -13,6 +13,7 @@ public:
     App();
     bool run();
     void printStart();
+    std::string askForPasswd() const noexcept;
 };
 
 #endif //APP_H
