@@ -12,6 +12,7 @@ clone this repo and execute in the project directory
 cmake -Bbuild
 cmake --build build
 ```
+the executable should be under build/pman
 
 ## functionality
 ### basics
