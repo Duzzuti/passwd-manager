@@ -59,7 +59,7 @@ std::filesystem::path FileHandler::getAppDataFilePath() const noexcept{
 }
 
 void FileHandler::resetAppData() const noexcept{
-
+    //WORK
 }
 
 FileHandler::FileHandler(){
@@ -75,9 +75,11 @@ bool FileHandler::setAppSetting(std::string setting_name, std::string setting_va
     
     */
     std::fstream file(this->getAppDataFilePath().c_str());
+    std::stringstream file_content;     //stores the data of the file
     std::string line;
-    while (std::getline(file, line))
-    {
+    int line_number = -1;
+    while (std::getline(file, line)){
+        line_number++;
         std::istringstream iss(line);
         std::string setting, value;
         if (!(iss >> setting >> value)){
@@ -90,9 +92,18 @@ bool FileHandler::setAppSetting(std::string setting_name, std::string setting_va
             }
             return false;
         } 
-        //WORK
-
+        std::cout << setting << "|" << value << std::endl;  //DEBUGONLY
+        if(!(setting == setting_name)){
+            //setting was not set previously, we have to save it, delete if it is the setting we wanna change
+            file_content << line << std::endl;
+        }
     }
+    //add the new setting to the file content stream
+    file_content << setting_name << " " << setting_value << std::endl;
+
+    std::ofstream write_file;
+    write_file.open(this->getAppDataFilePath().c_str(), std::ofstream::out | std::ofstream::trunc);
+    write_file << file_content.str();       //writes the file again with the read content and the added setting
     return true;
 }
 

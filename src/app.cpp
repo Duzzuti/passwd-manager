@@ -43,7 +43,7 @@ void App::printStart(){
 std::string App::askForPasswd() const noexcept{
     std::string pw;
     while(true){
-        std::cout << "Please enter the password for this file (if its a new file, this password will be set): ";
+        std::cout << "Please enter the password for this file (if it is a new file, this password will be set): ";
         std::cin >> pw;
         std::cout << std::endl;
         if(!PwFunc::isPasswordValid(pw)){
