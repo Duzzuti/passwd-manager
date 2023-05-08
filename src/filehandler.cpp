@@ -64,16 +64,93 @@ void FileHandler::resetAppData() const noexcept{
 
 FileHandler::FileHandler(){
     this->createAppDataDir();
-    this->createAppDataFile();
+    if(!this->isAppDataFile()){
+        this->createAppDataFile();
+    }
+    this->encryption_filepath = "";
+    std::optional<std::string> encryption_filepath = getAppSetting("filePath");
+    if(encryption_filepath.has_value()){
+        if(!std::filesystem::exists(encryption_filepath.value())){
+            this->removeAppSetting("filePath");
+        }else{
+            this->encryption_filepath = encryption_filepath.value();
+        }
+    }
 
 }
 
-bool FileHandler::setAppSetting(std::string setting_name, std::string setting_value) const noexcept{
+bool FileHandler::removeAppSetting(std::string setting_name) const{
+    if(!this->isAppDataFile()){
+        throw std::runtime_error("App data file not found");
+    }
+    std::fstream file(this->getAppDataFilePath().c_str());
+    std::stringstream file_content;     //stores the data of the file
+    std::string line;
+    while (std::getline(file, line)){
+        std::istringstream iss(line);
+        std::string setting, value;
+        if (!(iss >> setting >> value)){
+            std::cout << "The AppDataFile is not in the right format" << std::endl; // error occured, not in right format
+            std::cout << "Do you wanna reset the appData (y/n): ";
+            std::string tmp;
+            std::cin >> tmp;
+            if(tmp == "y"){
+                this->resetAppData();
+            }
+            return false;
+        } 
+        std::cout << setting << "|" << value << std::endl;  //DEBUGONLY
+        if(!(setting == setting_name)){
+            //a setting found that is not equal to the setting that should be deleted (we will save it)
+            file_content << line << std::endl;
+        }
+    }
+    std::ofstream write_file;
+    write_file.open(this->getAppDataFilePath().c_str(), std::ofstream::out | std::ofstream::trunc);
+    write_file << file_content.str();       //writes the file again with the read content without the deleted setting
+    return true;
+}
+
+std::optional<std::string> FileHandler::getAppSetting(std::string setting_name) const{
+    if(!this->isAppDataFile()){
+        throw std::runtime_error("App data file not found");
+    }
+    std::fstream file(this->getAppDataFilePath().c_str());
+    std::string line;
+    while (std::getline(file, line)){
+        std::istringstream iss(line);
+        std::string setting, value;
+        if (!(iss >> setting >> value)){
+            std::cout << "The AppDataFile is not in the right format" << std::endl; // error occured, not in right format
+            std::cout << "Do you wanna reset the appData (y/n): ";
+            std::string tmp;
+            std::cin >> tmp;
+            if(tmp == "y"){
+                this->resetAppData();
+            }
+            return{};
+        } 
+        std::cout << setting << "|" << value << std::endl;  //DEBUGONLY
+        if(setting == setting_name){
+            //setting is set in the appdata, return the value
+            return value;
+        }
+    }
+    return{};
+}
+
+bool FileHandler::isAppDataFile() const noexcept{
+    return std::filesystem::exists(this->getAppDataFilePath().c_str());
+}
+
+bool FileHandler::setAppSetting(std::string setting_name, std::string setting_value) const{
     /*
     APP SETTINGS
     filePath -> Path to the current encryption file
-    
     */
+    if(!this->isAppDataFile()){
+        throw std::runtime_error("App data file not found");
+    }
     std::fstream file(this->getAppDataFilePath().c_str());
     std::stringstream file_content;     //stores the data of the file
     std::string line;
@@ -107,18 +184,16 @@ bool FileHandler::setAppSetting(std::string setting_name, std::string setting_va
     return true;
 }
 
-bool FileHandler::setFilePath(std::string path) noexcept{
+bool FileHandler::setEncryptionFilePath(std::string path) noexcept{
     std::filesystem::path fp{path};
     bool exist = std::filesystem::exists(fp);
     if(exist){
         this->setAppSetting("filePath", path);
+        this->encryption_filepath = path;
     }
     return exist;
 }
 
-std::string FileHandler::getFilePath() const noexcept{
-    if(this->fileName.empty()){
-        return std::string{};
-    }
-    return (std::filesystem::path(this->appDataDir) / (std::filesystem::path(this->fileName)));
+std::string FileHandler::getEncryptionFilePath() const noexcept{
+    return this->encryption_filepath;
 }
