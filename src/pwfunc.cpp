@@ -1,7 +1,7 @@
 #include "pwfunc.h"
 #include "settings.h"
 
-bool PwFunc::isPasswordValid(std::string password) noexcept{
+string PwFunc::isPasswordValid(std::string password) noexcept{
     for(int i=0; i < password.length(); i++){
         bool found = false;
         for(int j=0; j < VALID_PASS_CHARSET.length(); j++){
@@ -10,10 +10,10 @@ bool PwFunc::isPasswordValid(std::string password) noexcept{
                 break;
             }
         }
-        if(!found)return false; //passwd contains illegal char
+        if(!found)return "Password contains illegal characters"; //passwd contains illegal char
     }
-    if(password.length() < MIN_PASS_LEN) return false; //passwd too short
-    return true;
+    if(password.length() < MIN_PASS_LEN) return "Password is too short"; //passwd too short
+    return "";
 }
 
 PwFunc::PwFunc(const Hash *hash) noexcept
