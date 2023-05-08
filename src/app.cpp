@@ -49,7 +49,6 @@ std::string App::askForPasswd() const noexcept{
         std::string validation=PwFunc::isPasswordValid(pw);
         if(!validation.empty()){
             std::cout << validation << std::endl;
-            //WORK Feedback the exact error to the user //ISSUE
             continue;
         }
         break;
