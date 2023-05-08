@@ -3,7 +3,7 @@
 #include "pwfunc.h"
 
 App::App(){
-    this->filePath = this->FH.getFilePath();
+    this->filePath = this->FH.getEncryptionFilePath();
 }
 
 bool App::run(){
@@ -32,7 +32,7 @@ void App::printStart(){
         }
         this->filePath = std::filesystem::current_path() / std::filesystem::path(filename);
     }
-    if(!this->FH.setFilePath(this->filePath)){  //save the new file path in the appdata
+    if(!this->FH.setEncryptionFilePath(this->filePath)){  //save the new file path in the appdata
         //newly created file not found
         throw std::logic_error("File not found");
     }
