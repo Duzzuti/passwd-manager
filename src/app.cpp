@@ -46,8 +46,9 @@ std::string App::askForPasswd() const noexcept{
         std::cout << "Please enter the password for this file (if it is a new file, this password will be set): ";
         std::cin >> pw;
         std::cout << std::endl;
-        if(!PwFunc::isPasswordValid(pw)){
-            std::cout << "Your password contains some illegal chars or is not long enough" << std::endl;
+        std::string validation=PwFunc::isPasswordValid(pw);
+        if(!validation.empty()){
+            std::cout << validation << std::endl;
             //WORK Feedback the exact error to the user //ISSUE
             continue;
         }
