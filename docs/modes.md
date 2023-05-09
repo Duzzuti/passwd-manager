@@ -10,6 +10,9 @@
 
 <br>
 
+## More Docs
+For information about the header length for each mode: *dataheader.md*
+
 ## Explanations
 ### Chainhash
 A chainhash is a function that is iterating a given number of iterations. In each iteration it performs a hash on the data. The result is stored in this data again.
