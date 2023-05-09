@@ -4,6 +4,7 @@
 #include "sha512.h"
 #include "pwfunc.h"
 #include <iostream>
+#include <sstream>
 
 int Modes::getModeBytesLen(unsigned char const mode){
     //gets the total length of the header
@@ -39,6 +40,27 @@ Bytes Modes::getSalt(unsigned char const mode, std::string password, Bytes heade
         return Modes::getSalt3(password, headerBytes);
     default:
         throw std::invalid_argument("mode "+std::to_string(mode)+" is not defined");
+    }
+}
+
+std::string Modes::getInfo(unsigned char const mode){
+    std::ostringstream msg_meta{};
+    msg_meta << "[ENCRYPTION MODE " << +mode << "] -> ";
+    switch(mode){
+        case 1:
+            return msg_meta.str()+"takes the password and performs one sha256 on it";
+        case 2:
+            return msg_meta.str()+"takes the password and performs one sha384 on it";
+        case 3:
+            return msg_meta.str()+"takes the password and performs one sha512 on it";
+        case 4:
+            return msg_meta.str()+"takes the password and performs a simple sha256 chainhash on it";
+        case 5:
+            return msg_meta.str()+"takes the password and performs a simple sha384 chainhash on it";
+        case 6:
+            return msg_meta.str()+"takes the password and performs a simple sha512 chainhash on it";
+        default:
+            throw std::invalid_argument("mode "+std::to_string(mode)+" is not defined");
     }
 }
 
