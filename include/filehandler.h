@@ -11,6 +11,8 @@
 #include <fstream>
 #include <optional>
 
+#include "bytes.h"
+
 class FileHandler{
 private:
     std::string appDataDir;
@@ -33,6 +35,7 @@ public:
     FileHandler();
     bool setEncryptionFilePath(std::string path) noexcept;
     std::string getEncryptionFilePath() const noexcept;
+    Bytes getFirstBytes(int num) const;
 };
 
 #endif //FILEHANDLER_H

@@ -2,6 +2,23 @@
 
 const std::string FileHandler::extension = ".enc";
 
+FileHandler::FileHandler(){
+    this->createAppDataDir();
+    if(!this->isAppDataFile()){
+        this->createAppDataFile();
+    }
+    this->encryption_filepath = "";
+    std::optional<std::string> encryption_filepath = getAppSetting("filePath");
+    if(encryption_filepath.has_value()){
+        if(!std::filesystem::exists(encryption_filepath.value())){
+            this->removeAppSetting("filePath");
+        }else{
+            this->encryption_filepath = encryption_filepath.value();
+        }
+    }
+
+}
+
 void FileHandler::getAppDataDir(){
 #if defined(_WIN32)
     // Get the user's app data directory on Windows
@@ -34,7 +51,6 @@ void FileHandler::getAppDataDir(){
 #endif
 }
 
-
 void FileHandler::createAppDataDir(){
     this->getAppDataDir();
     std::string appDataDir = this->appDataDir;
@@ -60,23 +76,6 @@ std::filesystem::path FileHandler::getAppDataFilePath() const noexcept{
 
 void FileHandler::resetAppData() const noexcept{
     //WORK
-}
-
-FileHandler::FileHandler(){
-    this->createAppDataDir();
-    if(!this->isAppDataFile()){
-        this->createAppDataFile();
-    }
-    this->encryption_filepath = "";
-    std::optional<std::string> encryption_filepath = getAppSetting("filePath");
-    if(encryption_filepath.has_value()){
-        if(!std::filesystem::exists(encryption_filepath.value())){
-            this->removeAppSetting("filePath");
-        }else{
-            this->encryption_filepath = encryption_filepath.value();
-        }
-    }
-
 }
 
 bool FileHandler::removeAppSetting(std::string setting_name) const{
@@ -196,4 +195,29 @@ bool FileHandler::setEncryptionFilePath(std::string path) noexcept{
 
 std::string FileHandler::getEncryptionFilePath() const noexcept{
     return this->encryption_filepath;
+}
+
+Bytes FileHandler::getFirstBytes(int num) const{
+    if(this->encryption_filepath.empty()){
+        throw std::runtime_error("Encrypted filepath is empty");
+    }
+    std::ifstream file(this->encryption_filepath.c_str()); 
+    if(!file){
+        throw std::runtime_error("Encrypted file not found in filepath");
+    }
+    // get length of file:
+    file.seekg (0, file.end);
+    int length = file.tellg();
+    file.seekg (0, file.beg);
+    if(length < num){
+        //not enough characters to read
+        throw std::length_error("File contains to few characters");
+    }
+    char buf[num];
+    file.read(buf, num);
+    Bytes ret = Bytes();
+    for(char c : buf){
+        ret.addByte(static_cast<unsigned char>(c));
+    }
+    return ret;
 }

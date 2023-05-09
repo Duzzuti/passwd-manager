@@ -5,21 +5,22 @@
 #include "pwfunc.h"
 #include <iostream>
 
-int Modes::getModeBytesLen(unsigned char const mode)
-{
+int Modes::getModeBytesLen(unsigned char const mode){
+    //gets the total length of the header
+    const constexpr int MODEBYTE = 1;
     switch (mode){
     case 1:
-        return SHA256_DIGEST_LENGTH;  //simple sha256
+        return MODEBYTE*2+SHA256_DIGEST_LENGTH*2+iteration_bytes;  //simple sha256
     case 2:
-        return SHA384_DIGEST_LENGTH;  //simple sha384
+        return MODEBYTE*2+SHA384_DIGEST_LENGTH*2+iteration_bytes;  //simple sha384
     case 3:
-        return SHA512_DIGEST_LENGTH;  //simple sha512
+        return MODEBYTE*2+SHA512_DIGEST_LENGTH*2+iteration_bytes;  //simple sha512
     case 4:
-        return SHA256_DIGEST_LENGTH+iteration_bytes;  //sha256 chainhash
+        return MODEBYTE*2+SHA256_DIGEST_LENGTH*2+iteration_bytes*2;  //sha256 chainhash
     case 5:
-        return SHA384_DIGEST_LENGTH+iteration_bytes;  //sha384 chainhash
+        return MODEBYTE*2+SHA384_DIGEST_LENGTH*2+iteration_bytes*2;  //sha384 chainhash
     case 6:
-        return SHA512_DIGEST_LENGTH+iteration_bytes;  //sha512 chainhash
+        return MODEBYTE*2+SHA512_DIGEST_LENGTH*2+iteration_bytes*2;  //sha512 chainhash
     default:
         throw std::invalid_argument("mode "+std::to_string(mode)+" is not defined");
     }

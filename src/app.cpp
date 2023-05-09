@@ -1,13 +1,20 @@
 #include "app.h"
 #include "utility.h"
 #include "pwfunc.h"
+#include "dataHeader.h"
 
 App::App(){
     this->filePath = this->FH.getEncryptionFilePath();
 }
 
 bool App::run(){
-    this->printStart();
+    this->printStart();     //get the file location from the user (if not in the app data)
+    //TODO check for empty file and construct a basic file header with a password from the user
+    unsigned char mode = this->FH.getFirstBytes(1).getBytes()[0];      //get the mode for the encrypted file
+    DataHeader DH(mode);
+    Bytes header = this->FH.getFirstBytes(DH.getHeaderLength());  
+    DH.setHeaderBytes(header);
+    std::string pw = this->askForPasswd();
     return true;
 }
 
@@ -31,6 +38,7 @@ void App::printStart(){
             std::cout << "New encryption file: " << filename << " created" << std::endl;
         }
         this->filePath = std::filesystem::current_path() / std::filesystem::path(filename);
+        std::cout << std::endl;
     }
     if(!this->FH.setEncryptionFilePath(this->filePath)){  //save the new file path in the appdata
         //newly created file not found
