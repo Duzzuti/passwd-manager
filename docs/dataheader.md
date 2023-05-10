@@ -1,18 +1,24 @@
 # DataHeader
-|Bytes|Modes|Type|Doc|More Docs|
-|----|----|----|-------------|-----|
-|1|ALL|unsigned char|saves the mode, in which the file is encrypted|modes.md|
-|32<br>48<br>64|1,4<br>2,5<br>3,6|Bytes|saves the bytes of a chainhash from the password hash to make sure the password the user entered was right|-|
-|8|ALL|long|saves the number of iterations for turning the passwordhash into another hash for password checking|bytes.md|
-|1|ALL|unsigned char|which chainhash was used for the password checking hash|TODO Modes of chainhashs|
-|32<br>48<br>64|1,4<br>2,5<br>3,6|Bytes|saves the encrypted salt|-|
-|8|4-6|long|saves the number of iterations for turning the password into the passwordhash for decrypting the salt|bytes.md|
+|Bytes|Type|Doc|More Docs|
+|---|---|-------------|-----|
+|1|unsigned char|which hash function was used in this file|hash_modes.md|
+|1|unsigned char|which chainhash was used to get the passwordhash|chainhash_modes.md|
+|8|long|saves the number of iterations for turning the password into the passwordhash|bytes.md|
+|1|int|saves the length (in bytes) of the datablock for the first chainhash|chainhash_modes.md|
+|0-255|Bytes|data block for the first chainhash|chainhash_modes.md|
+|1|unsigned char|which chainhash was used to validate the passwordhash|chainhash_modes.md|
+|8|long|saves the number of iterations for the second chainhash (password validating)|bytes.md|
+|1|int|saves the length (in bytes) of the datablock for the second chainhash|chainhash_modes.md|
+|0-255|Bytes|data block for the second chainhash|chainhash_modes.md|
+|Hash size|Bytes|saves the bytes of a chainhash from the passwordhash to validate the password|-|
+|Hash size|Bytes|saves the encrypted salt|doc.md|
 
-|Mode|Full byte length|Parts|
+
+### Total length of the data header lh:
+    21 + 2\*HS <= lh <= 21 + 2\*HS + 2\*255 Bytes
+
+|Hash size|Min lh|Max lh|
 |---|---|---|
-|1|74|1+32+8+1+32|
-|2|106|1+48+8+1+48|
-|3|138|1+64+8+1+64|
-|4|82|1+32+8+1+32+8|
-|5|114|1+48+8+1+48+8|
-|6|146|1+64+8+1+64+8|
+|32|85|595|
+|48|117|627|
+|64|149|659|
