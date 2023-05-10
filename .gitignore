@@ -1,6 +1,9 @@
 #cmake
 build
 
+#private folders
+deleted
+
 #vs code
 settings.json
 tasks.json
