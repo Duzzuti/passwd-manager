@@ -280,6 +280,32 @@ TEST(Utils, toHex){
     EXPECT_EQ("FF", toHex(testBytes4));
 }
 
+TEST(Utils, toLong){
+    unsigned long max_long = -1;
+    unsigned long max_long_one_less = -2;
+    unsigned long zero = 0;
+    unsigned long one = 1;
+    Bytes oneBytes = Bytes();
+    Bytes zeroBytes = Bytes();
+    Bytes maxLongBytes = Bytes();
+    Bytes maxLongLessBytes = Bytes();
+    for(int i=0; i < 7; i++){
+        maxLongBytes.addByte(255);
+        maxLongLessBytes.addByte(255);
+        zeroBytes.addByte(0);
+        oneBytes.addByte(0);
+    }
+    zeroBytes.addByte(0);
+    oneBytes.addByte(1);
+    maxLongBytes.addByte(255);
+    maxLongLessBytes.addByte(254);
+
+    EXPECT_EQ(max_long, toLong(maxLongBytes));
+    EXPECT_EQ(max_long_one_less, toLong(maxLongLessBytes));
+    EXPECT_EQ(zero, toLong(zeroBytes));
+    EXPECT_EQ(one, toLong(oneBytes));
+}
+
 TEST(Utils, bytesOperator){
     std::vector<unsigned char> testv1 = {123,43,23,113,213,32,0};
     std::vector<unsigned char> testv2 = {89,255,0,189, 11, 67, 254};
