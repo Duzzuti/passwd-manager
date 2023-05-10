@@ -3,7 +3,6 @@
 #define DATAHEADER_H
 
 #include "bytes.h"
-#include "modes.h"
 #include "hash_modes.h"
 #include "chainhash_modes.h"
 
