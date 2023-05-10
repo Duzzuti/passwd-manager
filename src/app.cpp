@@ -4,11 +4,7 @@
 #include "dataHeader.h"
 #include "settings.h"
 
-bool App::isValidMode(std::string mode, bool accept_blank) const noexcept{
-    if(mode.length() > std::to_string(MAX_MODE_NUMBER).length()){
-        //invalid length
-        return false;
-    }
+bool App::isValidHashMode(std::string mode, bool accept_blank) const noexcept{
     if(accept_blank && mode.empty()){
         //blank is also accepted
         return true;
@@ -22,7 +18,7 @@ bool App::isValidMode(std::string mode, bool accept_blank) const noexcept{
     }catch(std::exception){
         return false;
     }
-    if(1 <= int_mode && int_mode <= MAX_MODE_NUMBER){
+    if(HashModes::isModeValid(int_mode)){
         return true;
     }
     return false;
@@ -62,9 +58,9 @@ bool App::run(){
         //file is empty
         //construct a basic file header with a password from the user
         std::cout << "It seems that the encrypted file is empty. Let`s set up this file" << std::endl;
-        unsigned char enc_mode = this->askForMode();
+        unsigned char enc_mode = this->askForHashMode();
         std::cout << "Mode " << +enc_mode << " selected: " << std::endl << std::endl;
-        std::cout << Modes::getInfo(enc_mode) << std::endl << std::endl;
+        //std::cout << Modes::getInfo(enc_mode) << std::endl << std::endl;
         std::string pw = this->askForPasswd();
         long pass_val_iters = this->askForPasswdIters();
         std::cout << pass_val_iters << " iterations selected" << std::endl << std::endl;
@@ -126,22 +122,22 @@ std::string App::askForPasswd() const noexcept{
     return pw;
 }
 
-unsigned char App::askForMode() const noexcept{
-    std::string enc_mode_inp;
-    unsigned char enc_mode;
+unsigned char App::askForHashMode() const noexcept{
+    std::string hash_mode_inp;
+    unsigned char hash_mode;
     do{
-        std::cout << "Enter the encryption mode (1-" << +MAX_MODE_NUMBER <<")(leave blank to set the standard [" << +STANDARD_ENC_MODE <<"]): ";
-        enc_mode_inp = "";
-        getline(std::cin, enc_mode_inp);
-    }while (!this->isValidMode(enc_mode_inp, true));
+        std::cout << "Enter the hash mode (1-" << +MAX_HASHMODE_NUMBER <<")(leave blank to set the standard [" << +STANDARD_HASHMODE <<"]): ";
+        hash_mode_inp = "";
+        getline(std::cin, hash_mode_inp);
+    }while (!this->isValidHashMode(hash_mode_inp, true));
     
-    if(enc_mode_inp.empty()){
+    if(hash_mode_inp.empty()){
         //set the standard mode
-        enc_mode = STANDARD_ENC_MODE;
+        hash_mode = STANDARD_HASHMODE;
     }else{
-        enc_mode = std::stoi(enc_mode_inp); //set the user given mode
+        hash_mode = std::stoi(hash_mode_inp); //set the user given mode
     }
-    return enc_mode;
+    return hash_mode;
 }
 
 long App::askForPasswdIters() const noexcept{

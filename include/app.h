@@ -12,10 +12,10 @@ private:
 
 private:
     void printStart();
-    bool isValidMode(std::string mode, bool accept_blank=false) const noexcept;
+    bool isValidHashMode(std::string mode, bool accept_blank=false) const noexcept;
     bool isValidNumber(std::string number, bool accept_blank=false) const noexcept;
     std::string askForPasswd() const noexcept;
-    unsigned char askForMode() const noexcept;
+    unsigned char askForHashMode() const noexcept;
     long askForPasswdIters() const noexcept;
 public:
     App();
