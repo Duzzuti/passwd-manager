@@ -9,7 +9,7 @@ TEST(RNGClass, entropy){
     //calculates the entropy of the RNG
     std::unordered_map<unsigned char, long> bytemap{};
     for(long i=0; i<SET_NUMBER_ENTROPY; i++){
-        bytemap[RNG().get_random_bytes(1)[0]] += 1;
+        bytemap[RNG::get_random_bytes(1)[0]] += 1;
     }
     double entropy{};
     for(std::pair<unsigned char, long> key_value : bytemap){

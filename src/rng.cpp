@@ -1,6 +1,6 @@
 #include "rng.h"
 
-std::vector<unsigned char> RNG::get_random_bytes(int num) const{
+std::vector<unsigned char> RNG::get_random_bytes(int num){
     unsigned char rand_bytes[num];      //creates a new buffer with the given length
     std::vector<unsigned char> ret{};
     if (RAND_bytes(rand_bytes, sizeof(rand_bytes)) == 1) {  //generates the random bytes

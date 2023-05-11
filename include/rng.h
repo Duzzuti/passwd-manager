@@ -12,7 +12,7 @@ class RNG{
     it uses openssl libraries and is cryptograhically secure
     */
 public:
-    std::vector<unsigned char> get_random_bytes(int num) const;     //get random bytes with the given length
+    static std::vector<unsigned char> get_random_bytes(int num);     //get random bytes with the given length
     //long get_random_number(long min, long max) const;
 };
 

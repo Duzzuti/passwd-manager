@@ -12,7 +12,7 @@ Bytes::Bytes(const int len){
         throw std::range_error("The provided len is negative");
     }
     //sets random bytes (with a cryptographically secure algorithm from openssl)
-    this->setBytes(RNG().get_random_bytes(len));
+    this->setBytes(RNG::get_random_bytes(len));
 }
 
 void Bytes::print() const noexcept{
