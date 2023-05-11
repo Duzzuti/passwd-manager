@@ -3,30 +3,48 @@
 #include "pwfunc.h"
 #include "test_utils.h"   //provide gen_random for random strings
 #include "test_settings.cpp"
+#include "rng.h"
+#include "settings.h"
 
 TEST(PWFUNCClass, input_output){
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
     
-    for(int i=0; i < SET_MAX_PW_LEN; i++){
+    for(int i=0; i < TEST_MAX_PW_LEN; i++){
+        Bytes rand_b;
+        rand_b.setBytes(RNG::get_random_bytes(2));
+        unsigned long l1 = toLong(rand_b) / 6;
+        if(MIN_ITERATIONS > l1){
+            l1 = MIN_ITERATIONS;
+        }else if(MAX_ITERATIONS < l1){
+            l1 = TEST_MAX_PW_ITERS;
+        }
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l2 = toLong(rand_b);
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l3 = toLong(rand_b);
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l4 = toLong(rand_b);
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l5 = toLong(rand_b);
         std::string p = gen_random_string(i);
-        Bytes tmp = pwf.chainhash(p, SET_PW_ITERS);
+        Bytes tmp = pwf.chainhash(p, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp.getLen());
-        Bytes tmp2 = pwf.chainhashWithConstantSalt(p, SET_PW_ITERS);
+        Bytes tmp2 = pwf.chainhashWithConstantSalt(p, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp2.getLen());
-        Bytes tmp3 = pwf.chainhashWithConstantSalt(p, SET_PW_ITERS, gen_random_string(100));
+        Bytes tmp3 = pwf.chainhashWithConstantSalt(p, l1, gen_random_string(100));
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp3.getLen());
-        Bytes tmp4 = pwf.chainhashWithCountSalt(p, SET_PW_ITERS);
+        Bytes tmp4 = pwf.chainhashWithCountSalt(p, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp4.getLen());
-        Bytes tmp5 = pwf.chainhashWithCountSalt(p, SET_PW_ITERS, 100);
+        Bytes tmp5 = pwf.chainhashWithCountSalt(p, l1, l2);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp5.getLen());
-        Bytes tmp6 = pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS);
+        Bytes tmp6 = pwf.chainhashWithCountAndConstantSalt(p, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp6.getLen());
-        Bytes tmp7 = pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS, 100, gen_random_string(100));
+        Bytes tmp7 = pwf.chainhashWithCountAndConstantSalt(p, l1, l2, gen_random_string(100));
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp7.getLen());
-        Bytes tmp8 = pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS);
+        Bytes tmp8 = pwf.chainhashWithQuadraticCountSalt(p, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp8.getLen());
-        Bytes tmp9 = pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS, 100);
+        Bytes tmp9 = pwf.chainhashWithQuadraticCountSalt(p, l1, l2, l3, l4, l5);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp9.getLen());
     }
 
@@ -37,18 +55,34 @@ TEST(PWFUNCClass, concistency){
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
     
-    for(int i=0; i < SET_MAX_PW_LEN; i++){
+    for(int i=0; i < TEST_MAX_PW_LEN; i++){
         std::string p = gen_random_string(i);
         std::string s = gen_random_string(100);
-        EXPECT_EQ(pwf.chainhash(p, SET_PW_ITERS), pwf.chainhash(p, SET_PW_ITERS));
-        EXPECT_EQ(pwf.chainhashWithConstantSalt(p, SET_PW_ITERS), pwf.chainhashWithConstantSalt(p, SET_PW_ITERS));
-        EXPECT_EQ(pwf.chainhashWithConstantSalt(p, SET_PW_ITERS, s), pwf.chainhashWithConstantSalt(p, SET_PW_ITERS, s));
-        EXPECT_EQ(pwf.chainhashWithCountSalt(p, SET_PW_ITERS), pwf.chainhashWithCountSalt(p, SET_PW_ITERS));
-        EXPECT_EQ(pwf.chainhashWithCountSalt(p, SET_PW_ITERS, 100), pwf.chainhashWithCountSalt(p, SET_PW_ITERS, 100));
-        EXPECT_EQ(pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS), pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS));
-        EXPECT_EQ(pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS, 100, s), pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS, 100, s));
-        EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS), pwf.chainhashWithCountSalt(p, SET_PW_ITERS));
-        EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS, 100), pwf.chainhashWithCountSalt(p, SET_PW_ITERS, 100));
+        Bytes rand_b;
+        rand_b.setBytes(RNG::get_random_bytes(2));
+        unsigned long l1 = toLong(rand_b) / 6 ;
+        if(MIN_ITERATIONS > l1){
+            l1 = MIN_ITERATIONS;
+        }else if(MAX_ITERATIONS < l1){
+            l1 = TEST_MAX_PW_ITERS;
+        }
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l2 = toLong(rand_b);
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l3 = toLong(rand_b);
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l4 = toLong(rand_b);
+        rand_b.setBytes(RNG::get_random_bytes(8));
+        unsigned long l5 = toLong(rand_b);
+        EXPECT_EQ(pwf.chainhash(p, l1), pwf.chainhash(p, l1));
+        EXPECT_EQ(pwf.chainhashWithConstantSalt(p, l1), pwf.chainhashWithConstantSalt(p, l1));
+        EXPECT_EQ(pwf.chainhashWithConstantSalt(p, l1, s), pwf.chainhashWithConstantSalt(p, l1, s));
+        EXPECT_EQ(pwf.chainhashWithCountSalt(p, l1), pwf.chainhashWithCountSalt(p, l1));
+        EXPECT_EQ(pwf.chainhashWithCountSalt(p, l1, l2), pwf.chainhashWithCountSalt(p, l1, l2));
+        EXPECT_EQ(pwf.chainhashWithCountAndConstantSalt(p, l1), pwf.chainhashWithCountAndConstantSalt(p, l1));
+        EXPECT_EQ(pwf.chainhashWithCountAndConstantSalt(p, l1, l2, s), pwf.chainhashWithCountAndConstantSalt(p, l1, l2, s));
+        EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(p, l1), pwf.chainhashWithQuadraticCountSalt(p, l1));
+        EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(p, l1, l2, l3, l4, l5), pwf.chainhashWithQuadraticCountSalt(p, l1, l2, l3, l4, l5));
     }
 
     delete hash;
