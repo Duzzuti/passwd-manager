@@ -26,8 +26,8 @@ bool ChainHashModes::isChainHashValid(unsigned char const chainhash_mode, unsign
             return false;   //datablock too short
         }
         return true;
-    case 5: //count salt begin needed (8 Bytes for quadratic count salt)
-        if(datablock.getLen() != 8){
+    case 5: //count salt begin needed (8 Bytes for quadratic count salt, and 3*8 Bytes for a,b,c)
+        if(datablock.getLen() != 4*8){
         return false;   //datablock has an invalid length
         }
         return true;

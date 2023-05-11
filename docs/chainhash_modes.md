@@ -6,7 +6,7 @@
 | 2       |0-255B S| Performs a chainhash with a constant salt (repeat the hahsing on the same hash + a given salt)                                   |
 | 3       |8B SN| Performs a chainhash with a count salt (repeat the hahsing on the same hash + a incrementing number)                             |
 | 4       |8B SN, 0-247B S| Performs a chainhash with a count and constant salt (repeat the hahsing on the same hash + a incrementing number + a given salt) |
-| 5       |8B SN| Performs a chainhash with a quadratic count salt (repeat the hahsing on the same hash + a incrementing quadratic number)         |
+| 5       |8B SN 8B A 8B B 8B C| Performs a chainhash with a quadratic count salt (repeat the hahsing on the same hash + a incrementing quadratic number)         |
 
 
 ## Data block format
@@ -17,3 +17,4 @@
 |---|---|
 |S|a given salt|
 |SN|the start number for the count salt|
+|A, B, C|long number arguments|
