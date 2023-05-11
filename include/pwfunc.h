@@ -23,6 +23,7 @@ public:
     Bytes chainhashWithConstantSalt(const std::string password, int iterations=1, const std::string salt="") const noexcept;    //adds a constant salt each iteration
     Bytes chainhashWithCountSalt(const std::string password, int iterations=1, int salt_start=1) const noexcept;    //adds a salt (number that counts up each iteration)
     Bytes chainhashWithCountAndConstantSalt(const std::string password, int iterations=1, int salt_start=1, const std::string salt="") const noexcept;  //adds a constant and count salt each iteration
+    Bytes chainhashWithQuadraticCountSalt(const std::string password, int iterations=1, int salt_start=1, int a=1, int b=1, int c=1) const noexcept;  //adds a quadratic count salt each iteration
 };
 
 #endif //PWFUNC_H

@@ -26,6 +26,11 @@ bool ChainHashModes::isChainHashValid(unsigned char const chainhash_mode, unsign
             return false;   //datablock too short
         }
         return true;
+    case 5: //count salt begin needed (8 Bytes for quadratic count salt)
+        if(datablock.getLen() != 8){
+        return false;   //datablock has an invalid length
+        }
+        return true;
     default:
         return false;  //chainhash mode not valid
     }
@@ -41,6 +46,8 @@ Bytes ChainHashModes::performChainHash(unsigned char const chainhash_mode, unsig
         return Bytes();
     case 4: //constant + count salt
         return Bytes();
+    case 5: //Quadratic count salt
+        return Bytes();
     default:
         throw std::invalid_argument("chainhash mode does not exist");
     }
@@ -55,6 +62,8 @@ Bytes ChainHashModes::performChainHash(unsigned char const chainhash_mode, unsig
     case 3: //count salt
         return Bytes();
     case 4: //constant + count salt
+        return Bytes();
+    case 5: //quadratic count salt
         return Bytes();
     default:
         throw std::invalid_argument("chainhash mode does not exist");

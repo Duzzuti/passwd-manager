@@ -67,3 +67,15 @@ Bytes PwFunc::chainhashWithCountAndConstantSalt(const std::string password, int 
     }
     return ret;
 }
+
+Bytes PwFunc::chainhashWithQuadraticCountSalt(const std::string password, int iterations, int salt_start, int a, int b, int c) const noexcept{
+    Bytes ret = this->hash->hash(password+std::to_string(a*salt_start*salt_start + b*salt_start + c));  //hashes the password with the a*start_salt^2 + b*start_salt + c added
+    for(int i=1; i < iterations; i++){
+    //for iterations - 1 the salt will count up and get hashed. The hash is added to the current hash and is hashed again
+    salt_start++;
+    Bytes hashed_salt = this->hash->hash(std::to_string(a*salt_start*salt_start + b*salt_start + c));
+    ret.addBytes(hashed_salt);
+    ret = this->hash->hash(ret);
+    }
+    return ret;
+}

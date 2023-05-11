@@ -24,6 +24,10 @@ TEST(PWFUNCClass, input_output){
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp6.getLen());
         Bytes tmp7 = pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS, 100, gen_random_string(100));
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp7.getLen());
+        Bytes tmp8 = pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS);
+        EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp8.getLen());
+        Bytes tmp9 = pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS, 100);
+        EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp9.getLen());
     }
 
     delete hash;
@@ -43,6 +47,8 @@ TEST(PWFUNCClass, concistency){
         EXPECT_EQ(pwf.chainhashWithCountSalt(p, SET_PW_ITERS, 100), pwf.chainhashWithCountSalt(p, SET_PW_ITERS, 100));
         EXPECT_EQ(pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS), pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS));
         EXPECT_EQ(pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS, 100, s), pwf.chainhashWithCountAndConstantSalt(p, SET_PW_ITERS, 100, s));
+        EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS), pwf.chainhashWithCountSalt(p, SET_PW_ITERS));
+        EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(p, SET_PW_ITERS, 100), pwf.chainhashWithCountSalt(p, SET_PW_ITERS, 100));
     }
 
     delete hash;
