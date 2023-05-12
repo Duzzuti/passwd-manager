@@ -79,3 +79,74 @@ Bytes PwFunc::chainhashWithQuadraticCountSalt(const std::string password, unsign
     }
     return ret;
 }
+
+Bytes PwFunc::chainhash(const Bytes data, unsigned long iterations) const noexcept{
+    Bytes ret = this->hash->hash(data);     //hashes the data
+    for(unsigned long i=1; i < iterations; i++){
+        //for iterations -1 the hash is hashed again
+        ret = this->hash->hash(ret);
+    }
+    return ret;
+}
+
+Bytes PwFunc::chainhashWithConstantSalt(const Bytes data, unsigned long iterations, const std::string salt) const noexcept{
+    Bytes hashed_salt = this->hash->hash(salt);         //hashes the salt
+    Bytes new_data = data;
+    new_data.addBytes(hashed_salt);             //add the salt bytes to the data
+    Bytes ret = this->hash->hash(new_data); //hashes the data with the salt added
+    for(unsigned long i=1; i < iterations; i++){
+        //for iterations -1 the salt hash is added to the current hash and the result is hashed again
+        ret.addBytes(hashed_salt);
+        ret = this->hash->hash(ret);
+    }
+    return ret;
+}
+
+Bytes PwFunc::chainhashWithCountSalt(const Bytes data, unsigned long iterations, unsigned long salt_start) const noexcept{
+    Bytes hashed_salt = this->hash->hash(std::to_string(salt_start));         //hashes the salt
+    Bytes new_data = data;
+    new_data.addBytes(hashed_salt);             //add the salt bytes to the data
+    Bytes ret = this->hash->hash(new_data); //hashes the data with the salt added
+    for(unsigned long i=1; i < iterations; i++){
+        //for iterations - 1 the salt will count up and get hashed. The hash is added to the current hash and is hashed again
+        salt_start++;
+        Bytes hashed_salt = this->hash->hash(std::to_string(salt_start));
+        ret.addBytes(hashed_salt);
+        ret = this->hash->hash(ret);
+    }
+    return ret;
+}
+
+Bytes PwFunc::chainhashWithCountAndConstantSalt(const Bytes data, unsigned long iterations, unsigned long salt_start, const std::string salt) const noexcept{
+    Bytes hashed_constant_salt = this->hash->hash(salt);         //hashes the constant salt
+    Bytes hashed_salt = this->hash->hash(std::to_string(salt_start));         //hashes the count salt
+    Bytes new_data = data;
+    new_data.addBytes(hashed_constant_salt);    //add the constant salt bytes to the data
+    new_data.addBytes(hashed_salt);             //add the count salt bytes to the data
+    Bytes ret = this->hash->hash(new_data); //hashes the data with the salt added
+    for(unsigned long i=1; i < iterations; i++){
+        //for iterations -1 the count salt will increment and get hashed. Next the constant salt hash gets added to the current hash as well as the count salt hash
+        //the result is hashed again
+        salt_start++;
+        Bytes hashed_salt = this->hash->hash(std::to_string(salt_start));
+        ret.addBytes(hashed_constant_salt);
+        ret.addBytes(hashed_salt);
+        ret = this->hash->hash(ret);
+    }
+    return ret;
+}
+
+Bytes PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, unsigned long iterations, unsigned long salt_start, unsigned long a, unsigned long b, unsigned long c) const noexcept{
+    Bytes hashed_salt = this->hash->hash(std::to_string(a*salt_start*salt_start + b*salt_start + c));         //hashes the quadartic salt
+    Bytes new_data = data;
+    new_data.addBytes(hashed_salt);             //add the salt bytes to the data
+    Bytes ret = this->hash->hash(new_data); //hashes the data with the salt added
+    for(unsigned long i=1; i < iterations; i++){
+        //for iterations - 1 the salt will count up and get hashed. The hash is added to the current hash and is hashed again
+        salt_start++;
+        Bytes hashed_salt = this->hash->hash(std::to_string(a*salt_start*salt_start + b*salt_start + c));
+        ret.addBytes(hashed_salt);
+        ret = this->hash->hash(ret);
+    }
+    return ret;
+}
