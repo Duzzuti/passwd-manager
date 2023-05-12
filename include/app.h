@@ -13,10 +13,12 @@ private:
 private:
     void printStart();
     bool isValidHashMode(std::string mode, bool accept_blank=false) const noexcept;
+    bool isValidChainHashMode(std::string mode, bool accept_blank=false) const noexcept;
     bool isValidNumber(std::string number, bool accept_blank=false) const noexcept;
     std::string askForPasswd() const noexcept;
     unsigned char askForHashMode() const noexcept;
-    long askForPasswdIters() const noexcept;
+    unsigned char askForChainHashMode() const noexcept;
+    unsigned long askForPasswdIters() const noexcept;
 public:
     App();
     bool run();

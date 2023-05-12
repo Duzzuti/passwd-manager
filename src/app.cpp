@@ -5,6 +5,7 @@
 #include "settings.h"
 
 bool App::isValidHashMode(std::string mode, bool accept_blank) const noexcept{
+    //checks the hash mode (if accept_blank == True, we also acccept an empty string)
     if(accept_blank && mode.empty()){
         //blank is also accepted
         return true;
@@ -16,13 +17,39 @@ bool App::isValidHashMode(std::string mode, bool accept_blank) const noexcept{
     try{
         int_mode = std::stoi(mode); //transform the mode string to an number
     }catch(std::exception){
-        return false;
+        return false;       //the given hash mode string is not convertible into an int
+    }
+    if(!(0 < std::stoi(mode) && std::stoi(mode) < 256)){
+        return false;   //wrong range
     }
     if(HashModes::isModeValid(int_mode)){
         return true;
     }
-    return false;
+    return false;   //hash mode has some invalid number (out of range)
+}
 
+bool App::isValidChainHashMode(std::string mode, bool accept_blank) const noexcept{
+    //checks the chainhash mode (if accept_blank == True, we also acccept an empty string)
+    if(accept_blank && mode.empty()){
+        //blank is also accepted
+        return true;
+    }else if(!accept_blank && mode.empty()){
+        //blank is not accepted
+        return false;
+    }
+    unsigned char int_mode;
+    try{
+        int_mode = std::stoi(mode); //transform the mode string to an number
+    }catch(std::exception){
+        return false;       //the given chainhash mode string is not convertible into an int
+    }
+    if(!(0 < std::stoi(mode) && std::stoi(mode) < 256)){
+        return false;   //wrong range
+    }
+    if(ChainHashModes::isModeValid(int_mode)){
+        return true;
+    }
+    return false;   //chain hash mode has some invalid number (out of range)
 }
 
 bool App::isValidNumber(std::string number, bool accept_blank) const noexcept{
@@ -33,9 +60,9 @@ bool App::isValidNumber(std::string number, bool accept_blank) const noexcept{
         //blank is not accepted
         return false;
     }
-    long res_number;
+    unsigned long res_number;
     try{
-        res_number = std::stoi(number); //transform the number string to a number
+        res_number = std::stoul(number); //transform the number string to a number
     }catch(std::exception){
         return false;
     }
@@ -58,12 +85,14 @@ bool App::run(){
         //file is empty
         //construct a basic file header with a password from the user
         std::cout << "It seems that the encrypted file is empty. Let`s set up this file" << std::endl;
-        unsigned char enc_mode = this->askForHashMode();
-        std::cout << "Mode " << +enc_mode << " selected: " << std::endl << std::endl;
-        //std::cout << Modes::getInfo(enc_mode) << std::endl << std::endl;
-        std::string pw = this->askForPasswd();
-        long pass_val_iters = this->askForPasswdIters();
+        unsigned char hash_mode = this->askForHashMode();
+        //std::cout << "Hash Mode " << +hash_mode << " selected: " << std::endl << std::endl;
+        std::cout << HashModes::getInfo(hash_mode) << std::endl << std::endl;
+        unsigned char chainhash_mode1 = this->askForChainHashMode();
+        //WORK
+        unsigned long pass_val_iters = this->askForPasswdIters();
         std::cout << pass_val_iters << " iterations selected" << std::endl << std::endl;
+        std::string pw = this->askForPasswd();
         return false; //DEBUGONLY
 
     }
@@ -123,6 +152,7 @@ std::string App::askForPasswd() const noexcept{
 }
 
 unsigned char App::askForHashMode() const noexcept{
+    //this function asks the user for the hash mode (blank means standard)
     std::string hash_mode_inp;
     unsigned char hash_mode;
     do{
@@ -140,9 +170,29 @@ unsigned char App::askForHashMode() const noexcept{
     return hash_mode;
 }
 
-long App::askForPasswdIters() const noexcept{
+unsigned char App::askForChainHashMode() const noexcept{
+    //this function asks the user for the chain hash mode (blank means standard)
+    std::string chainhash_mode_inp;
+    unsigned char chainhash_mode;
+    do{
+        std::cout << "Enter the chainhash mode (1-" << +MAX_CHAINHASHMODE_NUMBER <<")(leave blank to set the standard [" << +STANDARD_CHAINHASHMODE <<"]): ";
+        chainhash_mode_inp = "";
+        getline(std::cin, chainhash_mode_inp);
+    }while (!this->isValidChainHashMode(chainhash_mode_inp, true));
+    
+    if(chainhash_mode_inp.empty()){
+        //set the standard mode
+        chainhash_mode = STANDARD_CHAINHASHMODE;
+    }else{
+        chainhash_mode = std::stoi(chainhash_mode_inp); //set the user given mode
+    }
+    return chainhash_mode;
+}
+
+unsigned long App::askForPasswdIters() const noexcept{
+    //asks the user for a password and also makes sure its not invalid (still can be wrong obv)
     std::string iter_inp;
-    long iter;
+    unsigned long iter;
     do{
         std::cout << "How many iterations should be used to validate your password (leave blank to set the standard [" << STANDARD_PASS_VAL_ITERATIONS << "]): ";
         iter_inp = "";
@@ -153,7 +203,7 @@ long App::askForPasswdIters() const noexcept{
         //set the standard iterations
         iter = STANDARD_PASS_VAL_ITERATIONS;
     }else{
-        iter = std::stoi(iter_inp); //set the user given iterations
+        iter = std::stoul(iter_inp); //set the user given iterations
     }
     return iter;
 
