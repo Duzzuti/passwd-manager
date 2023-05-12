@@ -2,6 +2,7 @@
 #include "rng.h"
 #include "app.h"
 #include "utility.h"
+#include "pwfunc.h"
 
 std::string ChainHashModes::getInfo(unsigned char const chainhash_mode){
     std::stringstream msg{}; 
@@ -25,20 +26,19 @@ std::string ChainHashModes::getInfo(unsigned char const chainhash_mode){
         default:
             throw std::invalid_argument("chainhash mode does not exist");
     }
+    return msg.str();
 }
 
-Bytes ChainHashModes::askForSaltString(Bytes bytes, std::string msg, unsigned char const max_len) noexcept
-{
+Bytes ChainHashModes::askForSaltString(Bytes bytes, std::string msg, unsigned char const max_len) noexcept{
     std::string blank = " or leave this field blank to generate it randomly: ";
     std::string inp{};
     do{
         std::cout << msg << " (you do not have to remember this, maximum length = " << +max_len << " Bytes)" << blank;
         getline(std::cin, inp);
-        std::cout << std::endl;
-    }while(inp.length() <= max_len);
+    }while(inp.length() > max_len);
     if(inp.empty()){    //user wants to generate it randomly
         Bytes tmpb = Bytes();
-        tmpb.setBytes(RNG::get_random_bytes(255));
+        tmpb.setBytes(RNG::get_random_bytes(max_len));
         bytes.addBytes(tmpb);
         return bytes;
     }
@@ -54,8 +54,7 @@ Bytes ChainHashModes::askForSaltNumber(Bytes bytes, std::string msg, unsigned ch
     do{
         std::cout << msg << " (you do not have to remember this, maximum length = " << +max_len << " Bytes)" << blank;
         getline(std::cin, inp);
-        std::cout << std::endl;
-    }while(App::isValidNumber(inp, true));
+    }while(!App::isValidNumber(inp, true));
     if(inp.empty()){    //user wants to generate it randomly
         Bytes tmpb = Bytes();
         tmpb.setBytes(RNG::get_random_bytes(8));
@@ -131,34 +130,68 @@ Bytes ChainHashModes::askForData(unsigned char const chainhash_mode){
 }
 
 Bytes ChainHashModes::performChainHash(unsigned char const chainhash_mode, unsigned long iters, Bytes datablock, Hash* hash, Bytes data){
+    if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
+        throw std::invalid_argument("ChainHash arguments are not valid");
+    }
+    PwFunc pwf = PwFunc(hash);
+    std::string constant_salt{};
+    unsigned long count_salt{};
+    unsigned long a{};
+    unsigned long b{};
+    unsigned long c{};
     switch (chainhash_mode){
     case 1: //normal chainhash
-        return Bytes();
+        return pwf.chainhash(data, iters);
     case 2: //constant salt
-        return Bytes();
+        constant_salt = charVecToString(datablock.getBytes());
+        return pwf.chainhashWithConstantSalt(data, iters, constant_salt);
     case 3: //count salt
-        return Bytes();
+        count_salt = toLong(datablock.popFirstBytes(8).value());
+        return pwf.chainhashWithCountSalt(data, iters, count_salt);
     case 4: //constant + count salt
-        return Bytes();
+        count_salt = toLong(datablock.popFirstBytes(8).value());
+        constant_salt = charVecToString(datablock.getBytes());
+        return pwf.chainhashWithCountAndConstantSalt(data, iters, count_salt, constant_salt);
     case 5: //Quadratic count salt
-        return Bytes();
+        count_salt = toLong(datablock.popFirstBytes(8).value());
+        a = toLong(datablock.popFirstBytes(8).value());
+        b = toLong(datablock.popFirstBytes(8).value());
+        c = toLong(datablock.popFirstBytes(8).value());
+        return pwf.chainhashWithQuadraticCountSalt(data, iters, count_salt, a, b, c);
     default:
         throw std::invalid_argument("chainhash mode does not exist");
     }
 }
 
 Bytes ChainHashModes::performChainHash(unsigned char const chainhash_mode, unsigned long iters, Bytes datablock, Hash* hash, std::string data){
+    if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
+        throw std::invalid_argument("ChainHash arguments are not valid");
+    }
+    PwFunc pwf = PwFunc(hash);
+    std::string constant_salt{};
+    unsigned long count_salt{};
+    unsigned long a{};
+    unsigned long b{};
+    unsigned long c{};
     switch (chainhash_mode){
     case 1: //normal chainhash
-        return Bytes();
+        return pwf.chainhash(data, iters);
     case 2: //constant salt
-        return Bytes();
+        constant_salt = charVecToString(datablock.getBytes());
+        return pwf.chainhashWithConstantSalt(data, iters, constant_salt);
     case 3: //count salt
-        return Bytes();
+        count_salt = toLong(datablock.popFirstBytes(8).value());
+        return pwf.chainhashWithCountSalt(data, iters, count_salt);
     case 4: //constant + count salt
-        return Bytes();
-    case 5: //quadratic count salt
-        return Bytes();
+        count_salt = toLong(datablock.popFirstBytes(8).value());
+        constant_salt = charVecToString(datablock.getBytes());
+        return pwf.chainhashWithCountAndConstantSalt(data, iters, count_salt, constant_salt);
+    case 5: //Quadratic count salt
+        count_salt = toLong(datablock.popFirstBytes(8).value());
+        a = toLong(datablock.popFirstBytes(8).value());
+        b = toLong(datablock.popFirstBytes(8).value());
+        c = toLong(datablock.popFirstBytes(8).value());
+        return pwf.chainhashWithQuadraticCountSalt(data, iters, count_salt, a, b, c);
     default:
         throw std::invalid_argument("chainhash mode does not exist");
     }

@@ -16,3 +16,11 @@ std::vector<unsigned char> LongToCharVec(unsigned long a){
     }
     return ret;
 }
+
+std::string charVecToString(std::vector<unsigned char> v){
+    std::string ret;
+    for(size_t i=0; i < v.size(); i++){
+        ret += v[i];
+    }
+    return ret;
+}
