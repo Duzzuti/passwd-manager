@@ -1,3 +1,4 @@
+#include <vector>
 #include "utility.h"
 
 bool endsWith(std::string const &fullString, std::string const &ending) {
@@ -6,4 +7,12 @@ bool endsWith(std::string const &fullString, std::string const &ending) {
     } else {
         return false;
     }
+}
+std::vector<unsigned char> LongToCharVec(unsigned long a){
+    std::vector<unsigned char> ret;
+    int i = 0;
+    for (i=0; i<8; ++i){
+        ret.push_back((unsigned char)((((unsigned long) a) >> (56 - (8*i))) & 0xFFu));
+    }
+    return ret;
 }
