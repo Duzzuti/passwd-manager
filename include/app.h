@@ -12,16 +12,16 @@ private:
 
 private:
     void printStart();
-    bool isValidHashMode(std::string mode, bool accept_blank=false) const noexcept;
-    bool isValidChainHashMode(std::string mode, bool accept_blank=false) const noexcept;
-    bool isValidNumber(std::string number, bool accept_blank=false) const noexcept;
     std::string askForPasswd() const noexcept;
     unsigned char askForHashMode() const noexcept;
     unsigned char askForChainHashMode() const noexcept;
-    unsigned long askForPasswdIters() const noexcept;
+    unsigned long askForIters(std::string msg) const noexcept;
 public:
     App();
     bool run();
+    static bool isValidHashMode(std::string mode, bool accept_blank=false) noexcept;
+    static bool isValidChainHashMode(std::string mode, bool accept_blank=false) noexcept;
+    static bool isValidNumber(std::string number, bool accept_blank=false, unsigned long lower_bound=0, unsigned long upper_bound=-1) noexcept;
 };
 
 #endif //APP_H

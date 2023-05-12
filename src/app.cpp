@@ -4,7 +4,7 @@
 #include "dataHeader.h"
 #include "settings.h"
 
-bool App::isValidHashMode(std::string mode, bool accept_blank) const noexcept{
+bool App::isValidHashMode(std::string mode, bool accept_blank) noexcept{
     //checks the hash mode (if accept_blank == True, we also acccept an empty string)
     if(accept_blank && mode.empty()){
         //blank is also accepted
@@ -28,7 +28,7 @@ bool App::isValidHashMode(std::string mode, bool accept_blank) const noexcept{
     return false;   //hash mode has some invalid number (out of range)
 }
 
-bool App::isValidChainHashMode(std::string mode, bool accept_blank) const noexcept{
+bool App::isValidChainHashMode(std::string mode, bool accept_blank) noexcept{
     //checks the chainhash mode (if accept_blank == True, we also acccept an empty string)
     if(accept_blank && mode.empty()){
         //blank is also accepted
@@ -52,7 +52,7 @@ bool App::isValidChainHashMode(std::string mode, bool accept_blank) const noexce
     return false;   //chain hash mode has some invalid number (out of range)
 }
 
-bool App::isValidNumber(std::string number, bool accept_blank) const noexcept{
+bool App::isValidNumber(std::string number, bool accept_blank, unsigned long lower_bound, unsigned long upper_bound) noexcept{
     if(accept_blank && number.empty()){
         //blank is also accepted
         return true;
@@ -66,7 +66,7 @@ bool App::isValidNumber(std::string number, bool accept_blank) const noexcept{
     }catch(std::exception){
         return false;
     }
-    if(MIN_ITERATIONS <= res_number && res_number <= MAX_ITERATIONS){
+    if(lower_bound <= res_number && res_number <= upper_bound){
         return true;
     }
     return false;
@@ -86,13 +86,57 @@ bool App::run(){
         //construct a basic file header with a password from the user
         std::cout << "It seems that the encrypted file is empty. Let`s set up this file" << std::endl;
         unsigned char hash_mode = this->askForHashMode();
-        //std::cout << "Hash Mode " << +hash_mode << " selected: " << std::endl << std::endl;
-        std::cout << HashModes::getInfo(hash_mode) << std::endl << std::endl;
+        std::cout << "In order to get an hash derived from the enterd password, we need to perform a chainhash" << std::endl;
+        std::cout << "Please enter the preferences for this chainhash:" << std::endl;
         unsigned char chainhash_mode1 = this->askForChainHashMode();
-        //WORK
-        unsigned long pass_val_iters = this->askForPasswdIters();
-        std::cout << pass_val_iters << " iterations selected" << std::endl << std::endl;
+        unsigned long chainhash_iters1 = this->askForIters("How many iterations should be used to derive a hash from your password");
+        Bytes datablock1 = ChainHashModes::askForData(chainhash_mode1);
+        if(datablock1.getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode1, chainhash_iters1, datablock1)){
+            throw std::length_error("Chainhash1 data was invalid");
+        }
+        unsigned char datablock_len1 = datablock1.getLen();
+
+        std::cout << "In order to verify the entered password, we need to perform an other chainhash" << std::endl;
+        std::cout << "Please enter the preferences for this chainhash as well" << std::endl;
+        unsigned char chainhash_mode2 = this->askForChainHashMode();
+        unsigned long chainhash_iters2 = this->askForIters("How many iterations should be used to validate the password");
+        Bytes datablock2 = ChainHashModes::askForData(chainhash_mode2);
+        if(datablock2.getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode2, chainhash_iters2, datablock2)){
+            throw std::length_error("Chainhash2 data was invalid");
+        }
+        unsigned char datablock_len2 = datablock2.getLen();
+
+        //print a summary
+        std::cout << std::endl;
+        std::cout << "Following preferences will be set for this file: " << std::endl;
+        std::cout << "[HASH FUNCTION] " << HashModes::getInfo(hash_mode) << std::endl << std::endl;
+        std::cout << "[CHAINHASH1] (to derive the hash from the password):" << std::endl;
+        std::cout << "\t[MODE] " << ChainHashModes::getInfo(chainhash_mode1) << std::endl;
+        std::cout << "\t[ITERATIONS] " << chainhash_iters1 << std::endl;
+        std::cout << "\t[DATABLOCKLEN] " << +datablock_len1 << " Bytes" << std::endl;
+        std::cout << "\t[DATABLOCK] " << toHex(datablock1) << std::endl << std::endl;
+
+        std::cout << "[CHAINHASH2] (to validate the hash from the password):" << std::endl;
+        std::cout << "\t[MODE] " << ChainHashModes::getInfo(chainhash_mode2) << std::endl;
+        std::cout << "\t[ITERATIONS] " << chainhash_iters2 << std::endl;
+        std::cout << "\t[DATABLOCKLEN] " << +datablock_len2 << " Bytes" << std::endl;
+        std::cout << "\t[DATABLOCK] " << toHex(datablock2) << std::endl << std::endl;
+
         std::string pw = this->askForPasswd();
+
+        std::cout << "Let's generate the password validator" << std::endl;
+        std::cout << "Please note that this is the minimum time you need to decrypt you file. ";
+        std::cout << "If its really slow you can set up the file again but with a faster chainhash or fewer iterations to match your hardware. ";
+        std::cout << "Keep in mind that you need a stronger password if the decrypt time is shorter (its shorter too for an attacker, who can faster bruteforce your password).";
+        //WORK time measurement
+        std::cout << std::endl << "Generating password hash..." << std::endl;
+        Hash* hash = HashModes::getHash(hash_mode);
+        Bytes pwhash = ChainHashModes::performChainHash(chainhash_mode1, chainhash_iters1, datablock1, hash, pw);
+        std::cout << "Password hash generated. Generating password validator..." << std::endl;
+        Bytes pwval = ChainHashModes::performChainHash(chainhash_mode2, chainhash_iters2, datablock2, hash, pwhash);
+        std::cout << "Password validator generated." << std::endl; 
+        delete hash;
+        
         return false; //DEBUGONLY
 
     }
@@ -189,19 +233,19 @@ unsigned char App::askForChainHashMode() const noexcept{
     return chainhash_mode;
 }
 
-unsigned long App::askForPasswdIters() const noexcept{
-    //asks the user for a password and also makes sure its not invalid (still can be wrong obv)
+unsigned long App::askForIters(std::string msg) const noexcept{
+    //asks the user for the number of iterations that should be applied when deriving the passwordhash
     std::string iter_inp;
     unsigned long iter;
     do{
-        std::cout << "How many iterations should be used to validate your password (leave blank to set the standard [" << STANDARD_PASS_VAL_ITERATIONS << "]): ";
+        std::cout << msg << " (leave blank to set the standard [" << STANDARD_ITERATIONS << "]): ";
         iter_inp = "";
         getline(std::cin, iter_inp);
-    }while (!this->isValidNumber(iter_inp, true));
+    }while (!this->isValidNumber(iter_inp, true, MIN_ITERATIONS, MAX_ITERATIONS));
 
     if(iter_inp.empty()){
         //set the standard iterations
-        iter = STANDARD_PASS_VAL_ITERATIONS;
+        iter = STANDARD_ITERATIONS;
     }else{
         iter = std::stoul(iter_inp); //set the user given iterations
     }
