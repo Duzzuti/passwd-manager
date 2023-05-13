@@ -1,4 +1,6 @@
 #include "dataHeader.h"
+#include "utility.h"
+#include "rng.h"
 
 DataHeader::DataHeader(unsigned char const hash_mode){
     this->hash_mode = hash_mode;
@@ -55,4 +57,45 @@ void DataHeader::setChainHash2(unsigned char mode, unsigned long iters, unsigned
     this->chainhash2_datablock = datablock;
     this->chainhash2_datablock_len = len;
     this->chainhash2_iters = iters;
+}
+
+Bytes DataHeader::getHeaderBytes() const{
+    if(this->getHeaderLength() == 0){
+        throw std::logic_error("not all data is set to calculate the length of the header");
+    }
+    if(this->getHeaderLength() != this->header_bytes.getLen()){
+        throw std::logic_error("the calculated header length is not equal to the set header length. Call calcHeaderBytes() first");
+    }
+    return this->header_bytes;
+}
+
+void DataHeader::calcHeaderBytes(){
+    if(this->chainhash1_mode == 0 || this->chainhash2_mode == 0 || this->valid_passwordhash.getLen() != this->hash_size){
+        //header bytes cannot be calculated (data is missing)
+        throw std::logic_error("not all data is set to calculate the length of the header");
+    }
+    //saves the expected length to validate the result
+    this->header_bytes = Bytes();
+    unsigned int len = this->getHeaderLength();
+
+    Bytes dataheader = Bytes();
+    Bytes tmp = Bytes();
+    dataheader.addByte(this->hash_mode);
+    dataheader.addByte(this->chainhash1_mode);
+    tmp.setBytes(LongToCharVec(this->chainhash1_iters));
+    dataheader.addBytes(tmp);
+    dataheader.addByte(this->chainhash1_datablock_len);
+    dataheader.addBytes(this->chainhash1_datablock);
+    dataheader.addByte(this->chainhash2_mode);
+    tmp.setBytes(LongToCharVec(this->chainhash2_iters));
+    dataheader.addBytes(tmp);
+    dataheader.addByte(this->chainhash2_datablock_len);
+    dataheader.addBytes(this->chainhash2_datablock);
+    dataheader.addBytes(this->valid_passwordhash);
+    tmp.setBytes(RNG::get_random_bytes(this->hash_size));   //generate the salt
+    dataheader.addBytes(tmp);
+    if(dataheader.getLen() != len){
+        throw std::logic_error("calculated header has not the expected length");
+    }
+    this->header_bytes = dataheader;
 }

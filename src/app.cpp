@@ -139,6 +139,15 @@ bool App::run(){
         delete hash;
         std::cout << "PW HASH: " << toHex(pwhash) << std::endl;         //DEBUGONLY
         std::cout << "PW VALIDATOR: " << toHex(pwval) << std::endl;     //DEBUGONLY
+
+        //create the dataheader
+        DataHeader DH = DataHeader(hash_mode);
+        DH.setChainHash1(chainhash_mode1, chainhash_iters1, datablock_len1, datablock1);
+        DH.setChainHash2(chainhash_mode2, chainhash_iters2, datablock_len2, datablock2);
+        DH.setValidPasswordHashBytes(pwval);
+        DH.calcHeaderBytes();
+        Bytes header = DH.getHeaderBytes();
+        std::cout << "FULL HEADER:" << std::endl << toHex(header) << std::endl;     //DEBUGONLY
         return false; //DEBUGONLY
 
     }
