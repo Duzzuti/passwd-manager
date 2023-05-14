@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #ifndef FILEHANDLER_H
 #define FILEHANDLER_H
 

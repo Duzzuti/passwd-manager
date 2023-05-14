@@ -16,6 +16,7 @@ private:
     unsigned char askForHashMode() const noexcept;
     unsigned char askForChainHashMode() const noexcept;
     unsigned long askForIters(std::string msg) const noexcept;
+    Bytes askForHeader() const;
 public:
     App();
     bool run();
