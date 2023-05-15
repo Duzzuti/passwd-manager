@@ -5,6 +5,8 @@
 
 const constexpr unsigned int MIN_PASS_LEN = 8;
 const std::string VALID_PASS_CHARSET = "a1eo0r2ins9lt357864mdycuhkbwgzpfvxjqAWYEZSRXMTNLVBDCOIPHUGKFJQ_.-!*@$#?%&;=~+[(|/]{}):§<>,";
+const constexpr unsigned char MAX_FILEMODE_NUMBER = 1;
+const constexpr unsigned char STANDARD_FILEMODE = 1;
 const constexpr unsigned char MAX_HASHMODE_NUMBER = 3;
 const constexpr unsigned char STANDARD_HASHMODE = 3;
 const constexpr unsigned char MAX_CHAINHASHMODE_NUMBER = 5;

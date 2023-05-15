@@ -8,6 +8,7 @@
 
 class DataHeader{
 private:
+    unsigned char file_mode;   //the file data mode that is choosen (content of the file)
     unsigned char hash_mode;   //the hash mode that is choosen (hash function)
     unsigned char hash_size;    //the size of the hash provided by the hash function (in Bytes)
     unsigned char chainhash1_mode;  //chainhash mode for the first chainhash (password -> passwordhash)
@@ -26,6 +27,7 @@ private:
 
 public:
     DataHeader(unsigned char const hash_mode);
+    void setFileDataMode(unsigned char const file_mode);
     void setHeaderBytes(Bytes headerBytes);
     unsigned int getHeaderLength() const noexcept;
     void setChainHash1(unsigned char mode, unsigned long iters, unsigned char len, Bytes datablock);

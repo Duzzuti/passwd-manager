@@ -1,15 +1,16 @@
 #include "dataHeader.h"
 #include "utility.h"
 #include "rng.h"
+#include "file_modes.h"
 
 DataHeader::DataHeader(unsigned char const hash_mode){
-    this->hash_mode = hash_mode;
     if(!HashModes::isModeValid(hash_mode)){
         std::cout << "ERROR: file is corupted and cannot be read " << std::endl;
         std::cout << "The given hash mode of the file is not valid (" << +hash_mode << ")" << std::endl;
         std::cout << "Update the application, correct the mode byte in the file or try a backup file you have made" << std::endl;
         throw std::runtime_error("Cannot read data header. Invalid hash mode");
     }
+    this->hash_mode = hash_mode;
     Hash* hash = HashModes::getHash(hash_mode);
     this->hash_size = hash->getHashSize();
     delete hash;
@@ -20,7 +21,7 @@ unsigned int DataHeader::getHeaderLength() const noexcept{
         return this->header_bytes.getLen();     //header bytes are set, so we get this length
     }
     if(this->chainhash1_mode != 0 && this->chainhash2_mode != 0){   //all data set to calculate the header length
-        return 21 + 2*this->hash_size + this->chainhash1_datablock_len + this->chainhash2_datablock_len;    //dataheader.md
+        return 22 + 2*this->hash_size + this->chainhash1_datablock_len + this->chainhash2_datablock_len;    //dataheader.md
     }else{
         return 0;   //not enough infos to get the header length
     }
@@ -37,6 +38,16 @@ void DataHeader::setChainHash1(unsigned char mode, unsigned long iters, unsigned
     this->chainhash1_datablock = datablock;
     this->chainhash1_datablock_len = len;
     this->chainhash1_iters = iters;
+}
+
+void DataHeader::setFileDataMode(unsigned char const file_mode){
+    if(!FileModes::isModeValid(file_mode)){
+        std::cout << "ERROR: file is corupted and cannot be read " << std::endl;
+        std::cout << "The given file mode of the file is not valid (" << +file_mode << ")" << std::endl;
+        std::cout << "Update the application, correct the mode byte in the file or try a backup file you have made" << std::endl;
+        throw std::runtime_error("Cannot read data header. Invalid file mode");
+    }
+    this->file_mode = file_mode;
 }
 
 void DataHeader::setValidPasswordHashBytes(Bytes validBytes){
@@ -70,7 +81,8 @@ Bytes DataHeader::getHeaderBytes() const{
 }
 
 void DataHeader::calcHeaderBytes(){
-    if(this->chainhash1_mode == 0 || this->chainhash2_mode == 0 || this->valid_passwordhash.getLen() != this->hash_size){
+    if(this->chainhash1_mode == 0 || this->chainhash2_mode == 0 || 
+        this->valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->file_mode)){
         //header bytes cannot be calculated (data is missing)
         throw std::logic_error("not all data is set to calculate the length of the header");
     }
@@ -80,6 +92,7 @@ void DataHeader::calcHeaderBytes(){
 
     Bytes dataheader = Bytes();
     Bytes tmp = Bytes();
+    dataheader.addByte(this->file_mode);
     dataheader.addByte(this->hash_mode);
     dataheader.addByte(this->chainhash1_mode);
     tmp.setBytes(LongToCharVec(this->chainhash1_iters));

@@ -13,6 +13,7 @@ private:
 private:
     void printStart();
     std::string askForPasswd() const noexcept;
+    unsigned char askForFileMode() const noexcept;
     unsigned char askForHashMode() const noexcept;
     unsigned char askForChainHashMode() const noexcept;
     unsigned long askForIters(std::string msg) const noexcept;
@@ -20,6 +21,7 @@ private:
 public:
     App();
     bool run();
+    static bool isValidFileMode(std::string mode, bool accept_blank=false) noexcept;
     static bool isValidHashMode(std::string mode, bool accept_blank=false) noexcept;
     static bool isValidChainHashMode(std::string mode, bool accept_blank=false) noexcept;
     static bool isValidNumber(std::string number, bool accept_blank=false, unsigned long lower_bound=0, unsigned long upper_bound=-1) noexcept;

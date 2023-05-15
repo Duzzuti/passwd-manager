@@ -5,7 +5,31 @@
 #include "dataHeader.h"
 #include "settings.h"
 #include "file_data.h"
+#include "file_modes.h"
 
+bool App::isValidFileMode(std::string mode, bool accept_blank) noexcept{
+    //checks the file mode (if accept_blank == True, we also acccept an empty string)
+    if(accept_blank && mode.empty()){
+        //blank is also accepted
+        return true;
+    }else if(!accept_blank && mode.empty()){
+        //blank is not accepted
+        return false;
+    }
+    unsigned char int_mode;
+    try{
+        int_mode = std::stoi(mode); //transform the mode string to an number
+    }catch(std::exception){
+        return false;       //the given file mode string is not convertible into an int
+    }
+    if(!(0 < std::stoi(mode) && std::stoi(mode) < 256)){
+        return false;   //wrong range
+    }
+    if(FileModes::isModeValid(int_mode)){
+        return true;
+    }
+    return false;   //file mode has some invalid number (out of range)
+}
 bool App::isValidHashMode(std::string mode, bool accept_blank) noexcept{
     //checks the hash mode (if accept_blank == True, we also acccept an empty string)
     if(accept_blank && mode.empty()){
@@ -91,11 +115,6 @@ bool App::run(){
         std::cout << "It seems that the encrypted file is empty. Let`s set this file up" << std::endl;
         header = this->askForHeader();
     }
-    unsigned char mode = this->FH.getFirstBytes(1).getBytes()[0];      //get the mode for the encrypted file
-    DataHeader DH(mode);
-    header = this->FH.getFirstBytes(DH.getHeaderLength());  
-    //DH.setHeaderBytes(header);
-    std::string pw = this->askForPasswd();
     return true;
 }
 
@@ -143,6 +162,25 @@ std::string App::askForPasswd() const noexcept{
         break;
     }
     return pw;
+}
+
+unsigned char App::askForFileMode() const noexcept{
+    //this function asks the user for the file mode (blank means standard)
+    std::string file_mode_inp;
+    unsigned char file_mode;
+    do{
+        std::cout << "Enter the file mode (1-" << +MAX_FILEMODE_NUMBER <<")(leave blank to set the standard [" << +STANDARD_FILEMODE <<"]): ";
+        file_mode_inp = "";
+        getline(std::cin, file_mode_inp);
+    }while (!this->isValidFileMode(file_mode_inp, true));
+    
+    if(file_mode_inp.empty()){
+        //set the standard mode
+        file_mode = STANDARD_FILEMODE;
+    }else{
+        file_mode = std::stoi(file_mode_inp); //set the user given mode
+    }
+    return file_mode;
 }
 
 unsigned char App::askForHashMode() const noexcept{
@@ -204,6 +242,7 @@ unsigned long App::askForIters(std::string msg) const noexcept{
 }
 
 Bytes App::askForHeader() const{
+    unsigned char file_data_mode = this->askForFileMode();
     unsigned char hash_mode = this->askForHashMode();
     std::cout << std::endl;
     std::cout << "In order to get an hash derived from the enterd password, we need to perform a chainhash" << std::endl;
@@ -229,6 +268,7 @@ Bytes App::askForHeader() const{
     //print a summary
     std::cout << std::endl;
     std::cout << "Following preferences will be set for this file: " << std::endl;
+    std::cout << "[FILE DATA MODE] " << FileModes::getInfo(file_data_mode) << std::endl;
     std::cout << "[HASH FUNCTION] " << HashModes::getInfo(hash_mode) << std::endl << std::endl;
     std::cout << "[CHAINHASH1] (to derive the hash from the password):" << std::endl;
     std::cout << "\t[MODE] " << ChainHashModes::getInfo(chainhash_mode1) << std::endl;
@@ -261,6 +301,7 @@ Bytes App::askForHeader() const{
 
     //create the dataheader
     DataHeader DH = DataHeader(hash_mode);
+    DH.setFileDataMode(file_data_mode);
     DH.setChainHash1(chainhash_mode1, chainhash_iters1, datablock_len1, datablock1);
     DH.setChainHash2(chainhash_mode2, chainhash_iters2, datablock_len2, datablock2);
     DH.setValidPasswordHashBytes(pwval);

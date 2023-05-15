@@ -1,6 +1,7 @@
 # DataHeader
 |Bytes|Type|Doc|More Docs|
 |---|---|-------------|-----|
+|1|unsigned char|which kind of data is in the file|TODO data.md|
 |1|unsigned char|which hash function was used in this file|hash_modes.md|
 |1|unsigned char|which chainhash was used to get the passwordhash|chainhash_modes.md|
 |8|long|saves the number of iterations for turning the password into the passwordhash|bytes.md|
@@ -15,10 +16,10 @@
 
 
 ### Total length of the data header lh:
-    21 + 2\*HS <= lh <= 21 + 2\*HS + 2\*255 Bytes
+    22 + 2\*HS <= lh <= 21 + 2\*HS + 2\*255 Bytes
 
 |Hash size|Min lh|Max lh|
 |---|---|---|
-|32|85|595|
-|48|117|627|
-|64|149|659|
+|32|86|596|
+|48|118|628|
+|64|150|660|
