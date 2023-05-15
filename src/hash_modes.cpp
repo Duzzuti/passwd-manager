@@ -2,7 +2,7 @@
 
 bool HashModes::isModeValid(unsigned char const hash_mode) noexcept{
     //checks whether the given hash mode is in the accepted range
-    return (1 <= hash_mode <= MAX_HASHMODE_NUMBER);
+    return (1 <= hash_mode && hash_mode <= MAX_HASHMODE_NUMBER);
 }
 
 Hash* HashModes::getHash(unsigned char const hash_mode){

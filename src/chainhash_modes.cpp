@@ -69,7 +69,7 @@ Bytes ChainHashModes::askForSaltNumber(Bytes bytes, std::string msg, unsigned ch
 }
 
 bool ChainHashModes::isModeValid(unsigned char const chainhash_mode) noexcept{
-    return (1 <= chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
+    return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
 }
 
 bool ChainHashModes::isChainHashValid(unsigned char const chainhash_mode, unsigned long iters, Bytes datablock) noexcept{
