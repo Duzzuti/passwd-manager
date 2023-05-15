@@ -1,14 +1,14 @@
 #include <vector>
 #include "utility.h"
 
-bool endsWith(std::string const &fullString, std::string const &ending) {
+bool endsWith(std::string const &fullString, std::string const &ending) noexcept{
     if (fullString.length() >= ending.length()) {
         return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
     } else {
         return false;
     }
 }
-std::vector<unsigned char> LongToCharVec(unsigned long a){
+std::vector<unsigned char> LongToCharVec(unsigned long a) noexcept{
     std::vector<unsigned char> ret;
     int i = 0;
     for (i=0; i<8; ++i){
@@ -17,7 +17,7 @@ std::vector<unsigned char> LongToCharVec(unsigned long a){
     return ret;
 }
 
-std::string charVecToString(std::vector<unsigned char> v){
+std::string charVecToString(std::vector<unsigned char> v) noexcept{
     std::string ret;
     for(size_t i=0; i < v.size(); i++){
         ret += v[i];

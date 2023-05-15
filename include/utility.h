@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-bool endsWith(std::string const &fullString, std::string const &ending);
-std::vector<unsigned char> LongToCharVec(unsigned long a);
-std::string charVecToString(std::vector<unsigned char> v);
+bool endsWith(std::string const &fullString, std::string const &ending) noexcept;
+std::vector<unsigned char> LongToCharVec(unsigned long a) noexcept;
+std::string charVecToString(std::vector<unsigned char> v) noexcept;
 
 #endif //UTILITY_H
