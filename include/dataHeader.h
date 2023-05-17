@@ -33,7 +33,7 @@ public:
     void setChainHash1(unsigned char mode, unsigned long iters, unsigned char len, Bytes datablock);
     void setChainHash2(unsigned char mode, unsigned long iters, unsigned char len, Bytes datablock);
     void setValidPasswordHashBytes(Bytes validBytes);
-    void calcHeaderBytes();
+    void calcHeaderBytes(Bytes passwordhash);
     Bytes getHeaderBytes() const;
 };
 

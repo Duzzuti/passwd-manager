@@ -80,7 +80,7 @@ Bytes DataHeader::getHeaderBytes() const{
     return this->header_bytes;
 }
 
-void DataHeader::calcHeaderBytes(){
+void DataHeader::calcHeaderBytes(Bytes passwordhash){
     if(this->chainhash1_mode == 0 || this->chainhash2_mode == 0 || 
         this->valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->file_mode)){
         //header bytes cannot be calculated (data is missing)
@@ -106,6 +106,7 @@ void DataHeader::calcHeaderBytes(){
     dataheader.addBytes(this->chainhash2_datablock);
     dataheader.addBytes(this->valid_passwordhash);
     tmp.setBytes(RNG::get_random_bytes(this->hash_size));   //generate the salt
+    tmp = tmp + passwordhash;       //encrypt the salt
     dataheader.addBytes(tmp);
     if(dataheader.getLen() != len){
         throw std::logic_error("calculated header has not the expected length");
