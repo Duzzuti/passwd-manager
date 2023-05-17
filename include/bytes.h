@@ -17,7 +17,7 @@ public:
     Bytes();    //creates a empty byte list
     Bytes(const int len);   //creates a byte vector with a given length (it is filled with cryptographically random bytes)
     void print() const noexcept;    //prints the hex string of this byte vector
-    void setBytes(std::vector<unsigned char> bytes) noexcept;   //set the bytes to a given value
+    void setBytes(const std::vector<unsigned char> bytes) noexcept;   //set the bytes to a given value
     std::vector<unsigned char> getBytes() const noexcept;       //getter for the byte vector
     int getLen() const noexcept;                                //getter for the length in bytes
     void addByte(const unsigned char byte) noexcept;            //adds one byte at the end of the byte vector
@@ -28,14 +28,14 @@ public:
     Bytes getFirstBytesFilledUp(const int num, const unsigned char fillup=0) const; //same as getFirstBytes but if there are not enough bytes to get we will fill them up with the given value
     bool isEmpty() const noexcept;          //returns true if there are no bytes in the vector
     void clear() noexcept;                  //deletes all bytes from the vector
-    friend bool operator==(Bytes b1, Bytes b2);     //returns true if the byte vectors of the two Byte objects are equal
-    friend Bytes operator+(Bytes b1, Bytes b2);     //performs an add elementwise (the two byte vectors are added to each other (elementwise) mod 256)
-    friend Bytes operator-(Bytes b1, Bytes b2);     //performs an subtract elementwise (the second byte vector is subtracted from the first (elementwise) mod 256)
+    friend bool operator==(const Bytes b1, const Bytes b2);     //returns true if the byte vectors of the two Byte objects are equal
+    friend Bytes operator+(const Bytes b1, const Bytes b2);     //performs an add elementwise (the two byte vectors are added to each other (elementwise) mod 256)
+    friend Bytes operator-(const Bytes b1, const Bytes b2);     //performs an subtract elementwise (the second byte vector is subtracted from the first (elementwise) mod 256)
 };
 
 std::string toHex(const unsigned char byte) noexcept;   //returns a string (with two chars) that is the hexadecimal representation of the byte
-std::string toHex(Bytes b) noexcept;                    //returns a string (with 2*len chars) that is the hexadecimal representation of the Bytes
+std::string toHex(const Bytes b) noexcept;                    //returns a string (with 2*len chars) that is the hexadecimal representation of the Bytes
 unsigned long toLong(const unsigned char byte) noexcept;   //returns a long that is the decimal representation of the byte
-unsigned long toLong(Bytes b) noexcept;                    //returns a long that is the decimal representation of the Bytes
+unsigned long toLong(const Bytes b) noexcept;                    //returns a long that is the decimal representation of the Bytes
 
 #endif //BYTES_H

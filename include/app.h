@@ -16,23 +16,23 @@ private:
 
 private:
     //does most of the work if you call any of the isValid methods
-    static bool isValidChar(std::string mode) noexcept;
+    static bool isValidChar(const std::string mode) noexcept;
     //this method is printing some start informations. If no filepath is set we create a new file in the current dir
     void printStart();
     std::string askForPasswd() const noexcept;      //asks the user for a password and validates the input format
     unsigned char askForFileMode() const noexcept;  //asks the user for a file mode and validates the input format
     unsigned char askForHashMode() const noexcept;  //asks the user for a hash mode and validates the input format
     unsigned char askForChainHashMode() const noexcept;         //asks the user for a chain hash mode and validates the input format
-    unsigned long askForIters(std::string msg) const noexcept;  //asks the user for an iteration number and validates the input format
+    unsigned long askForIters(const std::string msg) const noexcept;  //asks the user for an iteration number and validates the input format
     Bytes askForHeader() const;     //asks the user for data that is put into a header for the file
 public:
     App();
     bool run();                     //main function of the app, starts the app
-    static bool isValidFileMode(std::string mode, bool accept_blank=false) noexcept;    //checks if the entered file mode is valid
-    static bool isValidHashMode(std::string mode, bool accept_blank=false) noexcept;    //checks if the entered hash mode is valid
-    static bool isValidChainHashMode(std::string mode, bool accept_blank=false) noexcept;   //checks if the entered chain hash mode is valid
+    static bool isValidFileMode(const std::string mode, const bool accept_blank=false) noexcept;    //checks if the entered file mode is valid
+    static bool isValidHashMode(const std::string mode, const bool accept_blank=false) noexcept;    //checks if the entered hash mode is valid
+    static bool isValidChainHashMode(const std::string mode, const bool accept_blank=false) noexcept;   //checks if the entered chain hash mode is valid
     //checks if the entered number (unsigned long) is valid, underflow upper bound to get the max long value
-    static bool isValidNumber(std::string number, bool accept_blank=false, unsigned long lower_bound=0, unsigned long upper_bound=-1) noexcept;
+    static bool isValidNumber(const std::string number, const bool accept_blank=false, const unsigned long lower_bound=0, const unsigned long upper_bound=-1) noexcept;
 };
 
 #endif //APP_H

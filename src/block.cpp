@@ -8,7 +8,7 @@ Block::Block(){
     this->salt = Bytes();
 }
 
-Block::Block(int len, Bytes data, Bytes salt, Bytes password){
+Block::Block(const int len, const Bytes data, const Bytes salt, const Bytes password){
     if(len <= 0){
         //invalid block length
         throw std::range_error("length of the block cannot be negative or zero");
@@ -24,7 +24,7 @@ Block::Block(int len, Bytes data, Bytes salt, Bytes password){
     this->salt = salt;
 }
 
-void Block::setLen(int len){
+void Block::setLen(const int len){
     if(len > 0 && this->data.getLen() == 0 && this->encoded.getLen() == 0 && this->salt.getLen() == 0 && this->passwordhash.getLen() == 0){
        this->len = len; 
     }else{
@@ -33,7 +33,7 @@ void Block::setLen(int len){
     }
 }
 
-void Block::setData(Bytes data){
+void Block::setData(const Bytes data){
     if(data.getLen() != this->getLen() || this->getLen() <= 0){
         //you cannot set the data because it does not fullfil the block length
         throw std::length_error("length of data bytes does not match with the block length");
@@ -41,7 +41,7 @@ void Block::setData(Bytes data){
     this->data = data;
 }
 
-void Block::setPasswordHash(Bytes passwordhash){
+void Block::setPasswordHash(const Bytes passwordhash){
     if(passwordhash.getLen() != this->getLen() || this->getLen() <= 0){
         //you cannot set the passwordhash because it does not fullfil the block length
         throw std::length_error("length of passwordhash bytes does not match with the block length");
@@ -49,7 +49,7 @@ void Block::setPasswordHash(Bytes passwordhash){
     this->passwordhash = passwordhash;
 }
 
-void Block::setSalt(Bytes salt){
+void Block::setSalt(const Bytes salt){
     if(salt.getLen() != this->getLen() || this->getLen() <= 0){
         //you cannot set the salt because it does not fullfil the block length
         throw std::length_error("length of salt bytes does not match with the block length");
@@ -83,7 +83,7 @@ bool Block::isEncoded() const noexcept{
     return (this->getLen() > 0 && this->getLen() == this->encoded.getLen());
 }
 
-Block::Block(Bytes encoded){
+Block::Block(const Bytes encoded){
     if(encoded.getLen() <= 0){
         //provided data length is invalid
         throw std::range_error("length of the block cannot be negative or zero");
@@ -95,7 +95,7 @@ Block::Block(Bytes encoded){
     this->salt = Bytes();
 }
 
-void Block::setEncoded(Bytes encoded){
+void Block::setEncoded(const Bytes encoded){
     if(this->getLen() != encoded.getLen() || this->getLen() <= 0){
         //you cannot set the encoded because it does not fullfil the block length
         throw std::length_error("length of encoded bytes does not match with the block length");

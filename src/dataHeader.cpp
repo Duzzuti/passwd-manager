@@ -3,7 +3,7 @@
 #include "rng.h"
 #include "file_modes.h"
 
-DataHeader::DataHeader(unsigned char const hash_mode){
+DataHeader::DataHeader(const unsigned char hash_mode){
     if(!HashModes::isModeValid(hash_mode)){
         std::cout << "ERROR: file is corupted and cannot be read " << std::endl;
         std::cout << "The given hash mode of the file is not valid (" << +hash_mode << ")" << std::endl;
@@ -27,7 +27,7 @@ unsigned int DataHeader::getHeaderLength() const noexcept{
     }
 }
 
-void DataHeader::setChainHash1(unsigned char mode, unsigned long iters, unsigned char len, Bytes datablock){
+void DataHeader::setChainHash1(const unsigned char mode, const unsigned long iters, const unsigned char len, const Bytes datablock){
     if(len != datablock.getLen()){
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
@@ -40,7 +40,7 @@ void DataHeader::setChainHash1(unsigned char mode, unsigned long iters, unsigned
     this->chainhash1_iters = iters;
 }
 
-void DataHeader::setFileDataMode(unsigned char const file_mode){
+void DataHeader::setFileDataMode(const unsigned char file_mode){
     if(!FileModes::isModeValid(file_mode)){
         std::cout << "ERROR: file is corupted and cannot be read " << std::endl;
         std::cout << "The given file mode of the file is not valid (" << +file_mode << ")" << std::endl;
@@ -50,14 +50,14 @@ void DataHeader::setFileDataMode(unsigned char const file_mode){
     this->file_mode = file_mode;
 }
 
-void DataHeader::setValidPasswordHashBytes(Bytes validBytes){
+void DataHeader::setValidPasswordHashBytes(const Bytes validBytes){
     if(validBytes.getLen() != this->hash_size){
         throw std::length_error("Length of the given validBytes does not match with the hash size");
     }
     this->valid_passwordhash = validBytes;
 }
 
-void DataHeader::setChainHash2(unsigned char mode, unsigned long iters, unsigned char len, Bytes datablock){
+void DataHeader::setChainHash2(const unsigned char mode, const unsigned long iters, const unsigned char len, const Bytes datablock){
     if(len != datablock.getLen()){
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
@@ -80,7 +80,7 @@ Bytes DataHeader::getHeaderBytes() const{
     return this->header_bytes;
 }
 
-void DataHeader::calcHeaderBytes(Bytes passwordhash){
+void DataHeader::calcHeaderBytes(const Bytes passwordhash){
     if(this->chainhash1_mode == 0 || this->chainhash2_mode == 0 || 
         this->valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->file_mode)){
         //header bytes cannot be calculated (data is missing)

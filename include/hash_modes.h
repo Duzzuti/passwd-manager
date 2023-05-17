@@ -11,9 +11,9 @@
 
 class HashModes{
 public:
-    static bool isModeValid(unsigned char const hash_mode) noexcept;
-    static Hash* getHash(unsigned char const hash_mode);
-    static std::string getInfo(unsigned char const hash_mode) noexcept;
+    static bool isModeValid(const unsigned char hash_mode) noexcept;
+    static Hash* getHash(const unsigned char hash_mode);
+    static std::string getInfo(const unsigned char hash_mode) noexcept;
 };
 
 

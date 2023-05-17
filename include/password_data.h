@@ -10,15 +10,15 @@ class PasswordData : public FileData{
 private:
     std::unordered_map<std::string, std::vector<std::string>> siteMap;
     std::string error;
-    bool getData(Bytes bytes) noexcept;
+    bool getData(const Bytes bytes) noexcept;
     void printHelp() const noexcept;
     Bytes getBytes() const;
-    void showSets(std::string substring) const noexcept;
-    void addPw(std::string input) const noexcept;
-    void remPw(std::string input) const noexcept;
-    void editPw(std::string input) const noexcept;
+    void showSets(const std::string substring) const noexcept;
+    void addPw(const std::string input) const noexcept;
+    void remPw(const std::string input) const noexcept;
+    void editPw(const std::string input) const noexcept;
 public:
-    Bytes run(Bytes bytes);
+    Bytes run(const Bytes bytes);
     std::string getError() const noexcept;
 };
 

@@ -1,7 +1,7 @@
 #include "pwfunc.h"
 #include "settings.h"
 
-bool PwFunc::isPasswordValid(std::string password) noexcept{
+bool PwFunc::isPasswordValid(const std::string password) noexcept{
     for(int i=0; i < password.length(); i++){
         bool found = false;
         for(int j=0; j < VALID_PASS_CHARSET.length(); j++){
@@ -21,7 +21,7 @@ PwFunc::PwFunc(const Hash *hash) noexcept
     this->hash = hash;
 }
 
-Bytes PwFunc::chainhash(const std::string password, unsigned long iterations) const noexcept{
+Bytes PwFunc::chainhash(const std::string password, const unsigned long iterations) const noexcept{
     Bytes ret = this->hash->hash(password);     //hashes the password
     for(unsigned long i=1; i < iterations; i++){
         //for iterations -1 the hash is hashed again
@@ -30,7 +30,7 @@ Bytes PwFunc::chainhash(const std::string password, unsigned long iterations) co
     return ret;
 }
 
-Bytes PwFunc::chainhashWithConstantSalt(const std::string password, unsigned long iterations, const std::string salt) const noexcept{
+Bytes PwFunc::chainhashWithConstantSalt(const std::string password, const unsigned long iterations, const std::string salt) const noexcept{
     Bytes ret = this->hash->hash(password+salt);        //hashes the password with the salt added
     Bytes hashed_salt = this->hash->hash(salt);         //hashes the salt
     for(unsigned long i=1; i < iterations; i++){
@@ -41,7 +41,7 @@ Bytes PwFunc::chainhashWithConstantSalt(const std::string password, unsigned lon
     return ret;
 }
 
-Bytes PwFunc::chainhashWithCountSalt(const std::string password, unsigned long iterations, unsigned long salt_start) const noexcept{
+Bytes PwFunc::chainhashWithCountSalt(const std::string password, const unsigned long iterations, unsigned long salt_start) const noexcept{
     Bytes ret = this->hash->hash(password+std::to_string(salt_start));  //hashes the password with the start salt added
     for(unsigned long i=1; i < iterations; i++){
         //for iterations - 1 the salt will count up and get hashed. The hash is added to the current hash and is hashed again
@@ -53,7 +53,7 @@ Bytes PwFunc::chainhashWithCountSalt(const std::string password, unsigned long i
     return ret;
 }
 
-Bytes PwFunc::chainhashWithCountAndConstantSalt(const std::string password, unsigned long iterations, unsigned long salt_start, const std::string salt) const noexcept{
+Bytes PwFunc::chainhashWithCountAndConstantSalt(const std::string password, const unsigned long iterations, unsigned long salt_start, const std::string salt) const noexcept{
     Bytes ret = this->hash->hash(password+salt+std::to_string(salt_start)); //the password is hashed with the salt and the count salt
     Bytes hashed_constant_salt = this->hash->hash(salt);    //the constant salt gets hashed
     for(unsigned long i=1; i < iterations; i++){
@@ -68,7 +68,7 @@ Bytes PwFunc::chainhashWithCountAndConstantSalt(const std::string password, unsi
     return ret;
 }
 
-Bytes PwFunc::chainhashWithQuadraticCountSalt(const std::string password, unsigned long iterations, unsigned long salt_start, unsigned long a, unsigned long b, unsigned long c) const noexcept{
+Bytes PwFunc::chainhashWithQuadraticCountSalt(const std::string password, const unsigned long iterations, unsigned long salt_start, const unsigned long a, const unsigned long b, const unsigned long c) const noexcept{
     Bytes ret = this->hash->hash(password+std::to_string(a*salt_start*salt_start + b*salt_start + c));  //hashes the password with the a*start_salt^2 + b*start_salt + c added
     for(unsigned long i=1; i < iterations; i++){
         //for iterations - 1 the salt will count up and get hashed. The hash is added to the current hash and is hashed again
@@ -80,7 +80,7 @@ Bytes PwFunc::chainhashWithQuadraticCountSalt(const std::string password, unsign
     return ret;
 }
 
-Bytes PwFunc::chainhash(const Bytes data, unsigned long iterations) const noexcept{
+Bytes PwFunc::chainhash(const Bytes data, const unsigned long iterations) const noexcept{
     Bytes ret = this->hash->hash(data);     //hashes the data
     for(unsigned long i=1; i < iterations; i++){
         //for iterations -1 the hash is hashed again
@@ -89,7 +89,7 @@ Bytes PwFunc::chainhash(const Bytes data, unsigned long iterations) const noexce
     return ret;
 }
 
-Bytes PwFunc::chainhashWithConstantSalt(const Bytes data, unsigned long iterations, const std::string salt) const noexcept{
+Bytes PwFunc::chainhashWithConstantSalt(const Bytes data, const unsigned long iterations, const std::string salt) const noexcept{
     Bytes hashed_salt = this->hash->hash(salt);         //hashes the salt
     Bytes new_data = data;
     new_data.addBytes(hashed_salt);             //add the salt bytes to the data
@@ -102,7 +102,7 @@ Bytes PwFunc::chainhashWithConstantSalt(const Bytes data, unsigned long iteratio
     return ret;
 }
 
-Bytes PwFunc::chainhashWithCountSalt(const Bytes data, unsigned long iterations, unsigned long salt_start) const noexcept{
+Bytes PwFunc::chainhashWithCountSalt(const Bytes data, const unsigned long iterations, unsigned long salt_start) const noexcept{
     Bytes hashed_salt = this->hash->hash(std::to_string(salt_start));         //hashes the salt
     Bytes new_data = data;
     new_data.addBytes(hashed_salt);             //add the salt bytes to the data
@@ -117,7 +117,7 @@ Bytes PwFunc::chainhashWithCountSalt(const Bytes data, unsigned long iterations,
     return ret;
 }
 
-Bytes PwFunc::chainhashWithCountAndConstantSalt(const Bytes data, unsigned long iterations, unsigned long salt_start, const std::string salt) const noexcept{
+Bytes PwFunc::chainhashWithCountAndConstantSalt(const Bytes data, const unsigned long iterations, unsigned long salt_start, const std::string salt) const noexcept{
     Bytes hashed_constant_salt = this->hash->hash(salt);         //hashes the constant salt
     Bytes hashed_salt = this->hash->hash(std::to_string(salt_start));         //hashes the count salt
     Bytes new_data = data;
@@ -136,7 +136,7 @@ Bytes PwFunc::chainhashWithCountAndConstantSalt(const Bytes data, unsigned long 
     return ret;
 }
 
-Bytes PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, unsigned long iterations, unsigned long salt_start, unsigned long a, unsigned long b, unsigned long c) const noexcept{
+Bytes PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, const unsigned long iterations, unsigned long salt_start, const unsigned long a, const unsigned long b, const unsigned long c) const noexcept{
     Bytes hashed_salt = this->hash->hash(std::to_string(a*salt_start*salt_start + b*salt_start + c));         //hashes the quadartic salt
     Bytes new_data = data;
     new_data.addBytes(hashed_salt);             //add the salt bytes to the data

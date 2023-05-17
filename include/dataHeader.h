@@ -26,14 +26,14 @@ private:
 private:
 
 public:
-    DataHeader(unsigned char const hash_mode);
-    void setFileDataMode(unsigned char const file_mode);
-    void setHeaderBytes(Bytes headerBytes);
+    DataHeader(const unsigned char hash_mode);
+    void setFileDataMode(const unsigned char file_mode);
+    void setHeaderBytes(const Bytes headerBytes);
     unsigned int getHeaderLength() const noexcept;
-    void setChainHash1(unsigned char mode, unsigned long iters, unsigned char len, Bytes datablock);
-    void setChainHash2(unsigned char mode, unsigned long iters, unsigned char len, Bytes datablock);
-    void setValidPasswordHashBytes(Bytes validBytes);
-    void calcHeaderBytes(Bytes passwordhash);
+    void setChainHash1(const unsigned char mode, const unsigned long iters, const unsigned char len, const Bytes datablock);
+    void setChainHash2(const unsigned char mode, const unsigned long iters, const unsigned char len, const Bytes datablock);
+    void setValidPasswordHashBytes(const Bytes validBytes);
+    void calcHeaderBytes(const Bytes passwordhash);
     Bytes getHeaderBytes() const;
 };
 

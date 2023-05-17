@@ -10,7 +10,7 @@ the implementation of the App class is done in this file
 #include "file_data.h"
 #include "file_modes.h"
 
-bool App::isValidChar(std::string mode) noexcept{
+bool App::isValidChar(const std::string mode) noexcept{
     //checks if the mode is a valid unsigned char
     unsigned char mode_char;
     try{
@@ -25,7 +25,7 @@ bool App::isValidChar(std::string mode) noexcept{
     return true;
 }
 
-bool App::isValidFileMode(std::string mode, bool accept_blank) noexcept{
+bool App::isValidFileMode(const std::string mode, const bool accept_blank) noexcept{
     //checks the file mode (if accept_blank == True, we also acccept an empty string)
     if(mode.empty()){
         //if the mode was empty return if blank is accepted
@@ -41,7 +41,7 @@ bool App::isValidFileMode(std::string mode, bool accept_blank) noexcept{
     return false;   //file mode has some invalid number (out of range)
 }
 
-bool App::isValidHashMode(std::string mode, bool accept_blank) noexcept{
+bool App::isValidHashMode(const std::string mode, const bool accept_blank) noexcept{
     //checks the hash mode (if accept_blank == True, we also acccept an empty string)
     if(mode.empty()){
         //if the mode was empty return if blank is accepted
@@ -57,7 +57,7 @@ bool App::isValidHashMode(std::string mode, bool accept_blank) noexcept{
     return false;   //hash mode has some invalid number (out of range)
 }
 
-bool App::isValidChainHashMode(std::string mode, bool accept_blank) noexcept{
+bool App::isValidChainHashMode(const std::string mode, const bool accept_blank) noexcept{
     //checks the chainhash mode (if accept_blank == True, we also acccept an empty string)
     if(mode.empty()){
         //if the mode was empty return if blank is accepted
@@ -73,7 +73,7 @@ bool App::isValidChainHashMode(std::string mode, bool accept_blank) noexcept{
     return false;   //chain hash mode has some invalid number (out of range)
 }
 
-bool App::isValidNumber(std::string number, bool accept_blank, unsigned long lower_bound, unsigned long upper_bound) noexcept{
+bool App::isValidNumber(const std::string number, const bool accept_blank, const unsigned long lower_bound, const unsigned long upper_bound) noexcept{
     if(number.empty()){
         //if the number string was empty return if blank is accepted
         return accept_blank;
@@ -226,7 +226,7 @@ unsigned char App::askForChainHashMode() const noexcept{
     return chainhash_mode;
 }
 
-unsigned long App::askForIters(std::string msg) const noexcept{
+unsigned long App::askForIters(const std::string msg) const noexcept{
     //asks the user for the number of iterations that should be applied when deriving the passwordhash
     std::string iter_inp;
     unsigned long iter;

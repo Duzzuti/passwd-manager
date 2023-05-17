@@ -15,21 +15,30 @@ class PwFunc{
 private:
     const Hash* hash;       //stores the hash function that should be used
 public:
-    static bool isPasswordValid(std::string password) noexcept;
+    static bool isPasswordValid(const std::string password) noexcept;
 
     PwFunc() = default;
     PwFunc(const Hash* hash) noexcept;      //sets the hash function
-    Bytes chainhash(const std::string password, unsigned long iterations=1) const noexcept;       //performs a chainhash
-    Bytes chainhashWithConstantSalt(const std::string password, unsigned long iterations=1, const std::string salt="") const noexcept;    //adds a constant salt each iteration
-    Bytes chainhashWithCountSalt(const std::string password, unsigned long iterations=1, unsigned long salt_start=1) const noexcept;    //adds a salt (number that counts up each iteration)
-    Bytes chainhashWithCountAndConstantSalt(const std::string password, unsigned long iterations=1, unsigned long salt_start=1, const std::string salt="") const noexcept;  //adds a constant and count salt each iteration
-    Bytes chainhashWithQuadraticCountSalt(const std::string password, unsigned long iterations=1, unsigned long salt_start=1, unsigned long a=1, unsigned long b=1, unsigned long c=1) const noexcept;  //adds a quadratic count salt each iteration
+    Bytes chainhash(const std::string password, const unsigned long iterations=1) const noexcept;       //performs a chainhash
+    //adds a constant salt each iteration
+    Bytes chainhashWithConstantSalt(const std::string password, const unsigned long iterations=1, const std::string salt="") const noexcept;
+    //adds a salt (number that counts up each iteration)
+    Bytes chainhashWithCountSalt(const std::string password, const unsigned long iterations=1, unsigned long salt_start=1) const noexcept;
+    //adds a constant and count salt each iteration
+    Bytes chainhashWithCountAndConstantSalt(const std::string password, const unsigned long iterations=1, unsigned long salt_start=1, const std::string salt="") const noexcept;
+    //adds a quadratic count salt each iteration
+    Bytes chainhashWithQuadraticCountSalt(const std::string password, const unsigned long iterations=1, unsigned long salt_start=1, const unsigned long a=1, const unsigned long b=1, const unsigned long c=1) const noexcept;
+    
     //overload with Bytes data
-    Bytes chainhash(const Bytes data, unsigned long iterations=1) const noexcept;       //performs a chainhash
-    Bytes chainhashWithConstantSalt(const Bytes data, unsigned long iterations=1, const std::string salt="") const noexcept;    //adds a constant salt each iteration
-    Bytes chainhashWithCountSalt(const Bytes data, unsigned long iterations=1, unsigned long salt_start=1) const noexcept;    //adds a salt (number that counts up each iteration)
-    Bytes chainhashWithCountAndConstantSalt(const Bytes data, unsigned long iterations=1, unsigned long salt_start=1, const std::string salt="") const noexcept;  //adds a constant and count salt each iteration
-    Bytes chainhashWithQuadraticCountSalt(const Bytes data, unsigned long iterations=1, unsigned long salt_start=1, unsigned long a=1, unsigned long b=1, unsigned long c=1) const noexcept;  //adds a quadratic count salt each iteration
+    Bytes chainhash(const Bytes data, const unsigned long iterations=1) const noexcept;       //performs a chainhash
+    //adds a constant salt each iteration
+    Bytes chainhashWithConstantSalt(const Bytes data, const unsigned long iterations=1, const std::string salt="") const noexcept;
+    //adds a salt (number that counts up each iteration)
+    Bytes chainhashWithCountSalt(const Bytes data, const unsigned long iterations=1, unsigned long salt_start=1) const noexcept;
+    //adds a constant and count salt each iteration
+    Bytes chainhashWithCountAndConstantSalt(const Bytes data, const unsigned long iterations=1, unsigned long salt_start=1, const std::string salt="") const noexcept;
+    //adds a quadratic count salt each iteration
+    Bytes chainhashWithQuadraticCountSalt(const Bytes data, const unsigned long iterations=1, unsigned long salt_start=1, const unsigned long a=1, const unsigned long b=1, const unsigned long c=1) const noexcept;
 
 
 };

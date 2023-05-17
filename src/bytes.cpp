@@ -20,7 +20,7 @@ void Bytes::print() const noexcept{
     std::cout << std::endl;
 }
 
-void Bytes::setBytes(std::vector<unsigned char> bytes) noexcept{
+void Bytes::setBytes(const std::vector<unsigned char> bytes) noexcept{
     this->bytes = bytes;
 }
 
@@ -112,12 +112,12 @@ void Bytes::clear() noexcept{
 }
 
 
-bool operator==(Bytes b1, Bytes b2){
+bool operator==(const Bytes b1, const Bytes b2){
     //compare the two byte vectors
     return (b1.bytes == b2.bytes);
 }
 
-Bytes operator+(Bytes b1, Bytes b2){
+Bytes operator+(const Bytes b1, const Bytes b2){
     if(b1.getLen() != b2.getLen()){
         //the two Bytes need to have the same length to perform an elementwise addition
         throw std::length_error("bytes have different lengths");
@@ -130,7 +130,7 @@ Bytes operator+(Bytes b1, Bytes b2){
     return ret;
 }
 
-Bytes operator-(Bytes b1, Bytes b2){
+Bytes operator-(const Bytes b1, const Bytes b2){
     if(b1.getLen() != b2.getLen()){
         //the two Bytes need to have the same length to perform an elementwise subtraction
         throw std::length_error("bytes have different lengths");
@@ -151,7 +151,7 @@ std::string toHex(const unsigned char byte) noexcept{
     return ret;
 }
 
-std::string toHex(Bytes b) noexcept{
+std::string toHex(const Bytes b) noexcept{
     std::string ret{};
     for(unsigned char byte : b.getBytes()){
         //performs for each byte a transformation to hex string
@@ -164,7 +164,7 @@ unsigned long toLong(const unsigned char byte) noexcept{
     return (long)byte;
 }
 
-unsigned long toLong(Bytes b) noexcept{
+unsigned long toLong(const Bytes b) noexcept{
     unsigned long ret = 0;
     std::vector<unsigned char> v = b.getBytes();
     for(int i=0; i < v.size(); i++){

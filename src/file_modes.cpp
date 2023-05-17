@@ -2,7 +2,7 @@
 #include "file_modes.h"
 #include "settings.h"
 
-std::string FileModes::getInfo(unsigned char const file_mode) noexcept{
+std::string FileModes::getInfo(const unsigned char file_mode) noexcept{
     std::stringstream msg{}; 
     msg << "The file mode " << +file_mode << " stores ";
     switch (file_mode){
@@ -13,7 +13,7 @@ std::string FileModes::getInfo(unsigned char const file_mode) noexcept{
     return msg.str();
 }
 
-bool FileModes::isModeValid(unsigned char const file_mode) noexcept{
+bool FileModes::isModeValid(const unsigned char file_mode) noexcept{
     //checks whether the given file mode is in the accepted range
     return (1 <= file_mode && file_mode <= MAX_FILEMODE_NUMBER);
 }

@@ -78,7 +78,7 @@ void FileHandler::resetAppData() const noexcept{
     //WORK
 }
 
-bool FileHandler::removeAppSetting(std::string setting_name) const{
+bool FileHandler::removeAppSetting(const std::string setting_name) const{
     if(!this->isAppDataFile()){
         throw std::runtime_error("App data file not found");
     }
@@ -110,7 +110,7 @@ bool FileHandler::removeAppSetting(std::string setting_name) const{
     return true;
 }
 
-std::optional<std::string> FileHandler::getAppSetting(std::string setting_name) const{
+std::optional<std::string> FileHandler::getAppSetting(const std::string setting_name) const{
     if(!this->isAppDataFile()){
         throw std::runtime_error("App data file not found");
     }
@@ -142,7 +142,7 @@ bool FileHandler::isAppDataFile() const noexcept{
     return std::filesystem::exists(this->getAppDataFilePath().c_str());
 }
 
-bool FileHandler::setAppSetting(std::string setting_name, std::string setting_value) const{
+bool FileHandler::setAppSetting(const std::string setting_name, const std::string setting_value) const{
     /*
     APP SETTINGS
     filePath -> Path to the current encryption file
@@ -183,7 +183,7 @@ bool FileHandler::setAppSetting(std::string setting_name, std::string setting_va
     return true;
 }
 
-bool FileHandler::setEncryptionFilePath(std::string path) noexcept{
+bool FileHandler::setEncryptionFilePath(const std::string path) noexcept{
     std::filesystem::path fp{path};
     bool exist = std::filesystem::exists(fp);
     if(exist){
@@ -197,7 +197,7 @@ std::string FileHandler::getEncryptionFilePath() const noexcept{
     return this->encryption_filepath;
 }
 
-Bytes FileHandler::getFirstBytes(int num) const{
+Bytes FileHandler::getFirstBytes(const int num) const{
     if(this->encryption_filepath.empty()){
         throw std::runtime_error("Encrypted filepath is empty");
     }

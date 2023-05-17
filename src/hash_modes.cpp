@@ -1,11 +1,11 @@
 #include "hash_modes.h"
 
-bool HashModes::isModeValid(unsigned char const hash_mode) noexcept{
+bool HashModes::isModeValid(const unsigned char hash_mode) noexcept{
     //checks whether the given hash mode is in the accepted range
     return (1 <= hash_mode && hash_mode <= MAX_HASHMODE_NUMBER);
 }
 
-Hash* HashModes::getHash(unsigned char const hash_mode){
+Hash* HashModes::getHash(const unsigned char hash_mode){
     switch(hash_mode){
         case 1: //sha256
             return new sha256();
@@ -18,7 +18,7 @@ Hash* HashModes::getHash(unsigned char const hash_mode){
     }
 }
 
-std::string HashModes::getInfo(unsigned char const hash_mode) noexcept{
+std::string HashModes::getInfo(const unsigned char hash_mode) noexcept{
     std::stringstream msg{}; 
     msg << "The hash mode " << +hash_mode << " corresponds to hash function: ";
     switch (hash_mode){

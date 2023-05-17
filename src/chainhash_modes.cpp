@@ -7,7 +7,7 @@ contains the implementations for the chainhashModes class
 #include "utility.h"
 #include "pwfunc.h"
 
-std::string ChainHashModes::getInfo(unsigned char const chainhash_mode){
+std::string ChainHashModes::getInfo(const unsigned char chainhash_mode){
     //gets some information about the given chainhash mode
     std::stringstream msg{}; 
     msg << "The chainhash mode " << +chainhash_mode << " corresponds to a chainhash ";
@@ -33,7 +33,7 @@ std::string ChainHashModes::getInfo(unsigned char const chainhash_mode){
     return msg.str();
 }
 
-Bytes ChainHashModes::askForSaltString(Bytes bytes, std::string msg, unsigned char const max_len){
+Bytes ChainHashModes::askForSaltString(Bytes bytes, const std::string msg, const unsigned char max_len){
     //asks the user for a string that is used as a salt and added to the given bytes
     if(max_len < 1){
         //if max len is zero it means that this function is useless, throw an error to prohibit bugs
@@ -58,7 +58,7 @@ Bytes ChainHashModes::askForSaltString(Bytes bytes, std::string msg, unsigned ch
     return bytes;
 }
 
-Bytes ChainHashModes::askForSaltNumber(Bytes bytes, std::string msg, unsigned char const max_len){
+Bytes ChainHashModes::askForSaltNumber(Bytes bytes, const std::string msg, const unsigned char max_len){
     //asks the user for a number that is used as a salt and added to the given bytes
     if(max_len > 8 || max_len < 1){
         //if max len is zero or greater than 8 (unsigned long) it means that this function is useless, throw an error to prohibit bugs
@@ -83,12 +83,12 @@ Bytes ChainHashModes::askForSaltNumber(Bytes bytes, std::string msg, unsigned ch
     return bytes;
 }
 
-bool ChainHashModes::isModeValid(unsigned char const chainhash_mode) noexcept{
+bool ChainHashModes::isModeValid(const unsigned char chainhash_mode) noexcept{
     //checks whether the chainhash mode is in the range of valid modes
     return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
 }
 
-bool ChainHashModes::isChainHashValid(unsigned char const chainhash_mode, unsigned long iters, Bytes datablock) noexcept{
+bool ChainHashModes::isChainHashValid(const unsigned char chainhash_mode, const unsigned long iters, const Bytes datablock) noexcept{
     //checks if the chainhash is valid
     if(!(iters > 0 && iters <= MAX_ITERATIONS)){
         return false;   //iteration number is not valid
@@ -121,7 +121,7 @@ bool ChainHashModes::isChainHashValid(unsigned char const chainhash_mode, unsign
     }
 }
 
-Bytes ChainHashModes::askForData(unsigned char const chainhash_mode){
+Bytes ChainHashModes::askForData(const unsigned char chainhash_mode){
     //gets data from the user based on the mode
     std::string inp{};
     std::string blank = " or leave this field blank to generate it randomly: ";
@@ -147,7 +147,7 @@ Bytes ChainHashModes::askForData(unsigned char const chainhash_mode){
     }
 }
 
-Bytes ChainHashModes::performChainHash(unsigned char const chainhash_mode, unsigned long iters, Bytes datablock, Hash* hash, Bytes data){
+Bytes ChainHashModes::performChainHash(const unsigned char chainhash_mode, const unsigned long iters, Bytes datablock, const Hash* hash, const Bytes data){
     //performs a chainhash on bytes
     if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
         throw std::invalid_argument("ChainHash arguments are not valid");   //chainhash is not valid
@@ -182,7 +182,7 @@ Bytes ChainHashModes::performChainHash(unsigned char const chainhash_mode, unsig
     }
 }
 
-Bytes ChainHashModes::performChainHash(unsigned char const chainhash_mode, unsigned long iters, Bytes datablock, Hash* hash, std::string data){
+Bytes ChainHashModes::performChainHash(const unsigned char chainhash_mode, const unsigned long iters, Bytes datablock, const Hash* hash, const std::string data){
     //performs a chainhash on a string
     if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
         throw std::invalid_argument("ChainHash arguments are not valid");   //chainhash is not valid

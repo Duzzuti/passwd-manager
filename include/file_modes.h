@@ -6,8 +6,8 @@
 
 class FileModes{
 public:
-    static std::string getInfo(unsigned char const file_mode) noexcept;
-    static bool isModeValid(unsigned char const file_mode) noexcept;
+    static std::string getInfo(const unsigned char file_mode) noexcept;
+    static bool isModeValid(const unsigned char file_mode) noexcept;
 };
 
 
