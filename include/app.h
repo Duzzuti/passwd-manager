@@ -15,6 +15,8 @@ private:
     FileHandler FH;         //stores the FileHandler object
 
 private:
+    //does most of the work if you call any of the isValid methods
+    static bool isValidChar(std::string mode) noexcept;
     //this method is printing some start informations. If no filepath is set we create a new file in the current dir
     void printStart();
     std::string askForPasswd() const noexcept;      //asks the user for a password and validates the input format
@@ -25,10 +27,11 @@ private:
     Bytes askForHeader() const;     //asks the user for data that is put into a header for the file
 public:
     App();
-    bool run();
-    static bool isValidFileMode(std::string mode, bool accept_blank=false) noexcept;
-    static bool isValidHashMode(std::string mode, bool accept_blank=false) noexcept;
-    static bool isValidChainHashMode(std::string mode, bool accept_blank=false) noexcept;
+    bool run();                     //main function of the app, starts the app
+    static bool isValidFileMode(std::string mode, bool accept_blank=false) noexcept;    //checks if the entered file mode is valid
+    static bool isValidHashMode(std::string mode, bool accept_blank=false) noexcept;    //checks if the entered hash mode is valid
+    static bool isValidChainHashMode(std::string mode, bool accept_blank=false) noexcept;   //checks if the entered chain hash mode is valid
+    //checks if the entered number (unsigned long) is valid, underflow upper bound to get the max long value
     static bool isValidNumber(std::string number, bool accept_blank=false, unsigned long lower_bound=0, unsigned long upper_bound=-1) noexcept;
 };
 
