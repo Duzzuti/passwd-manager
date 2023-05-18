@@ -1,6 +1,20 @@
 #include "pwfunc.h"
 #include "settings.h"
 
+class getError {
+public:
+  string passError(string inValid_char) {
+    string output={""};
+    if (inValid_char.size() == 0) {
+      output += "Password is too short.";
+      return output;
+    } else {
+      output += "Password must not contain '" + inValid_char + "'.";
+      return output;
+    }
+  }
+};
+
 bool isPresent_in_VALID_PASS_CHARSET(string VALID_PASS_CHARSET, char p){
     for(int j=0; j < VALID_PASS_CHARSET.length(); j++){
         if(VALID_PASS_CHARSET[j]==p) return true;
@@ -9,16 +23,24 @@ bool isPresent_in_VALID_PASS_CHARSET(string VALID_PASS_CHARSET, char p){
 }
 
 bool PwFunc::isPasswordValid(const std::string password) noexcept{
+    string inValid_char="";
     bool valid=true,is_curr_char_present=true;
     if(password.length()<MIN_PASS_LEN) valid false ; //passwd is too short
     else{
     for(int i=0;i<password.length();i++){
         int is_curr_char_present=isPresent_in_VALID_PASS_CHARSET(VALID_PASS_CHARSET,s[i]);
-        if(is_curr_char_present==false)  {valid=false;break;}
-    }
+        if(is_curr_char_present==false)  {
+            inValid_char+=s[i];
+            valid=false;
+            break;
+        }
+      }
     }
     if(valid) return true; // Valid Password
-    else return false; //passwd contain illegal character.
+    else {
+        getError Error;
+        cout<<Error.passError(inValid_char)<<endl;
+    }; //passwd contain illegal character.
 }
 
 PwFunc::PwFunc(const Hash *hash) noexcept
