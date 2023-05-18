@@ -1,19 +1,24 @@
 #include "pwfunc.h"
 #include "settings.h"
 
-bool PwFunc::isPasswordValid(const std::string password) noexcept{
-    for(int i=0; i < password.length(); i++){
-        bool found = false;
-        for(int j=0; j < VALID_PASS_CHARSET.length(); j++){
-            if(password[i] == VALID_PASS_CHARSET[j]){
-                found = true;
-                break;
-            }
-        }
-        if(!found)return false; //passwd contains illegal char
+bool isPresent_in_VALID_PASS_CHARSET(string VALID_PASS_CHARSET, char p){
+    for(int j=0; j < VALID_PASS_CHARSET.length(); j++){
+        if(VALID_PASS_CHARSET[j]==p) return true;
     }
-    if(password.length() < MIN_PASS_LEN) return false; //passwd too short
-    return true;
+    return false;
+}
+
+bool PwFunc::isPasswordValid(const std::string password) noexcept{
+    bool valid=true,is_curr_char_present=true;
+    if(password.length()<MIN_PASS_LEN) valid false ; //passwd is too short
+    else{
+    for(int i=0;i<password.length();i++){
+        int is_curr_char_present=isPresent_in_VALID_PASS_CHARSET(VALID_PASS_CHARSET,s[i]);
+        if(is_curr_char_present==false)  {valid=false;break;}
+    }
+    }
+    if(valid) return true; // Valid Password
+    else return false; //passwd contain illegal character.
 }
 
 PwFunc::PwFunc(const Hash *hash) noexcept
