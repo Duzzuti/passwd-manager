@@ -13,7 +13,6 @@ class FileData{
     */
 private:
     //checks if the decrypted data is valid for it's use case
-    virtual bool isDataValid(const Bytes bytes) noexcept = 0;
     //formats the byte data into the right datatypes (like maps and lists), returns a success bool
     virtual bool getData(Bytes bytes) noexcept = 0;
 public:
@@ -22,7 +21,7 @@ public:
     //at the end, we will return the modified Bytes back to the user
     virtual Bytes run(Bytes) = 0;
     //returns the last occured error: all methods returning a success bool should overwrite the error if success is false
-    virtual std::string getError() noexcept = 0;        //gets the last error from other methods
+    virtual std::string getError() const noexcept = 0;        //gets the last error from other methods
 };
 
 #endif //FILEDATA_H
