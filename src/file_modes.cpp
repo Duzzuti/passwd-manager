@@ -27,7 +27,7 @@ bool FileModes::isModeValid(const unsigned char file_mode) noexcept{
     return (1 <= file_mode && file_mode <= MAX_FILEMODE_NUMBER);
 }
 
-FileData* FileModes::getFileDataClass(const unsigned char file_mode) noexcept{
+FileData* FileModes::getFileDataClass(const unsigned char file_mode){
     //gets the specific FileData subclass
     switch (file_mode){
         case 1: //password data
