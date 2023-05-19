@@ -1,18 +1,34 @@
 #include "pwfunc.h"
 #include "settings.h"
 
+std::string PwFunc::getError() const noexcept{
+    //gets the current error
+    return this->error;
+}
+
 bool PwFunc::isPasswordValid(const std::string password) noexcept{
+    //checks the password for illegal format, sets an error if it is not valid
     for(int i=0; i < password.length(); i++){
+        //loops through the password characters
         bool found = false;
         for(int j=0; j < VALID_PASS_CHARSET.length(); j++){
-            if(password[i] == VALID_PASS_CHARSET[j]){
+            if(password[i] == VALID_PASS_CHARSET[j]){   //checks if the character is in the valid chars
                 found = true;
-                break;
+                break;  //character found
             }
         }
-        if(!found)return false; //passwd contains illegal char
+        if(!found){ //invalid character, is not in charset
+            this->error = "Password conatins illegal character: '";
+            this->error += password[i];
+            this->error += "'";
+            return false; //passwd contains illegal char
+        }
     }
-    if(password.length() < MIN_PASS_LEN) return false; //passwd too short
+    if(password.length() < MIN_PASS_LEN){   //password length does not match the min length
+        this->error = "Password is too short, it has to be at least "+std::to_string(MIN_PASS_LEN);
+        this->error += " characters long";
+        return false; //passwd too short
+    }
     return true;
 }
 
