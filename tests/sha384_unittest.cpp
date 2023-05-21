@@ -9,7 +9,7 @@ TEST(SHA384Class, att_strings){
     std::vector<Bytes> hashv = std::vector<Bytes>();
     sha384 shaObj = sha384();
     for(int len=4; len < TEST_MAX_LEN; len++){
-        for(long num=0; num < TEST_ITERS; num++){
+        for(u_int64_t num=0; num < TEST_ITERS; num++){
             std::string tmpstr = gen_random_string(len);
             Bytes tmp = shaObj.hash(tmpstr);
             EXPECT_EQ(tmp, shaObj.hash(tmpstr));
@@ -52,7 +52,7 @@ TEST(SHA384Class, att_bytes){
     std::vector<Bytes> hashv = std::vector<Bytes>();
     sha384 shaObj = sha384();
     for(int len=4; len < TEST_MAX_LEN; len++){
-        for(long num=0; num < TEST_ITERS; num++){
+        for(u_int64_t num=0; num < TEST_ITERS; num++){
             Bytes tmpbytes = Bytes(len);
             Bytes tmp = shaObj.hash(tmpbytes);
             EXPECT_EQ(tmp, shaObj.hash(tmpbytes));

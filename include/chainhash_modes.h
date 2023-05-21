@@ -21,11 +21,11 @@ public:
     static Bytes askForSaltNumber(Bytes bytes, const std::string msg, const unsigned char max_len=8);
     static bool isModeValid(const unsigned char chainhash_mode) noexcept;   //checks if the given chain hash mode is valid
     //checks if the given chainhash is valid (with the iterations and datablock which contains data that is used by the chainhash)
-    static bool isChainHashValid(const unsigned char chainhash_mode, const unsigned long iters, const Bytes datablock) noexcept;
+    static bool isChainHashValid(const unsigned char chainhash_mode, const u_int64_t iters, const Bytes datablock) noexcept;
     static Bytes askForData(const unsigned char chainhash_mode);    //gets data from the user that is needed for this chainhash mode
     //two methods for actually performing the chainhash, one for Bytes input and one for string input
-    static Bytes performChainHash(const unsigned char chainhash_mode, const unsigned long iters, Bytes datablock, const Hash* hash, const Bytes data);
-    static Bytes performChainHash(const unsigned char chainhash_mode, const unsigned long iters, Bytes datablock, const Hash* hash, const std::string data);
+    static Bytes performChainHash(const unsigned char chainhash_mode, const u_int64_t iters, Bytes datablock, const Hash* hash, const Bytes data);
+    static Bytes performChainHash(const unsigned char chainhash_mode, const u_int64_t iters, Bytes datablock, const Hash* hash, const std::string data);
 };
 
 

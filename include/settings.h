@@ -33,10 +33,10 @@ const constexpr unsigned char STANDARD_CHAINHASHMODE = 4;
 
 //##################### ITERATIONS ####################
 //stores the default value for iteration count
-const constexpr unsigned long STANDARD_ITERATIONS = 1000;    //WORK we should test how many we need
+const constexpr u_int64_t STANDARD_ITERATIONS = 1000;    //WORK we should test how many we need
 //stores the maximum accepted iterations
-const constexpr unsigned long MIN_ITERATIONS = 1;
+const constexpr u_int64_t MIN_ITERATIONS = 1;
 //stores the minimum accepted iterations
-const constexpr unsigned long MAX_ITERATIONS = 1000000000;
+const constexpr u_int64_t MAX_ITERATIONS = 1000000000;
 
 #endif //SETTINGS_H

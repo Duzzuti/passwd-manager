@@ -32,7 +32,7 @@ unsigned int DataHeader::getHeaderLength() const noexcept{
     }
 }
 
-void DataHeader::setChainHash1(const unsigned char mode, const unsigned long iters, const unsigned char len, const Bytes datablock){
+void DataHeader::setChainHash1(const unsigned char mode, const u_int64_t iters, const unsigned char len, const Bytes datablock){
     //sets the information about the first chainhash
     if(len != datablock.getLen()){  //validates the datablock length
         throw std::invalid_argument("length of the datablock does not match with the given length");
@@ -67,7 +67,7 @@ void DataHeader::setValidPasswordHashBytes(const Bytes validBytes){
     this->valid_passwordhash = validBytes;
 }
 
-void DataHeader::setChainHash2(const unsigned char mode, const unsigned long iters, const unsigned char len, const Bytes datablock){
+void DataHeader::setChainHash2(const unsigned char mode, const u_int64_t iters, const unsigned char len, const Bytes datablock){
     //sets the information about the second chainhash
     if(len != datablock.getLen()){  //validates the datablock length
         throw std::invalid_argument("length of the datablock does not match with the given length");

@@ -61,7 +61,7 @@ Bytes ChainHashModes::askForSaltString(Bytes bytes, const std::string msg, const
 Bytes ChainHashModes::askForSaltNumber(Bytes bytes, const std::string msg, const unsigned char max_len){
     //asks the user for a number that is used as a salt and added to the given bytes
     if(max_len > 8 || max_len < 1){
-        //if max len is zero or greater than 8 (unsigned long) it means that this function is useless, throw an error to prohibit bugs
+        //if max len is zero or greater than 8 (u_int64_t) it means that this function is useless, throw an error to prohibit bugs
         throw std::runtime_error("maximum length of the number from the user does not make sense");
     }
     std::string blank = " or leave this field blank to generate it randomly: ";
@@ -76,7 +76,7 @@ Bytes ChainHashModes::askForSaltNumber(Bytes bytes, const std::string msg, const
         bytes.addBytes(tmpb);
         return bytes;
     }
-    unsigned long inp_int = std::stoul(inp);
+    u_int64_t inp_int = std::stoul(inp);
     Bytes tmpb = Bytes();
     tmpb.setBytes(LongToCharVec(inp_int));
     bytes.addBytes(tmpb);
@@ -88,7 +88,7 @@ bool ChainHashModes::isModeValid(const unsigned char chainhash_mode) noexcept{
     return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
 }
 
-bool ChainHashModes::isChainHashValid(const unsigned char chainhash_mode, const unsigned long iters, const Bytes datablock) noexcept{
+bool ChainHashModes::isChainHashValid(const unsigned char chainhash_mode, const u_int64_t iters, const Bytes datablock) noexcept{
     //checks if the chainhash is valid
     if(!(iters > 0 && iters <= MAX_ITERATIONS)){
         return false;   //iteration number is not valid
@@ -126,7 +126,7 @@ Bytes ChainHashModes::askForData(const unsigned char chainhash_mode){
     std::string inp{};
     std::string blank = " or leave this field blank to generate it randomly: ";
     Bytes ret = Bytes();
-    unsigned long inp_int = 0;
+    u_int64_t inp_int = 0;
     switch(chainhash_mode){
         case 1: //normal chainhash (no data needed)
             return Bytes();
@@ -147,17 +147,17 @@ Bytes ChainHashModes::askForData(const unsigned char chainhash_mode){
     }
 }
 
-Bytes ChainHashModes::performChainHash(const unsigned char chainhash_mode, const unsigned long iters, Bytes datablock, const Hash* hash, const Bytes data){
+Bytes ChainHashModes::performChainHash(const unsigned char chainhash_mode, const u_int64_t iters, Bytes datablock, const Hash* hash, const Bytes data){
     //performs a chainhash on bytes
     if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
         throw std::invalid_argument("ChainHash arguments are not valid");   //chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);      //init the pwfunc object with the given hash function
     std::string constant_salt{};    //init all variables we might need, because in the switch statement no variables can be declared
-    unsigned long count_salt{};
-    unsigned long a{};
-    unsigned long b{};
-    unsigned long c{};
+    u_int64_t count_salt{};
+    u_int64_t a{};
+    u_int64_t b{};
+    u_int64_t c{};
     switch (chainhash_mode){
     case 1: //normal chainhash
         return pwf.chainhash(data, iters);  //just use the iterations
@@ -182,17 +182,17 @@ Bytes ChainHashModes::performChainHash(const unsigned char chainhash_mode, const
     }
 }
 
-Bytes ChainHashModes::performChainHash(const unsigned char chainhash_mode, const unsigned long iters, Bytes datablock, const Hash* hash, const std::string data){
+Bytes ChainHashModes::performChainHash(const unsigned char chainhash_mode, const u_int64_t iters, Bytes datablock, const Hash* hash, const std::string data){
     //performs a chainhash on a string
     if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
         throw std::invalid_argument("ChainHash arguments are not valid");   //chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);      //init the pwfunc object with the given hash function
     std::string constant_salt{};    //init all variables we might need, because in the switch statement no variables can be declared
-    unsigned long count_salt{};
-    unsigned long a{};
-    unsigned long b{};
-    unsigned long c{};
+    u_int64_t count_salt{};
+    u_int64_t a{};
+    u_int64_t b{};
+    u_int64_t c{};
     switch (chainhash_mode){
     case 1: //normal chainhash
         return pwf.chainhash(data, iters);      //just use the iterations

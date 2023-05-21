@@ -73,16 +73,16 @@ bool App::isValidChainHashMode(const std::string mode, const bool accept_blank) 
     return false;   //chain hash mode has some invalid number (out of range)
 }
 
-bool App::isValidNumber(const std::string number, const bool accept_blank, const unsigned long lower_bound, const unsigned long upper_bound) noexcept{
+bool App::isValidNumber(const std::string number, const bool accept_blank, const u_int64_t lower_bound, const u_int64_t upper_bound) noexcept{
     if(number.empty()){
         //if the number string was empty return if blank is accepted
         return accept_blank;
     }
-    unsigned long long_number;
+    u_int64_t long_number;
     try{
         long_number = std::stoul(number); //transform the number string to a number
     }catch(std::exception){
-        return false;   //number string could not be transformed into an unsigned long
+        return false;   //number string could not be transformed into an u_int64_t
     }
     //checks the bounds of the number
     if(lower_bound <= long_number && long_number <= upper_bound){
@@ -226,10 +226,10 @@ unsigned char App::askForChainHashMode() const noexcept{
     return chainhash_mode;
 }
 
-unsigned long App::askForIters(const std::string msg) const noexcept{
+u_int64_t App::askForIters(const std::string msg) const noexcept{
     //asks the user for the number of iterations that should be applied when deriving the passwordhash
     std::string iter_inp;
-    unsigned long iter;
+    u_int64_t iter;
     do{
         std::cout << msg << " (leave blank to set the standard [" << STANDARD_ITERATIONS << "]): ";
         iter_inp = "";
@@ -255,7 +255,7 @@ Bytes App::askForHeader() const{
     std::cout << "In order to get an hash derived from the enterd password, we need to perform a chainhash" << std::endl;
     std::cout << "Please enter the preferences for this chainhash:" << std::endl << std::endl;
     unsigned char chainhash_mode1 = this->askForChainHashMode();std::cout << std::endl;     //chainhash1 mode
-    unsigned long chainhash_iters1 = this->askForIters("How many iterations should be used to derive a hash from your password");std::cout << std::endl;
+    u_int64_t chainhash_iters1 = this->askForIters("How many iterations should be used to derive a hash from your password");std::cout << std::endl;
     //for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
     Bytes datablock1 = ChainHashModes::askForData(chainhash_mode1);     //gets the datablock for chainhash1
     if(datablock1.getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode1, chainhash_iters1, datablock1)){
@@ -268,7 +268,7 @@ Bytes App::askForHeader() const{
     std::cout << "In order to verify the entered password, we need to perform an other chainhash" << std::endl;
     std::cout << "Please enter the preferences for this chainhash as well" << std::endl << std::endl;
     unsigned char chainhash_mode2 = this->askForChainHashMode();std::cout << std::endl; //chainhash2 mode
-    unsigned long chainhash_iters2 = this->askForIters("How many iterations should be used to validate the password");std::cout << std::endl;
+    u_int64_t chainhash_iters2 = this->askForIters("How many iterations should be used to validate the password");std::cout << std::endl;
     //for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
     Bytes datablock2 = ChainHashModes::askForData(chainhash_mode2); //gets the datablock for chainhash2
     if(datablock2.getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode2, chainhash_iters2, datablock2)){

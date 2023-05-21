@@ -14,13 +14,13 @@ bool endsWith(const std::string &fullString, const std::string &ending) noexcept
     }
 }
 
-std::vector<unsigned char> LongToCharVec(const unsigned long a) noexcept{
+std::vector<unsigned char> LongToCharVec(const u_int64_t a) noexcept{
     //transforms a long number into its byte representation and returns the byte vector
     std::vector<unsigned char> ret;
     int i = 0;
     for (i=0; i<8; ++i){
-        //a unsigned long has 8 Bytes
-        ret.push_back((unsigned char)((((unsigned long) a) >> (56 - (8*i))) & 0xFFu));
+        //a u_int64_t has 8 Bytes
+        ret.push_back((unsigned char)((((u_int64_t) a) >> (56 - (8*i))) & 0xFFu));
     }
     return ret;
 }

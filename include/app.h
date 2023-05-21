@@ -23,7 +23,7 @@ private:
     unsigned char askForFileMode() const noexcept;  //asks the user for a file mode and validates the input format
     unsigned char askForHashMode() const noexcept;  //asks the user for a hash mode and validates the input format
     unsigned char askForChainHashMode() const noexcept;         //asks the user for a chain hash mode and validates the input format
-    unsigned long askForIters(const std::string msg) const noexcept;  //asks the user for an iteration number and validates the input format
+    u_int64_t askForIters(const std::string msg) const noexcept;  //asks the user for an iteration number and validates the input format
     Bytes askForHeader() const;     //asks the user for data that is put into a header for the file
 public:
     App();
@@ -31,8 +31,8 @@ public:
     static bool isValidFileMode(const std::string mode, const bool accept_blank=false) noexcept;    //checks if the entered file mode is valid
     static bool isValidHashMode(const std::string mode, const bool accept_blank=false) noexcept;    //checks if the entered hash mode is valid
     static bool isValidChainHashMode(const std::string mode, const bool accept_blank=false) noexcept;   //checks if the entered chain hash mode is valid
-    //checks if the entered number (unsigned long) is valid, underflow upper bound to get the max long value
-    static bool isValidNumber(const std::string number, const bool accept_blank=false, const unsigned long lower_bound=0, const unsigned long upper_bound=-1) noexcept;
+    //checks if the entered number (u_int64_t) is valid, underflow upper bound to get the max long value
+    static bool isValidNumber(const std::string number, const bool accept_blank=false, const u_int64_t lower_bound=0, const u_int64_t upper_bound=-1) noexcept;
 };
 
 #endif //APP_H

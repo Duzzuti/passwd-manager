@@ -13,20 +13,20 @@ TEST(PWFUNCClass, input_output){
     for(int i=0; i < TEST_MAX_PW_LEN; i++){
         Bytes rand_b;
         rand_b.setBytes(RNG::get_random_bytes(2));
-        unsigned long l1 = toLong(rand_b) / 6;
+        u_int64_t l1 = toLong(rand_b) / 6;
         if(MIN_ITERATIONS > l1){
             l1 = MIN_ITERATIONS;
         }else if(MAX_ITERATIONS < l1){
             l1 = TEST_MAX_PW_ITERS;
         }
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l2 = toLong(rand_b);
+        u_int64_t l2 = toLong(rand_b);
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l3 = toLong(rand_b);
+        u_int64_t l3 = toLong(rand_b);
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l4 = toLong(rand_b);
+        u_int64_t l4 = toLong(rand_b);
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l5 = toLong(rand_b);
+        u_int64_t l5 = toLong(rand_b);
         std::string p = gen_random_string(i);
         Bytes tmp = pwf.chainhash(p, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp.getLen());
@@ -60,20 +60,20 @@ TEST(PWFUNCClass, concistency){
         std::string s = gen_random_string(100);
         Bytes rand_b;
         rand_b.setBytes(RNG::get_random_bytes(2));
-        unsigned long l1 = toLong(rand_b) / 6 ;
+        u_int64_t l1 = toLong(rand_b) / 6 ;
         if(MIN_ITERATIONS > l1){
             l1 = MIN_ITERATIONS;
         }else if(MAX_ITERATIONS < l1){
             l1 = TEST_MAX_PW_ITERS;
         }
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l2 = toLong(rand_b);
+        u_int64_t l2 = toLong(rand_b);
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l3 = toLong(rand_b);
+        u_int64_t l3 = toLong(rand_b);
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l4 = toLong(rand_b);
+        u_int64_t l4 = toLong(rand_b);
         rand_b.setBytes(RNG::get_random_bytes(8));
-        unsigned long l5 = toLong(rand_b);
+        u_int64_t l5 = toLong(rand_b);
         EXPECT_EQ(pwf.chainhash(p, l1), pwf.chainhash(p, l1));
         EXPECT_EQ(pwf.chainhashWithConstantSalt(p, l1), pwf.chainhashWithConstantSalt(p, l1));
         EXPECT_EQ(pwf.chainhashWithConstantSalt(p, l1, s), pwf.chainhashWithConstantSalt(p, l1, s));

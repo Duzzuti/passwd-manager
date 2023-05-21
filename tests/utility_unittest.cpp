@@ -33,13 +33,13 @@ TEST(UtilityClass, endswith){
 }
 
 TEST(UtilityClass, Longtocharvec){
-    unsigned long l1 = 0;
-    unsigned long l2 = 1;
-    unsigned long l3 = -1;
-    unsigned long l4 = -2;
-    unsigned long l5 = l3/256;
-    unsigned long l6 = l3/256 -1;
-    unsigned long l7 = l3/256 +1;
+    u_int64_t l1 = 0;
+    u_int64_t l2 = 1;
+    u_int64_t l3 = -1;
+    u_int64_t l4 = -2;
+    u_int64_t l5 = l3/256;
+    u_int64_t l6 = l3/256 -1;
+    u_int64_t l7 = l3/256 +1;
     std::vector<unsigned char> v1;
     std::vector<unsigned char> v2;
     std::vector<unsigned char> v3;

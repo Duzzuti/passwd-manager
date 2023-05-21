@@ -7,12 +7,12 @@
 
 TEST(RNGClass, entropy){
     //calculates the entropy of the RNG
-    std::unordered_map<unsigned char, long> bytemap{};
-    for(long i=0; i<TEST_NUMBER_ENTROPY; i++){
+    std::unordered_map<unsigned char, u_int64_t> bytemap{};
+    for(u_int64_t i=0; i<TEST_NUMBER_ENTROPY; i++){
         bytemap[RNG::get_random_bytes(1)[0]] += 1;
     }
     double entropy{};
-    for(std::pair<unsigned char, long> key_value : bytemap){
+    for(std::pair<unsigned char, u_int64_t> key_value : bytemap){
         double num = key_value.second;
         double charprob = num/TEST_NUMBER_ENTROPY;
         if(isnanl(charprob) || charprob == 0){

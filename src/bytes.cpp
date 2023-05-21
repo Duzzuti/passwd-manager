@@ -160,17 +160,17 @@ std::string toHex(const Bytes b) noexcept{
     return ret;
 }
 
-unsigned long toLong(const unsigned char byte) noexcept{
+u_int64_t toLong(const unsigned char byte) noexcept{
     return (long)byte;
 }
 
-unsigned long toLong(const Bytes b) noexcept{
-    unsigned long ret = 0;
+u_int64_t toLong(const Bytes b) noexcept{
+    u_int64_t ret = 0;
     std::vector<unsigned char> v = b.getBytes();
     for(int i=0; i < v.size(); i++){
         //performs for each byte a transformation to long
-        unsigned long byte_value = toLong(v[i]);
-        unsigned long byte_position = std::pow(256, v.size()-i-1);
+        u_int64_t byte_value = toLong(v[i]);
+        u_int64_t byte_position = std::pow(256, v.size()-i-1);
         ret += byte_value*byte_position;
     }
     return ret;

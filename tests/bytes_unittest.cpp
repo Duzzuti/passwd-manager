@@ -281,10 +281,10 @@ TEST(Utils, toHex){
 }
 
 TEST(Utils, toLong){
-    unsigned long max_long = -1;
-    unsigned long max_long_one_less = -2;
-    unsigned long zero = 0;
-    unsigned long one = 1;
+    u_int64_t max_long = -1;
+    u_int64_t max_long_one_less = -2;
+    u_int64_t zero = 0;
+    u_int64_t one = 1;
     Bytes oneBytes = Bytes();
     Bytes zeroBytes = Bytes();
     Bytes maxLongBytes = Bytes();
