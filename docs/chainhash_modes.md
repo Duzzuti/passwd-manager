@@ -10,10 +10,10 @@
 
 
 ## Data block format
-\<length in bytes>B \<data>
+\<length in bytes>B \<data_name>
 
 ### data
-|data|description|
+|data_name|description|
 |---|---|
 |S|a given salt|
 |SN|the start number for the count salt|
