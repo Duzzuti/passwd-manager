@@ -17,4 +17,4 @@
 |---|---|
 |S|a given salt|
 |SN|the start number for the count salt|
-|A, B, C|long number arguments|
+|A, B, C|8 Byte number arguments|

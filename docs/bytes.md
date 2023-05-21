@@ -4,19 +4,19 @@
 
 ### Turning Bytes to Numbers
 ``` c++
-    long ret = 0;
+    u_int64_t ret = 0;
     std::vector<unsigned char> v = b.getBytes();
     for(int i=0; i < v.size(); i++){
-        long byte_value = toLong(v[i]);
-        long byte_position = std::pow(256, v.size()-i-1);
+        u_int64_t byte_value = toLong(v[i]);
+        u_int64_t byte_position = std::pow(256, v.size()-i-1);
         ret += byte_value*byte_position;
     }
 ```
 this method is implemented in bytes/toLong()
 
-First it is looping over all bytes.<br>For each byte we will take its value (from 0 - 255) and also the position of the byte in the whole bytestring.
+First it is looping over all bytes.<br>For each byte we will take it's value (from 0 - 255) and also it's position in the whole bytestring.
 
-Due to the fact that we iterate over the highest byte first, the byte position has to be calculated first.
+Due to the fact that we iterate over the highest byte first, the byte position has to be calculated.
 
 The position is the <br>length of the bytestring - the current index position of the byte - 1 <br>(-1 because we count from zero)
 

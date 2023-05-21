@@ -3,7 +3,7 @@ For information about the header length for each mode: *dataheader.md*
 
 ## Explanations
 ### Salt
-A random generated salt is saved in the data header. Its encrypted that means we have to decrypt it with the password. The password has to get chainhashed to an passwordhash.
+A random generated salt is saved in the data header. It is encrypted, that means we have to decrypt it with the password. The password has to get chainhashed to an passwordhash.
 
 We have to subtract the passwordhash from the encrypted salt to decrypt it (bytewise mod 256)
 
