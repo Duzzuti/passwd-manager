@@ -121,18 +121,22 @@ Bytes PasswordData::getBytes() const{
 
 void PasswordData::showSets(const std::string substring) const noexcept
 {
+    //WORK
 }
 
 void PasswordData::addPw(const std::string input) const noexcept
 {
+    //WORK
 }
 
 void PasswordData::remPw(const std::string input) const noexcept
 {
+    //WORK
 }
 
 void PasswordData::editPw(const std::string input) const noexcept
 {
+    //WORK
 }
 
 Bytes PasswordData::run(Bytes bytes){
