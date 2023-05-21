@@ -5,7 +5,7 @@ the implementation of the App class is done in this file
 #include "app.h"
 #include "utility.h"
 #include "pwfunc.h"
-#include "dataHeader.h"
+#include "dataheader.h"
 #include "settings.h"
 #include "file_data.h"
 #include "file_modes.h"
