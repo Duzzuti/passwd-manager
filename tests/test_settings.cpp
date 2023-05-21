@@ -4,6 +4,8 @@ this module is providing some constants that are used as test settings
 you can set the settings to fast or slow (but more test iterations)
 */
 
+#include <iostream>
+
 //easy mode (tests are running very short)
 //hashing functions
 const constexpr int TEST_MAX_LEN = 512;
@@ -14,6 +16,8 @@ const constexpr double TEST_ENTROPY_ERROR = 0.001;
 //pwfunc
 const constexpr int TEST_MAX_PW_ITERS = 100;
 const constexpr int TEST_MAX_PW_LEN = 20;
+//dataheader
+const constexpr u_int64_t TEST_DH_ITERS = 1000;
 
 
 
