@@ -9,6 +9,7 @@ the implementation of the App class is done in this file
 #include "settings.h"
 #include "file_data.h"
 #include "file_modes.h"
+#include "chainhash_data.h"
 
 bool App::isValidChar(const std::string mode) noexcept{
     //checks if the mode is a valid unsigned char
@@ -207,7 +208,7 @@ unsigned char App::askForHashMode() const noexcept{
     return hash_mode;
 }
 
-unsigned char App::askForChainHashMode() const noexcept{
+CHModes App::askForChainHashMode() const noexcept{
     //this function asks the user for the chain hash mode (blank means standard)
     std::string chainhash_mode_inp;
     unsigned char chainhash_mode;
@@ -223,7 +224,7 @@ unsigned char App::askForChainHashMode() const noexcept{
     }else{
         chainhash_mode = std::stoi(chainhash_mode_inp); //set the user given mode
     }
-    return chainhash_mode;
+    return CHModes(chainhash_mode);
 }
 
 u_int64_t App::askForIters(const std::string msg) const noexcept{
@@ -254,28 +255,28 @@ Bytes App::askForHeader() const{
     std::cout << std::endl;
     std::cout << "In order to get an hash derived from the enterd password, we need to perform a chainhash" << std::endl;
     std::cout << "Please enter the preferences for this chainhash:" << std::endl << std::endl;
-    unsigned char chainhash_mode1 = this->askForChainHashMode();std::cout << std::endl;     //chainhash1 mode
+    CHModes chainhash_mode1 = this->askForChainHashMode();std::cout << std::endl;     //chainhash1 mode
     u_int64_t chainhash_iters1 = this->askForIters("How many iterations should be used to derive a hash from your password");std::cout << std::endl;
     //for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
-    Bytes datablock1 = ChainHashModes::askForData(chainhash_mode1);     //gets the datablock for chainhash1
-    if(datablock1.getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode1, chainhash_iters1, datablock1)){
+    ChainHashData datablock1 = ChainHashModes::askForData(chainhash_mode1);     //gets the datablock for chainhash1
+    if(datablock1.getDataBlock().getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode1, chainhash_iters1, datablock1)){
         //checks whether the datablock1 has a valid format
         throw std::length_error("Chainhash1 data was invalid");
     }
-    unsigned char datablock_len1 = datablock1.getLen(); //gets the length in Bytes from the datablock1
+    unsigned char datablock_len1 = datablock1.getDataBlock().getLen(); //gets the length in Bytes from the datablock1
     //ask for chainhash2 data, which is used to get the passwordhashhash from the passwordhash (for validating the passwordhash)
     std::cout << std::endl;
     std::cout << "In order to verify the entered password, we need to perform an other chainhash" << std::endl;
     std::cout << "Please enter the preferences for this chainhash as well" << std::endl << std::endl;
-    unsigned char chainhash_mode2 = this->askForChainHashMode();std::cout << std::endl; //chainhash2 mode
+    CHModes chainhash_mode2 = this->askForChainHashMode();std::cout << std::endl; //chainhash2 mode
     u_int64_t chainhash_iters2 = this->askForIters("How many iterations should be used to validate the password");std::cout << std::endl;
     //for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
-    Bytes datablock2 = ChainHashModes::askForData(chainhash_mode2); //gets the datablock for chainhash2
-    if(datablock2.getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode2, chainhash_iters2, datablock2)){
+    ChainHashData datablock2 = ChainHashModes::askForData(chainhash_mode2); //gets the datablock for chainhash2
+    if(datablock2.getDataBlock().getLen() > 255 || !ChainHashModes::isChainHashValid(chainhash_mode2, chainhash_iters2, datablock2)){
         //checks whether the datablock2 has a valid format
         throw std::length_error("Chainhash2 data was invalid");
     }
-    unsigned char datablock_len2 = datablock2.getLen(); //gets the length in Bytes from the datablock2
+    unsigned char datablock_len2 = datablock2.getDataBlock().getLen(); //gets the length in Bytes from the datablock2
 
     //print a summary
     std::cout << std::endl;
@@ -286,13 +287,13 @@ Bytes App::askForHeader() const{
     std::cout << "\t[MODE] " << ChainHashModes::getInfo(chainhash_mode1) << std::endl;
     std::cout << "\t[ITERATIONS] " << chainhash_iters1 << std::endl;
     std::cout << "\t[DATABLOCKLEN] " << +datablock_len1 << " Bytes" << std::endl;
-    std::cout << "\t[DATABLOCK] " << toHex(datablock1) << std::endl << std::endl;
+    std::cout << "\t[DATABLOCK] " << toHex(datablock1.getDataBlock()) << std::endl << std::endl;
 
     std::cout << "[CHAINHASH2] (to validate the hash from the password):" << std::endl;
     std::cout << "\t[MODE] " << ChainHashModes::getInfo(chainhash_mode2) << std::endl;
     std::cout << "\t[ITERATIONS] " << chainhash_iters2 << std::endl;
     std::cout << "\t[DATABLOCKLEN] " << +datablock_len2 << " Bytes" << std::endl;
-    std::cout << "\t[DATABLOCK] " << toHex(datablock2) << std::endl << std::endl;
+    std::cout << "\t[DATABLOCK] " << toHex(datablock2.getDataBlock()) << std::endl << std::endl;
 
     std::string pw = this->askForPasswd();  //gets the password from the user that should be used to encrypt the file
 

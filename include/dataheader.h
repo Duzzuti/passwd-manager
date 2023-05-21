@@ -5,6 +5,7 @@
 #include "bytes.h"
 #include "hash_modes.h"
 #include "chainhash_modes.h"
+#include "chainhash_data.h"
 
 class DataHeader{
     /*
@@ -18,14 +19,14 @@ private:
     unsigned char file_mode;   //the file data mode that is choosen (content of the file)
     const unsigned char hash_mode;   //the hash mode that is choosen (hash function)
     unsigned char hash_size;    //the size of the hash provided by the hash function (in Bytes)
-    unsigned char chainhash1_mode;  //chainhash mode for the first chainhash (password -> passwordhash)
-    unsigned char chainhash2_mode;  //chainhash mode for the second chainhash (passwordhash -> validate password)
+    CHModes chainhash1_mode;  //chainhash mode for the first chainhash (password -> passwordhash)
+    CHModes chainhash2_mode;  //chainhash mode for the second chainhash (passwordhash -> validate password)
     u_int64_t chainhash1_iters; //iterations for the first chainhash
     u_int64_t chainhash2_iters; //iterations for the second chainhash
     unsigned char chainhash1_datablock_len; //the length of the first datablock
     unsigned char chainhash2_datablock_len; //the length of the second datablock
-    Bytes chainhash1_datablock;     //the first datablock
-    Bytes chainhash2_datablock;     //the second datablock
+    ChainHashData chainhash1_datablock;     //the first datablock
+    ChainHashData chainhash2_datablock;     //the second datablock
     Bytes valid_passwordhash;       //saves the hash that should be the result of the second chainhash
     Bytes enc_salt;                 //saves the encoded salt
     Bytes header_bytes;             //bytes that are in the header
@@ -38,8 +39,8 @@ public:
     void setFileDataMode(const unsigned char file_mode);    //sets the file data mode (semantik of content)
     //setter for the chainhashs, takes a mode, number of iters, a datablock length (to verify datablock) and the datablock
     //which conains data for the chainhash
-    void setChainHash1(const unsigned char mode, const u_int64_t iters, const unsigned char len, const Bytes datablock);
-    void setChainHash2(const unsigned char mode, const u_int64_t iters, const unsigned char len, const Bytes datablock);
+    void setChainHash1(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
+    void setChainHash2(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
     void setValidPasswordHashBytes(const Bytes validBytes); //sets the passwordhashhash to validate the password hash
     //calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     //verifies the pwhash with the previous set pwhash validator

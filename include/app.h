@@ -8,6 +8,7 @@ the run() method is the encapsulated main method
 
 #include <iostream>
 #include "filehandler.h"
+#include "chainhash_modes.h"
 
 class App{
 private:
@@ -22,7 +23,7 @@ private:
     std::string askForPasswd() const noexcept;      //asks the user for a password and validates the input format
     unsigned char askForFileMode() const noexcept;  //asks the user for a file mode and validates the input format
     unsigned char askForHashMode() const noexcept;  //asks the user for a hash mode and validates the input format
-    unsigned char askForChainHashMode() const noexcept;         //asks the user for a chain hash mode and validates the input format
+    CHModes askForChainHashMode() const noexcept;         //asks the user for a chain hash mode and validates the input format
     u_int64_t askForIters(const std::string msg) const noexcept;  //asks the user for an iteration number and validates the input format
     Bytes askForHeader() const;     //asks the user for data that is put into a header for the file
 public:

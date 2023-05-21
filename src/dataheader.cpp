@@ -32,9 +32,9 @@ unsigned int DataHeader::getHeaderLength() const noexcept{
     }
 }
 
-void DataHeader::setChainHash1(const unsigned char mode, const u_int64_t iters, const unsigned char len, const Bytes datablock){
+void DataHeader::setChainHash1(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock){
     //sets the information about the first chainhash
-    if(len != datablock.getLen()){  //validates the datablock length
+    if(len != datablock.getDataBlock().getLen()){  //validates the datablock length
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
     if(!ChainHashModes::isChainHashValid(mode, iters, datablock)){
@@ -48,9 +48,9 @@ void DataHeader::setChainHash1(const unsigned char mode, const u_int64_t iters, 
     this->chainhash1_iters = iters;
 }
 
-void DataHeader::setChainHash2(const unsigned char mode, const u_int64_t iters, const unsigned char len, const Bytes datablock){
+void DataHeader::setChainHash2(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock){
     //sets the information about the second chainhash
-    if(len != datablock.getLen()){  //validates the datablock length
+    if(len != datablock.getDataBlock().getLen()){  //validates the datablock length
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
     if(!ChainHashModes::isChainHashValid(mode, iters, datablock)){
@@ -128,12 +128,12 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
     tmp.setBytes(LongToCharVec(this->chainhash1_iters));
     dataheader.addBytes(tmp);                           //add iterations for the first chainhash
     dataheader.addByte(this->chainhash1_datablock_len); //add datablock length byte
-    dataheader.addBytes(this->chainhash1_datablock);    //add first datablock
+    dataheader.addBytes(this->chainhash1_datablock.getDataBlock());    //add first datablock
     dataheader.addByte(this->chainhash2_mode);          //add second chainhash mode
     tmp.setBytes(LongToCharVec(this->chainhash2_iters));
     dataheader.addBytes(tmp);                           //add iterations for the second chainhash
     dataheader.addByte(this->chainhash2_datablock_len); //add datablock length byte
-    dataheader.addBytes(this->chainhash2_datablock);    //add second datablock
+    dataheader.addBytes(this->chainhash2_datablock.getDataBlock());    //add second datablock
     dataheader.addBytes(this->valid_passwordhash);      //add password validator
     tmp.setBytes(RNG::get_random_bytes(this->hash_size));   //generate the salt with random bytes
     tmp = tmp + passwordhash;       //encrypt the salt with the password hash
