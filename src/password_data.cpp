@@ -153,7 +153,7 @@ void PasswordData::showSets(const std::string substring) const noexcept
 
     // Output password sets in a table-like manner
     const int divider = 25;
-    std::cout << std::left << std::setw(divider) << "Site Name"
+    std::cout << std::left << std::setw(divider) << "Website"
               << std::left << std::setw(divider) << "Username"
               << std::left << std::setw(divider) << "Email"
               << std::left << std::setw(divider) << "Password" << '\n';
