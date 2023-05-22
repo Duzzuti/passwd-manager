@@ -17,7 +17,7 @@ public:
     //checks if the given mode is valid (in a certain range)
     static bool isModeValid(const unsigned char file_mode) noexcept;
     //gets the FileData class that matches with the given file mode
-    //it can be used to perform data specific actions (i.e. to modify the plain data)
+    //it can be used to perform data specific actions (e.g. to modify the plain data)
     static FileData* getFileDataClass(const unsigned char file_mode); 
 };
 

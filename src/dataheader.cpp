@@ -6,7 +6,7 @@ this file contains the implementations of Data header class
 #include "rng.h"
 #include "file_modes.h"
 
-DataHeader::DataHeader(const unsigned char hash_mode) : hash_mode(hash_mode){
+DataHeader::DataHeader(const unsigned char hash_mode){
     //initialize the hash mode
     if(!HashModes::isModeValid(hash_mode)){
         //throw with an error if the hash mode is not valid
@@ -15,9 +15,19 @@ DataHeader::DataHeader(const unsigned char hash_mode) : hash_mode(hash_mode){
         std::cout << "Update the application, correct the mode byte in the file or try a backup file you have made" << std::endl;
         throw std::invalid_argument("Cannot read data header. Invalid hash mode");
     }
+    this->dh.hash_mode = hash_mode;
     Hash* hash = HashModes::getHash(hash_mode);
     this->hash_size = hash->getHashSize();      //gets the hash size of the hash that corresponds to the given mode
     delete hash;
+}
+
+bool DataHeader::isComplete() const noexcept{
+    //checks if the dataheader has everything set
+    if(this->dh.chainhash1_mode == 0 || this->dh.chainhash2_mode == 0 || 
+        this->dh.valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->dh.file_mode)){
+        return false;
+    }
+    return true;
 }
 
 unsigned int DataHeader::getHeaderLength() const noexcept{
@@ -25,8 +35,8 @@ unsigned int DataHeader::getHeaderLength() const noexcept{
     if(this->header_bytes.getLen() > 0){
         return this->header_bytes.getLen();     //header bytes are set, so we get this length
     }
-    if(this->chainhash1_mode != 0 && this->chainhash2_mode != 0){   //all data set to calculate the header length
-        return 22 + 2*this->hash_size + this->chainhash1_datablock_len + this->chainhash2_datablock_len;    //dataheader.md
+    if(this->dh.chainhash1_mode != 0 && this->dh.chainhash2_mode != 0){   //all data set to calculate the header length
+        return 22 + 2*this->hash_size + this->dh.chainhash1_datablock_len + this->dh.chainhash2_datablock_len;    //dataheader.md
     }else{
         return 0;   //not enough infos to get the header length
     }
@@ -42,10 +52,10 @@ void DataHeader::setChainHash1(const CHModes mode, const u_int64_t iters, const 
         throw std::invalid_argument("given data is not valid");
     }
     //set the information to the object
-    this->chainhash1_mode = mode;
-    this->chainhash1_datablock = datablock;
-    this->chainhash1_datablock_len = len;
-    this->chainhash1_iters = iters;
+    this->dh.chainhash1_mode = mode;
+    this->dh.chainhash1_datablock = datablock;
+    this->dh.chainhash1_datablock_len = len;
+    this->dh.chainhash1_iters = iters;
 }
 
 void DataHeader::setChainHash2(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock){
@@ -58,10 +68,10 @@ void DataHeader::setChainHash2(const CHModes mode, const u_int64_t iters, const 
         throw std::invalid_argument("given data is not valid");
     }
     //set the information to the object
-    this->chainhash2_mode = mode;
-    this->chainhash2_datablock = datablock;
-    this->chainhash2_datablock_len = len;
-    this->chainhash2_iters = iters;
+    this->dh.chainhash2_mode = mode;
+    this->dh.chainhash2_datablock = datablock;
+    this->dh.chainhash2_datablock_len = len;
+    this->dh.chainhash2_iters = iters;
 }
 
 void DataHeader::setFileDataMode(const unsigned char file_mode){
@@ -72,7 +82,7 @@ void DataHeader::setFileDataMode(const unsigned char file_mode){
         std::cout << "Update the application, correct the mode byte in the file or try a backup file you have made" << std::endl;
         throw std::invalid_argument("Cannot read data header. Invalid file mode");
     }
-    this->file_mode = file_mode;
+    this->dh.file_mode = file_mode;
 }
 
 void DataHeader::setValidPasswordHashBytes(const Bytes validBytes){
@@ -80,7 +90,7 @@ void DataHeader::setValidPasswordHashBytes(const Bytes validBytes){
     if(validBytes.getLen() != this->hash_size){ //check if the hash size is right
         throw std::length_error("Length of the given validBytes does not match with the hash size");
     }
-    this->valid_passwordhash = validBytes;
+    this->dh.valid_passwordhash = validBytes;
 }
 
 Bytes DataHeader::getHeaderBytes() const{
@@ -98,17 +108,16 @@ Bytes DataHeader::getHeaderBytes() const{
 
 void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwhash){
     //calculates the header
-    if(this->chainhash1_mode == 0 || this->chainhash2_mode == 0 || 
-        this->valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->file_mode)){
+    if(!this->isComplete()){
         //header bytes cannot be calculated (data is missing)
         throw std::logic_error("not all data is set to calculate the length of the header");
     }
     if(verify_pwhash){
         //verifies the given pwhash with the currently set validator
-        Hash* hash = HashModes::getHash(this->hash_mode);   //gets the right hash function
+        Hash* hash = HashModes::getHash(this->dh.hash_mode);   //gets the right hash function
         //is the chainhash from the given hash equal to the validator
-        const bool isOkay = (this->valid_passwordhash == ChainHashModes::performChainHash(
-            this->chainhash2_mode, chainhash2_iters, chainhash2_datablock, hash, passwordhash));
+        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(
+            this->dh.chainhash2_mode, this->dh.chainhash2_iters, this->dh.chainhash2_datablock, hash, passwordhash));
         delete hash;
         if(!isOkay){
             //given pwhash is not valid
@@ -122,25 +131,35 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
 
     Bytes dataheader = Bytes();
     Bytes tmp = Bytes();
-    dataheader.addByte(this->file_mode);                //add file mode byte
-    dataheader.addByte(this->hash_mode);                //add hash mode byte
-    dataheader.addByte(this->chainhash1_mode);          //add first chainhash mode byte
-    tmp.setBytes(LongToCharVec(this->chainhash1_iters));
+    dataheader.addByte(this->dh.file_mode);                //add file mode byte
+    dataheader.addByte(this->dh.hash_mode);                //add hash mode byte
+    dataheader.addByte(this->dh.chainhash1_mode);          //add first chainhash mode byte
+    tmp.setBytes(LongToCharVec(this->dh.chainhash1_iters));
     dataheader.addBytes(tmp);                           //add iterations for the first chainhash
-    dataheader.addByte(this->chainhash1_datablock_len); //add datablock length byte
-    dataheader.addBytes(this->chainhash1_datablock.getDataBlock());    //add first datablock
-    dataheader.addByte(this->chainhash2_mode);          //add second chainhash mode
-    tmp.setBytes(LongToCharVec(this->chainhash2_iters));
+    dataheader.addByte(this->dh.chainhash1_datablock_len); //add datablock length byte
+    dataheader.addBytes(this->dh.chainhash1_datablock.getDataBlock());    //add first datablock
+    dataheader.addByte(this->dh.chainhash2_mode);          //add second chainhash mode
+    tmp.setBytes(LongToCharVec(this->dh.chainhash2_iters));
     dataheader.addBytes(tmp);                           //add iterations for the second chainhash
-    dataheader.addByte(this->chainhash2_datablock_len); //add datablock length byte
-    dataheader.addBytes(this->chainhash2_datablock.getDataBlock());    //add second datablock
-    dataheader.addBytes(this->valid_passwordhash);      //add password validator
+    dataheader.addByte(this->dh.chainhash2_datablock_len); //add datablock length byte
+    dataheader.addBytes(this->dh.chainhash2_datablock.getDataBlock());    //add second datablock
+    dataheader.addBytes(this->dh.valid_passwordhash);      //add password validator
     tmp.setBytes(RNG::get_random_bytes(this->hash_size));   //generate the salt with random bytes
     tmp = tmp + passwordhash;       //encrypt the salt with the password hash
-    this->enc_salt = tmp;           //set the encrypted salt
-    dataheader.addBytes(this->enc_salt);                //add encrypted salt
+    this->dh.enc_salt = tmp;           //set the encrypted salt
+    dataheader.addBytes(this->dh.enc_salt);                //add encrypted salt
     if(dataheader.getLen() != len){     //checks if the length is equal to the expected length
         throw std::logic_error("calculated header has not the expected length");
     }
     this->header_bytes = dataheader;
 }
+
+DataHeaderParts DataHeader::getDataHeaderParts() const{
+    //getter for the dataheader parts
+    if(!this->isComplete()){
+        //dataheader parts are not ready
+        throw std::logic_error("Cannot get DataHeaderParts because its not complete");
+    }
+    return this->dh;
+}
+

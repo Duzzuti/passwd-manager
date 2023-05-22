@@ -7,6 +7,22 @@
 #include "chainhash_modes.h"
 #include "chainhash_data.h"
 
+struct DataHeaderParts{
+    //holds the variables used for the dataheader
+    u_int64_t chainhash1_iters; //iterations for the first chainhash
+    u_int64_t chainhash2_iters; //iterations for the second chainhash
+    unsigned char file_mode;   //the file data mode that is choosen (content of the file)
+    unsigned char hash_mode;   //the hash mode that is choosen (hash function)
+    CHModes chainhash1_mode;  //chainhash mode for the first chainhash (password -> passwordhash)
+    CHModes chainhash2_mode;  //chainhash mode for the second chainhash (passwordhash -> validate password)
+    unsigned char chainhash1_datablock_len; //the length of the first datablock
+    unsigned char chainhash2_datablock_len; //the length of the second datablock
+    ChainHashData chainhash1_datablock;     //the first datablock
+    ChainHashData chainhash2_datablock;     //the second datablock
+    Bytes valid_passwordhash;       //saves the hash that should be the result of the second chainhash
+    Bytes enc_salt;                 //saves the encoded salt
+};
+
 class DataHeader{
     /*
     this class stores the functionalities of the dataheader
@@ -16,21 +32,13 @@ class DataHeader{
     more information about the header: docs/dataheader.md
     */
 private:
-    unsigned char file_mode;   //the file data mode that is choosen (content of the file)
-    const unsigned char hash_mode;   //the hash mode that is choosen (hash function)
+    DataHeaderParts dh;             //saves every part of the header
     unsigned char hash_size;    //the size of the hash provided by the hash function (in Bytes)
-    CHModes chainhash1_mode;  //chainhash mode for the first chainhash (password -> passwordhash)
-    CHModes chainhash2_mode;  //chainhash mode for the second chainhash (passwordhash -> validate password)
-    u_int64_t chainhash1_iters; //iterations for the first chainhash
-    u_int64_t chainhash2_iters; //iterations for the second chainhash
-    unsigned char chainhash1_datablock_len; //the length of the first datablock
-    unsigned char chainhash2_datablock_len; //the length of the second datablock
-    ChainHashData chainhash1_datablock;     //the first datablock
-    ChainHashData chainhash2_datablock;     //the second datablock
-    Bytes valid_passwordhash;       //saves the hash that should be the result of the second chainhash
-    Bytes enc_salt;                 //saves the encoded salt
     Bytes header_bytes;             //bytes that are in the header
 
+private:
+    //checks if all data is set correctly
+    bool isComplete() const noexcept;
 public:
     //sets up the data header with a hash mode which is necessary to
     //calculate the length of the header, get the hash function and it is also const and cannot be changed anyways
@@ -51,6 +59,8 @@ public:
     //gets the length of the currently set header bytes, if its not currently set, we try to calculate the expected len
     //all set data, such as chainhash data etc. are used to calculate this expected len. If the data is not enough we return 0
     unsigned int getHeaderLength() const noexcept;
+    //gets the dataheader parts if they are complete
+    DataHeaderParts getDataHeaderParts() const;
 };
 
 
