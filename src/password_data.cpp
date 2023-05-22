@@ -1,6 +1,9 @@
+#include <map>
+#include <algorithm>
 #include "password_data.h"
 #include "settings.h"
 #include "utility.h"
+#include "iomanip"
 
 bool PasswordData::getData(Bytes bytes) noexcept{
     //takes the bytes as an input and returns a bool that represents success of this function
@@ -121,7 +124,45 @@ Bytes PasswordData::getBytes() const{
 
 void PasswordData::showSets(const std::string substring) const noexcept
 {
-    //WORK
+    std::string substring_ignore_case = substring;
+    std::transform(substring_ignore_case.begin(), substring_ignore_case.end(), substring_ignore_case.begin(),
+                   [](unsigned char c){ return std::tolower(c);});
+
+    // Put all password sets that contain the substring into a vector
+    std::vector<std::pair<std::string, std::vector<std::string>>> passwordSets;
+    if (substring.empty()) {
+        for (auto &set : this->siteMap)
+            passwordSets.emplace_back(set);
+    }
+    else {
+        for (auto &set : this->siteMap) {
+            std::string first_ignore_case = set.first;
+            std::transform(first_ignore_case.begin(), first_ignore_case.end(), first_ignore_case.begin(),
+                           [](unsigned char c){ return std::tolower(c);});
+            if (first_ignore_case.find(substring_ignore_case) != std::string::npos)
+                passwordSets.emplace_back(set);
+        }
+    }
+
+
+    // Sort password sets in alphabetical order
+    std::sort(passwordSets.begin(), passwordSets.end(), [] (const auto &a, const auto &b ){
+        return a.first < b.first;
+    });
+
+
+    // Output password sets in a table-like manner
+    const int divider = 25;
+    std::cout << std::left << std::setw(divider) << "Website"
+              << std::left << std::setw(divider) << "Username"
+              << std::left << std::setw(divider) << "Email"
+              << std::left << std::setw(divider) << "Password" << '\n';
+    for (const auto &set : passwordSets) {
+        std::cout << std::left << std::setw(divider) << set.first
+                  << std::left << std::setw(divider) << set.second[0]
+                  << std::left << std::setw(divider) << set.second[1]
+                  << std::left << std::setw(divider) << set.second[2] << '\n';
+    }
 }
 
 void PasswordData::addPw(const std::string input) const noexcept
