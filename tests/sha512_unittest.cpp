@@ -7,8 +7,8 @@ TEST(SHA512Class, att_strings){
     //testing the sha512 function on strings
     std::vector<Bytes> hashv = std::vector<Bytes>();
     sha512 shaObj = sha512();
-    for(int len=4; len < TEST_MAX_LEN; len++){
-        for(u_int64_t num=0; num < TEST_ITERS; num++){
+    for(int len=4; len < TEST_HASH_MAX_LEN; len++){
+        for(u_int64_t num=0; num < TEST_HASH_ITERS; num++){
             std::string tmpstr = gen_random_string(len);
             Bytes tmp = shaObj.hash(tmpstr);
             EXPECT_EQ(tmp, shaObj.hash(tmpstr));
@@ -50,8 +50,8 @@ TEST(SHA512Class, att_bytes){
     //testing the sha512 function on bytes
     std::vector<Bytes> hashv = std::vector<Bytes>();
     sha512 shaObj = sha512();
-    for(int len=4; len < TEST_MAX_LEN; len++){
-        for(u_int64_t num=0; num < TEST_ITERS; num++){
+    for(int len=4; len < TEST_HASH_MAX_LEN; len++){
+        for(u_int64_t num=0; num < TEST_HASH_ITERS; num++){
             Bytes tmpbytes = Bytes(len);
             Bytes tmp = shaObj.hash(tmpbytes);
             EXPECT_EQ(tmp, shaObj.hash(tmpbytes));
