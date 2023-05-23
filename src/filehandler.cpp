@@ -89,6 +89,18 @@ std::filesystem::path FileHandler::getAppDataFilePath() const noexcept{
 }
 
 void FileHandler::resetAppData() const noexcept{
+    //try to recover the filePath
+    std::optional<std::string> set = this->getAppSetting("filePath");
+    //clear the app data file
+    std::ofstream app_of(this->getAppDataFilePath().c_str());
+    if(set.has_value()){
+        if(std::filesystem::exists(set.value().c_str())){
+            //filePath does exist, save it again into app data
+            app_of << "filePath" << " " << set.value() << std::endl;
+            return;
+        }
+    }
+    //could not recover the filePath, the user has to be asked
     //WORK
 }
 
@@ -165,7 +177,8 @@ std::optional<std::string> FileHandler::getAppSetting(const std::string setting_
 
 bool FileHandler::isAppDataFile() const noexcept{
     //checks if the app data file exists on the system
-    return std::filesystem::exists(this->getAppDataFilePath().c_str());
+    std::ifstream file(this->getAppDataFilePath().c_str()); //creates a stream
+    return (bool) file;  //convert the filestream to a bool, returns false if the file does not exist
 }
 
 bool FileHandler::setAppSetting(const std::string setting_name, const std::string setting_value) const{
