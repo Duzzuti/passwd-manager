@@ -8,6 +8,7 @@
 #include "chainhash_data.h"
 
 struct DataHeaderParts{
+public:
     //holds the variables used for the dataheader
     u_int64_t chainhash1_iters; //iterations for the first chainhash
     u_int64_t chainhash2_iters; //iterations for the second chainhash
@@ -17,8 +18,8 @@ struct DataHeaderParts{
     CHModes chainhash2_mode;  //chainhash mode for the second chainhash (passwordhash -> validate password)
     unsigned char chainhash1_datablock_len; //the length of the first datablock
     unsigned char chainhash2_datablock_len; //the length of the second datablock
-    ChainHashData chainhash1_datablock;     //the first datablock
-    ChainHashData chainhash2_datablock;     //the second datablock
+    ChainHashData chainhash1_datablock{Format(CHAINHASH_NORMAL)};     //the first datablock
+    ChainHashData chainhash2_datablock{Format(CHAINHASH_NORMAL)};     //the second datablock
     Bytes valid_passwordhash;       //saves the hash that should be the result of the second chainhash
     Bytes enc_salt;                 //saves the encoded salt
 };

@@ -18,14 +18,19 @@ Format::Format(const CHModes chainhash_mode){
     switch(chainhash_mode){
         case CHAINHASH_NORMAL:
             this->format = "";
+            break;
         case CHAINHASH_CONSTANT_SALT:
             this->format = "*B S";
+            break;
         case CHAINHASH_COUNT_SALT:
             this->format = "8B SN";
+            break;
         case CHAINHASH_CONSTANT_COUNT_SALT:
             this->format = "8B SN *B S";
+            break;
         case CHAINHASH_QUADRATIC:
             this->format = "8B SN 8B A 8B B 8B C";
+            break;
         default:    //invalid chainhash mode, should not throw
             throw std::logic_error("invalid chainhash mode");
     }
