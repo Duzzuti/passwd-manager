@@ -36,7 +36,7 @@ target_link_libraries(passwd_manager_test_sha512 ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(passwd_manager_test_sha512 PUBLIC ${INCLUDE_DIR})
 target_include_directories(passwd_manager_test_sha512 PUBLIC ${TEST_INCLUDE_DIR})
 
-add_executable(passwd_manager_test_rng main_test.cpp rng_unittest.cpp ${SRC_DIR}/rng.cpp)
+add_executable(passwd_manager_test_rng main_test.cpp rng_unittest.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/bytes.cpp)
 target_link_libraries(passwd_manager_test_rng gtest_main)
 target_link_libraries(passwd_manager_test_rng ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(passwd_manager_test_rng PUBLIC ${INCLUDE_DIR})
@@ -56,7 +56,7 @@ target_include_directories(passwd_manager_test_utility PUBLIC ${INCLUDE_DIR})
 add_executable(passwd_manager_test_dataheader 
     main_test.cpp dataheader_unittest.cpp 
     ${SRC_DIR}/password_data.cpp ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/app.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/file_modes.cpp 
-    ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp 
+    ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/format.cpp
     ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(passwd_manager_test_dataheader gtest_main)
 target_link_libraries(passwd_manager_test_dataheader ${OPENSSL_LIBRARIES} pthread)
