@@ -2,17 +2,10 @@
 #ifndef CHAINHASHMODES_H
 #define CHAINHASHMODES_H
 
+#include "base.h"
 #include "hash.h"
 #include "settings.h"
 #include "chainhash_data.h"
-
-enum CHModes : unsigned char{
-    CHAINHASH_NORMAL = 1,
-    CHAINHASH_CONSTANT_SALT,
-    CHAINHASH_COUNT_SALT,
-    CHAINHASH_CONSTANT_COUNT_SALT,
-    CHAINHASH_QUADRATIC
-};
 
 class ChainHashModes{
     /*

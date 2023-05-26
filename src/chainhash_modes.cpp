@@ -93,52 +93,30 @@ bool ChainHashModes::isChainHashValid(const CHModes chainhash_mode, const u_int6
     if(datablock.getDataBlock().getLen() > 255){
         return false;   //datablock is too long
     }
-    switch (chainhash_mode){
-    case CHAINHASH_NORMAL: //no datablock needed
+    if(datablock.isCompletedFormat(Format(chainhash_mode))){
+        //checks if the datablock is already completed
         return true;
-    case CHAINHASH_CONSTANT_SALT: //datablock is constant salt (can be everything)
-        return true;
-    case CHAINHASH_COUNT_SALT: //count salt begin needed (8 Bytes)
-        if(datablock.isCompletedFormat("8B SN")){
-            return false;   //datablock has an invalid format
-        }
-        return true;
-    case CHAINHASH_CONSTANT_COUNT_SALT: //count salt begin needed (8 Bytes + constant salt Bytes)
-        if(datablock.isCompletedFormat("8B")){
-            return false;   //datablock too short
-        }
-        return true;
-    case CHAINHASH_QUADRATIC: //count salt begin needed (8 Bytes for quadratic count salt, and 3*8 Bytes for a,b,c)
-        if(datablock.getDataBlock().getLen() != 4*8){
-        return false;   //datablock has an invalid length
-        }
-        return true;
-    default:
-        return false;  //chainhash mode not valid
     }
+    return false;
 }
 
 ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode){
     //gets data from the user based on the mode
-    ChainHashData chd{""};
+    ChainHashData chd{Format(chainhash_mode)};
     switch(chainhash_mode){
         case CHAINHASH_NORMAL: //normal chainhash (no data needed)
             break;
         case CHAINHASH_CONSTANT_SALT: //constant salt, we need a salt string
-            chd = ChainHashData("*B S");
             chd.addBytes(ChainHashModes::askForSaltString("Please enter the salt that should be mixed into the chainhash", 255));
             break;
         case CHAINHASH_COUNT_SALT: //count salt, we need a start number for the count salt
-            chd = ChainHashData("8B SN");
             chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the start number for the count salt"));
             break;
         case CHAINHASH_CONSTANT_COUNT_SALT: //count salt and constant salt, we need a start number for the count salt and a salt string 
-            chd = ChainHashData("8B SN *B S");
             chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the start number for the count salt"));
             chd.addBytes(ChainHashModes::askForSaltString("Please enter the salt that should be mixed into the chainhash", 247));
             break;
         case CHAINHASH_QUADRATIC: //quadratic salt, we need the start salt number and 3 numbers for a,b,c (a*a*salt + b*salt + c)
-            chd = ChainHashData("8B SN 8B A 8B B 8B C");
             chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the start number for the count salt"));
             chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the value of quadratic part a"));
             chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the value of linear part b"));
