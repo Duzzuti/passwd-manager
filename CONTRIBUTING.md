@@ -1,6 +1,9 @@
 # Encryption System
 
 Welcome to the Encryption System project! This project aims to develop a flexible and local encryption system. Your contributions are valuable in making this encryption system more secure, efficient, and versatile.
+## Discord channel
+
+You can join our [Discord Server](https://discord.gg/4EGhJCNq) for discussions
 
 ## Getting Started
 
