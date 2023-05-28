@@ -17,11 +17,31 @@ enum CHModes : unsigned char{
     CHAINHASH_QUADRATIC         //chainhash with quadratic salt
 };
 
+//enum which holds the hash modes as unsigned chars
+enum HModes : unsigned char{
+    HASHMODE_SHA256 = 1,        //sha256 hashmode
+    HASHMODE_SHA384,            //sha384 hashmode
+    HASHMODE_SHA512,            //sha512 hashmode
+};
+
+//enum which holds the file data modes as unsigned chars
+enum FModes : unsigned char{
+    FILEMODE_PASSWORD = 1,      //password filemode
+};
+
 //enum which describes a success type, an success type can be a success, fail or timeout
 enum SuccessType{
     SUCCESS,
     FAIL,
     TIMEOUT    
+};
+
+//used in a function that could fail, it returns a success type, a value and an error message
+template <typename T>
+struct ErrorStruct{
+    bool success;   //true if the operation was successful
+    std::string error;  //error message
+    T returnValue;  //return value
 };
 
 //struct that is used as an data package between format and other classes
