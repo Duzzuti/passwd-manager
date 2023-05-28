@@ -4,7 +4,7 @@
 
 class BrutePwAttacker : public BaseAttacker{
     //attacker that is trying every possible password combination
-    AttackerReturn attack(DataHeaderParts dhp, Bytes data, std::string decrypted_content) const noexcept{
+    AttackerReturn attack(DataHeaderParts dhp, Bytes data, std::string decrypted_content) const noexcept override{
         AttackerReturn ret;     //return struct
         u_int64_t tries = 1;    //number of tries
         Hash* hash = HashModes::getHash(dhp.hash_mode);     //get the hash function used

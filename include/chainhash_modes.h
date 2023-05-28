@@ -4,7 +4,6 @@
 
 #include "base.h"
 #include "hash.h"
-#include "settings.h"
 #include "chainhash_data.h"
 
 class ChainHashModes{

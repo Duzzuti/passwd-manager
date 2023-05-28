@@ -1,6 +1,7 @@
 #pragma once
 #ifndef RNG_H
 #define RNG_H
+
 #include "openssl/err.h"
 #include "openssl/rand.h"
 #include <vector>

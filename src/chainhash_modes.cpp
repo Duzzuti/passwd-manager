@@ -7,6 +7,7 @@ contains the implementations for the chainhashModes class
 #include "utility.h"
 #include "pwfunc.h"
 #include "chainhash_data.h"
+#include "settings.h"
 
 std::string ChainHashModes::getInfo(const CHModes chainhash_mode){
     //gets some information about the given chainhash mode

@@ -197,6 +197,8 @@ TEST(RNGClass, byte_buffer){
                 case 8:
                     EXPECT_GT(actual_entropy, entropy - TEST_RNG_BYTE_ENTROPY_ERROR);
                     break;
+                default:
+                    FAIL() << "Buffer size not supported";
             }
         //stores the entropy data for printing later
         entropydifs.push_back(entropyData(entropy - actual_entropy, 255 - range, 255));

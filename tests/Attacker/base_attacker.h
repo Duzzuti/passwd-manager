@@ -26,7 +26,7 @@ protected:
     const std::string CHAR_SET = VALID_PASS_CHARSET;    //contains the valid char set (chars that can be used for the password)
 public:
     //template wrapper method that calls attack and checks the returns
-    bool run(DataHeader dh, Bytes data, std::string decrypted_content, Bytes passwordhash) const noexcept;
+    bool run(DataHeader dh, Bytes data, std::string decrypted_content, Bytes passwordhash) const;
     //WORK add time limit
     //virtual attack method, has to get implemented by derived classes; 
     //testing the worst case scenario: the attacker got information about the dataheader parts the saved data encrypted and decrypted

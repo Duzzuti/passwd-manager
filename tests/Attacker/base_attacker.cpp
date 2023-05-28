@@ -3,7 +3,7 @@ implementation of the abstract class base attacker
 */
 #include "base_attacker.h"
 
-bool BaseAttacker::run(DataHeader dh, Bytes data, std::string decrypted_content, Bytes passwordhash) const noexcept{
+bool BaseAttacker::run(DataHeader dh, Bytes data, std::string decrypted_content, Bytes passwordhash) const{
     //template method run that calls the attack method 
     //WORK start timer here
     //attacker gets header data, and encrypted/decrypted body
@@ -29,6 +29,9 @@ bool BaseAttacker::run(DataHeader dh, Bytes data, std::string decrypted_content,
             //attacker failed because of timeout
             std::cout << "Passwordhash not found due to timeout";
             break;
+        default:
+            //should never happen
+            throw std::logic_error("Invalid success type");
     }
     std::cout << std::endl;
     std::cout << "Attacker tried " << attack_ret.tries << " passwords" << std::endl;
