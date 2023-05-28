@@ -12,8 +12,8 @@ public:
     //holds the variables used for the dataheader
     u_int64_t chainhash1_iters; //iterations for the first chainhash
     u_int64_t chainhash2_iters; //iterations for the second chainhash
-    unsigned char file_mode;   //the file data mode that is choosen (content of the file)
-    unsigned char hash_mode;   //the hash mode that is choosen (hash function)
+    FModes file_mode;   //the file data mode that is choosen (content of the file)
+    HModes hash_mode;   //the hash mode that is choosen (hash function)
     CHModes chainhash1_mode;  //chainhash mode for the first chainhash (password -> passwordhash)
     CHModes chainhash2_mode;  //chainhash mode for the second chainhash (passwordhash -> validate password)
     unsigned char chainhash1_datablock_len; //the length of the first datablock
@@ -43,9 +43,9 @@ private:
 public:
     //sets up the data header with a hash mode which is necessary to
     //calculate the length of the header, get the hash function and it is also const and cannot be changed anyways
-    DataHeader(const unsigned char hash_mode);
+    DataHeader(const HModes hash_mode);
     //setter for the data that is needed for the header
-    void setFileDataMode(const unsigned char file_mode);    //sets the file data mode (semantik of content)
+    void setFileDataMode(const FModes file_mode);    //sets the file data mode (semantik of content)
     //setter for the chainhashs, takes a mode, number of iters, a datablock length (to verify datablock) and the datablock
     //which conains data for the chainhash
     void setChainHash1(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);

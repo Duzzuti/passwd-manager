@@ -3,11 +3,8 @@
 #define HASHMODES_H
 
 #include <sstream>
-#include "settings.h"
+#include "base.h"
 #include "hash.h"
-#include "sha256.h"
-#include "sha384.h"
-#include "sha512.h"
 
 class HashModes{
     /*
@@ -19,9 +16,9 @@ public:
     //checks if the hash mode exists (has to be in a defined range)
     static bool isModeValid(const unsigned char hash_mode) noexcept;
     //gets the hash sub class (e.g sha256) to perform a hash (strategy pattern)
-    static Hash* getHash(const unsigned char hash_mode);
+    static Hash* getHash(const HModes hash_mode);
     //gets some information about that hash mode (info about the hash function)
-    static std::string getInfo(const unsigned char hash_mode) noexcept;
+    static std::string getInfo(const HModes hash_mode);
 };
 
 

@@ -3,6 +3,7 @@
 #define PWFUNC_H
 
 #include "hash.h"
+#include "base.h"
 
 class PwFunc{
     /*
@@ -17,11 +18,8 @@ private:
     std::string error;      //stores the last occured error
 public:
     //checks the password for illegal characters and length
-    bool isPasswordValid(const std::string password) noexcept;
+    static ErrorStruct<bool> isPasswordValid(const std::string password) noexcept;
 
-    std::string getError() const noexcept;  //gets the last occured error
-
-    PwFunc() = default;
     PwFunc(const Hash* hash) noexcept;      //sets the hash function
     Bytes chainhash(const std::string password, const u_int64_t iterations=1) const noexcept;       //performs a chainhash
     //adds a constant salt each iteration

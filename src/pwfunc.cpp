@@ -1,13 +1,9 @@
 #include "pwfunc.h"
 #include "settings.h"
 
-std::string PwFunc::getError() const noexcept{
-    //gets the current error
-    return this->error;
-}
-
-bool PwFunc::isPasswordValid(const std::string password) noexcept{
+ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept{
     //checks the password for illegal format, sets an error if it is not valid
+    ErrorStruct<bool> ret;
     for(int i=0; i < password.length(); i++){
         //loops through the password characters
         bool found = false;
@@ -18,18 +14,21 @@ bool PwFunc::isPasswordValid(const std::string password) noexcept{
             }
         }
         if(!found){ //invalid character, is not in charset
-            this->error = "Password conatins illegal character: '";
-            this->error += password[i];
-            this->error += "'";
-            return false; //passwd contains illegal char
+            ret.error = "Password conatins illegal character: '";
+            ret.error += password[i];
+            ret.error += "'";
+            ret.success = false; //passwd contains illegal char
+            return ret;
         }
     }
     if(password.length() < MIN_PASS_LEN){   //password length does not match the min length
-        this->error = "Password is too short, it has to be at least "+std::to_string(MIN_PASS_LEN);
-        this->error += " characters long";
-        return false; //passwd too short
+        ret.error = "Password is too short, it has to be at least "+std::to_string(MIN_PASS_LEN);
+        ret.error += " characters long";
+        ret.success = false; //passwd too short
+        return ret;
     }
-    return true;
+    ret.success = true; //passwd is valid
+    return ret;
 }
 
 PwFunc::PwFunc(const Hash *hash) noexcept

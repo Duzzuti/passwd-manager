@@ -6,15 +6,8 @@ this file contains the implementations of Data header class
 #include "rng.h"
 #include "file_modes.h"
 
-DataHeader::DataHeader(const unsigned char hash_mode){
+DataHeader::DataHeader(const HModes hash_mode){
     //initialize the hash mode
-    if(!HashModes::isModeValid(hash_mode)){
-        //throw with an error if the hash mode is not valid
-        std::cout << "ERROR: file is corupted and cannot be read " << std::endl;
-        std::cout << "The given hash mode of the file is not valid (" << +hash_mode << ")" << std::endl;
-        std::cout << "Update the application, correct the mode byte in the file or try a backup file you have made" << std::endl;
-        throw std::invalid_argument("Cannot read data header. Invalid hash mode");
-    }
     this->dh.hash_mode = hash_mode;
     Hash* hash = HashModes::getHash(hash_mode);
     this->hash_size = hash->getHashSize();      //gets the hash size of the hash that corresponds to the given mode
@@ -74,14 +67,8 @@ void DataHeader::setChainHash2(const CHModes mode, const u_int64_t iters, const 
     this->dh.chainhash2_iters = iters;
 }
 
-void DataHeader::setFileDataMode(const unsigned char file_mode){
+void DataHeader::setFileDataMode(const FModes file_mode){
     //sets the file data mode
-    if(!FileModes::isModeValid(file_mode)){ //validates the file mode, if invalid throw with an error
-        std::cout << "ERROR: file is corupted and cannot be read " << std::endl;
-        std::cout << "The given file mode of the file is not valid (" << +file_mode << ")" << std::endl;
-        std::cout << "Update the application, correct the mode byte in the file or try a backup file you have made" << std::endl;
-        throw std::invalid_argument("Cannot read data header. Invalid file mode");
-    }
     this->dh.file_mode = file_mode;
 }
 

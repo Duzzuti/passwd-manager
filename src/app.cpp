@@ -160,9 +160,10 @@ std::string App::askForPasswd() const noexcept{
         std::cout << "Please enter the password for this file (if it is a new file, this password will be set): ";
         getline(std::cin, pw);
         std::cout << std::endl;
-        PwFunc pwf{};
-        if(!pwf.isPasswordValid(pw)){   //checks whether the password is valid
-            std::cout << pwf.getError() << std::endl;       //prints the reason why the password is not valid
+        ErrorStruct err_struct = PwFunc::isPasswordValid(pw);    //checks whether the password is valid
+        if(!err_struct.success){
+            //no success, password not valid
+            std::cout << err_struct.error << std::endl;       //prints the reason why the password is not valid
             continue;
         }
         break;
@@ -170,7 +171,7 @@ std::string App::askForPasswd() const noexcept{
     return pw;  //returns the gotten password
 }
 
-unsigned char App::askForFileMode() const noexcept{
+FModes App::askForFileMode() const noexcept{
     //this function asks the user for the file mode (blank means standard)
     std::string file_mode_inp;
     unsigned char file_mode;
@@ -186,10 +187,10 @@ unsigned char App::askForFileMode() const noexcept{
     }else{
         file_mode = std::stoi(file_mode_inp); //set the user given mode
     }
-    return file_mode;
+    return FModes(file_mode);   //returns the enum type of the file mode
 }
 
-unsigned char App::askForHashMode() const noexcept{
+HModes App::askForHashMode() const noexcept{
     //this function asks the user for the hash mode (blank means standard)
     std::string hash_mode_inp;
     unsigned char hash_mode;
@@ -205,7 +206,7 @@ unsigned char App::askForHashMode() const noexcept{
     }else{
         hash_mode = std::stoi(hash_mode_inp); //set the user given mode
     }
-    return hash_mode;
+    return HModes(hash_mode);   //returns the enum type of the hash mode
 }
 
 CHModes App::askForChainHashMode() const noexcept{
@@ -249,8 +250,8 @@ u_int64_t App::askForIters(const std::string msg) const noexcept{
 
 Bytes App::askForHeader() const{
     //returns a valid header with the user preferences
-    unsigned char file_data_mode = this->askForFileMode();  //ask for file mode
-    unsigned char hash_mode = this->askForHashMode();       //ask for hash mode
+    FModes file_data_mode = this->askForFileMode();  //ask for file mode
+    HModes hash_mode = this->askForHashMode();       //ask for hash mode
     //ask for chainhash1 data, which is used to get the passwordhash from the password
     std::cout << std::endl;
     std::cout << "In order to get an hash derived from the enterd password, we need to perform a chainhash" << std::endl;
