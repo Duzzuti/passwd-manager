@@ -81,12 +81,12 @@ Bytes ChainHashModes::askForSaltNumber(const std::string msg, const unsigned cha
     return bytes;
 }
 
-bool ChainHashModes::isModeValid(const unsigned char chainhash_mode) noexcept{
+bool ChainHashModes::isModeValid(const CHModes chainhash_mode) noexcept{
     //checks whether the chainhash mode is in the range of valid modes
     return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
 }
 
-bool ChainHashModes::isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock) noexcept{
+bool ChainHashModes::isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock){
     //checks if the chainhash is valid
     if(!(iters > 0 && iters <= MAX_ITERATIONS)){
         return false;   //iteration number is not valid

@@ -22,7 +22,7 @@ std::string FileModes::getInfo(const FModes file_mode){
     return msg.str();
 }
 
-bool FileModes::isModeValid(const unsigned char file_mode) noexcept{
+bool FileModes::isModeValid(const FModes file_mode) noexcept{
     //checks whether the given file mode is in the accepted range
     return (1 <= file_mode && file_mode <= MAX_FILEMODE_NUMBER);
 }

@@ -7,7 +7,7 @@ this file contains implementations of HashModes class
 #include "sha384.h"
 #include "sha512.h"
 
-bool HashModes::isModeValid(const unsigned char hash_mode) noexcept{
+bool HashModes::isModeValid(const HModes hash_mode) noexcept{
     //checks whether the given hash mode is in the accepted range
     return (1 <= hash_mode && hash_mode <= MAX_HASHMODE_NUMBER);
 }

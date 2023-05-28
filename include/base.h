@@ -8,8 +8,8 @@ you can include this file everywhere without creating circular includes
 
 #include <iostream>
 
-//enum which holds the chainhash modes as unisgned chars
-enum CHModes : unsigned char{
+//enum which holds the chainhash modes
+enum CHModes{
     CHAINHASH_NORMAL = 1,       //normal chainhash without salt
     CHAINHASH_CONSTANT_SALT,    //chainhash with constant salt
     CHAINHASH_COUNT_SALT,       //chainhash with count salt
@@ -17,15 +17,15 @@ enum CHModes : unsigned char{
     CHAINHASH_QUADRATIC         //chainhash with quadratic salt
 };
 
-//enum which holds the hash modes as unsigned chars
-enum HModes : unsigned char{
+//enum which holds the hash modes
+enum HModes{
     HASHMODE_SHA256 = 1,        //sha256 hashmode
     HASHMODE_SHA384,            //sha384 hashmode
     HASHMODE_SHA512,            //sha512 hashmode
 };
 
-//enum which holds the file data modes as unsigned chars
-enum FModes : unsigned char{
+//enum which holds the file data modes
+enum FModes{
     FILEMODE_PASSWORD = 1,      //password filemode
 };
 

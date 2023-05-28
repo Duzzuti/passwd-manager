@@ -81,7 +81,7 @@ std::vector<NameLen> Format::getNameLenList() const{
                 //size does not end with B (wrong format)
                 throw std::invalid_argument("format is not valid. Contains no B on the end of size part.");
             }
-            substring.erase(substring.end());   //delete the B
+            substring.pop_back();   //delete the B
             int size_int = 0;
             //if the format is *B, that means that any length (greater than zero is accepted)
             //we mark this with a length of zero

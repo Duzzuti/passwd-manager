@@ -36,7 +36,7 @@ bool App::isValidFileMode(const std::string mode, const bool accept_blank) noexc
         return false;   //input mode was not a valid char
     }
     //checks the actual range of the file modes
-    if(FileModes::isModeValid(std::stoi(mode))){
+    if(FileModes::isModeValid(FModes(std::stoi(mode)))){
         return true;
     }
     return false;   //file mode has some invalid number (out of range)
@@ -52,7 +52,7 @@ bool App::isValidHashMode(const std::string mode, const bool accept_blank) noexc
         return false;   //input mode was not a valid char
     }
     //checks the actual range of the hash mode
-    if(HashModes::isModeValid(std::stoi(mode))){
+    if(HashModes::isModeValid(HModes(std::stoi(mode)))){
         return true;
     }
     return false;   //hash mode has some invalid number (out of range)
@@ -68,7 +68,7 @@ bool App::isValidChainHashMode(const std::string mode, const bool accept_blank) 
         return false;   //input mode was not a valid char
     }
     //checks the actual range of the chain hash modes
-    if(ChainHashModes::isModeValid(std::stoi(mode))){
+    if(ChainHashModes::isModeValid(CHModes(std::stoi(mode)))){
         return true;
     }
     return false;   //chain hash mode has some invalid number (out of range)

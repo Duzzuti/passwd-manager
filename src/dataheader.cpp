@@ -8,6 +8,9 @@ this file contains the implementations of Data header class
 
 DataHeader::DataHeader(const HModes hash_mode){
     //initialize the hash mode
+    if(!HashModes::isModeValid(hash_mode)){
+        throw std::invalid_argument("invalid hash mode");
+    }
     this->dh.hash_mode = hash_mode;
     Hash* hash = HashModes::getHash(hash_mode);
     this->hash_size = hash->getHashSize();      //gets the hash size of the hash that corresponds to the given mode
@@ -69,6 +72,9 @@ void DataHeader::setChainHash2(const CHModes mode, const u_int64_t iters, const 
 
 void DataHeader::setFileDataMode(const FModes file_mode){
     //sets the file data mode
+    if(!FileModes::isModeValid(file_mode)){
+        throw std::invalid_argument("invalid file mode");
+    }
     this->dh.file_mode = file_mode;
 }
 
