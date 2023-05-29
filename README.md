@@ -14,8 +14,33 @@ cmake --build build
 ```
 the executable should be under build/pman
 
-## functionality
-### basics
+# Development environment
+
+In order to ensure that all developers use the same environment, we use docker. This will avoid many problems with different versions of libraries and compilers. We will carry out the development using VSCode's `Remote Development` extension. This will allow us to do all our coding, compiling and testing inside a docker container.
+
+## How to set up the development environment
+
+1. Install docker
+2. Install VSCode's `Remote Devlopment` extension pack: `ms-vscode-remote.vscode-remote-extensionpack`
+3. Build and run the container image with:
+```sh
+$ cd <passwd-manager root folder>
+
+$ docker build -t passwd-manager . --build-arg USERNAME=`whoami`
+
+$ docker run --name passwd-manager -v <passwd-manager root folder>:/home/`whoami`/passwd-manager -it passwd-manager
+```
+
+4. Open the `Remote Explorer` tab in VSCode:
+<img src="docs/DevContainers.png"
+        alt="Remote Explorer"
+        style="left"
+    />
+5. Select the folder `/home/$your_username/passwd-manager`:
+<img src="docs/OpenFolder.png"
+        alt="Open Folder"
+        style="float; right"
+    />
 the system just encrypts a file with a password.
 
 the data is loaded on a blockchain that is made out of data blocks.
