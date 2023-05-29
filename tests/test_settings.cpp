@@ -66,7 +66,7 @@ const constexpr int TEST_MAX_PW_ITERS = 10000;    //number of iterations for the
 const constexpr int TEST_MAX_PW_LEN = 30;       //up to which password length should be tested
 //+++++++++++++++++dataheader++++++++++++++++++++++++++++++
 //{S; A}
-const constexpr u_int64_t TEST_DH_ITERS = 1000; //number of dataheaders tested
+const constexpr u_int64_t TEST_DH_ITERS = 10000; //number of dataheaders tested
 
 
 
@@ -87,7 +87,7 @@ const constexpr u_int64_t TEST_DH_ITERS = 1000; //number of dataheaders tested
 // const constexpr int TEST_MAX_PW_ITERS = 65000;
 // const constexpr int TEST_MAX_PW_LEN = 30;
 
-// const constexpr u_int64_t TEST_DH_ITERS = 10000;
+// const constexpr u_int64_t TEST_DH_ITERS = 20000;
 
 // //####################### HARD MODE (tests are running slow) ###################################
 // const constexpr int TEST_HASH_MAX_LEN = 512;

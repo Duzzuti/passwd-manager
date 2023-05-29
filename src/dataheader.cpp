@@ -19,7 +19,7 @@ DataHeader::DataHeader(const HModes hash_mode){
 
 bool DataHeader::isComplete() const noexcept{
     //checks if the dataheader has everything set
-    if(this->dh.chainhash1_mode == 0 || this->dh.chainhash2_mode == 0 || 
+    if(!ChainHashModes::isModeValid(this->dh.chainhash1_mode) || !ChainHashModes::isModeValid(this->dh.chainhash2_mode) || 
         this->dh.valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->dh.file_mode)){
         return false;
     }
@@ -31,7 +31,7 @@ unsigned int DataHeader::getHeaderLength() const noexcept{
     if(this->header_bytes.getLen() > 0){
         return this->header_bytes.getLen();     //header bytes are set, so we get this length
     }
-    if(this->dh.chainhash1_mode != 0 && this->dh.chainhash2_mode != 0){   //all data set to calculate the header length
+    if(ChainHashModes::isModeValid(this->dh.chainhash1_mode) && ChainHashModes::isModeValid(this->dh.chainhash2_mode)){   //all data set to calculate the header length
         return 22 + 2*this->hash_size + this->dh.chainhash1_datablock_len + this->dh.chainhash2_datablock_len;    //dataheader.md
     }else{
         return 0;   //not enough infos to get the header length
