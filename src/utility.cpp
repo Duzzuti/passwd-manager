@@ -34,3 +34,16 @@ std::string charVecToString(const std::vector<unsigned char> v) noexcept{
     }
     return ret;
 }
+
+unsigned int getLongLen(const u_int64_t num) noexcept{
+    //gets the byte length of a long number
+    unsigned int ret = 0;
+    u_int64_t tmp = num; 
+    while(tmp > 0){
+        //shift the number 8 bits to the right and increment the counter
+        //(this is the same as dividing by 256 (byte) and incrementing the counter)
+        tmp = tmp >> 8;
+        ret++;
+    }
+    return ret;
+}

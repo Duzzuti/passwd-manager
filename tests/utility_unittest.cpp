@@ -76,3 +76,27 @@ TEST(UtilityClass, Longtocharvec){
     EXPECT_EQ(v7, LongToCharVec(l7));
 }
 
+TEST(UtilityClass, getLongLen){
+    u_int64_t l1 = 0;
+    u_int64_t l2 = 1;
+    u_int64_t l3 = -1;
+    u_int64_t l4 = -2;
+    u_int64_t l5 = l3/256;
+    u_int64_t l6 = l3/256 -1;
+    u_int64_t l7 = l3/256 +1;
+    u_int64_t l8 = 256;
+    u_int64_t l9 = 255;
+    u_int64_t l10 = (u_int64_t)256*256*256*256;
+    u_int64_t l11 = (u_int64_t)256*256*256*256 - 1;
+    EXPECT_EQ(0, getLongLen(l1));
+    EXPECT_EQ(1, getLongLen(l2));
+    EXPECT_EQ(8, getLongLen(l3));
+    EXPECT_EQ(8, getLongLen(l4));
+    EXPECT_EQ(7, getLongLen(l5));
+    EXPECT_EQ(7, getLongLen(l6));
+    EXPECT_EQ(8, getLongLen(l7));
+    EXPECT_EQ(2, getLongLen(l8));
+    EXPECT_EQ(1, getLongLen(l9));
+    EXPECT_EQ(5, getLongLen(l10));
+    EXPECT_EQ(4, getLongLen(l11));
+}
