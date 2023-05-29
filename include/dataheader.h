@@ -14,8 +14,8 @@ public:
     u_int64_t chainhash2_iters; //iterations for the second chainhash
     FModes file_mode;   //the file data mode that is choosen (content of the file)
     HModes hash_mode;   //the hash mode that is choosen (hash function)
-    CHModes chainhash1_mode;  //chainhash mode for the first chainhash (password -> passwordhash)
-    CHModes chainhash2_mode;  //chainhash mode for the second chainhash (passwordhash -> validate password)
+    CHModes chainhash1_mode = CHModes(0);  //chainhash mode for the first chainhash (password -> passwordhash)
+    CHModes chainhash2_mode = CHModes(0);  //chainhash mode for the second chainhash (passwordhash -> validate password)
     unsigned char chainhash1_datablock_len; //the length of the first datablock
     unsigned char chainhash2_datablock_len; //the length of the second datablock
     ChainHashData chainhash1_datablock{Format(CHAINHASH_NORMAL)};     //the first datablock
