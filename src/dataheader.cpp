@@ -40,12 +40,13 @@ unsigned int DataHeader::getHeaderLength() const noexcept{
 
 void DataHeader::setChainHash1(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock){
     //sets the information about the first chainhash
-    if(len != datablock.getDataBlock().getLen()){  //validates the datablock length
+    if(len != datablock.getLen()){  //validates the datablock length
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
-    if(!ChainHashModes::isChainHashValid(mode, iters, datablock)){
+    ErrorStruct err = ChainHashModes::isChainHashValid(mode, iters, datablock);   //validates the chainhash
+    if(!err.success){
         //validates the chainhash
-        throw std::invalid_argument("given data is not valid");
+        throw std::invalid_argument(err.error);
     }
     //set the information to the object
     this->dh.chainhash1_mode = mode;
@@ -56,12 +57,13 @@ void DataHeader::setChainHash1(const CHModes mode, const u_int64_t iters, const 
 
 void DataHeader::setChainHash2(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock){
     //sets the information about the second chainhash
-    if(len != datablock.getDataBlock().getLen()){  //validates the datablock length
+    if(len != datablock.getLen()){  //validates the datablock length
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
-    if(!ChainHashModes::isChainHashValid(mode, iters, datablock)){
+    ErrorStruct err = ChainHashModes::isChainHashValid(mode, iters, datablock);   //validates the chainhash
+    if(!err.success){
         //validates the chainhash
-        throw std::invalid_argument("given data is not valid");
+        throw std::invalid_argument(err.error);
     }
     //set the information to the object
     this->dh.chainhash2_mode = mode;

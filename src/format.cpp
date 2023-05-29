@@ -67,7 +67,7 @@ std::vector<NameLen> Format::getNameLenList() const{
     unsigned char data_len = 0;
     //loops over every format substring seperated by " "
     while ((ind = format.find(" ")) != std::string::npos) {
-        std::string substring = this->format.substr(0, ind);  //gets the substring with the given index
+        std::string substring = format.substr(0, ind);  //gets the substring with the given index
         if(substring.empty()){
             throw std::invalid_argument("format is not valid. Got some empty substring");
         }

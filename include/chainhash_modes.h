@@ -22,7 +22,7 @@ public:
     static Bytes askForSaltNumber(const std::string msg, const unsigned char max_len=8);
     static bool isModeValid(const CHModes chainhash_mode) noexcept;   //checks if the given chain hash mode is valid
     //checks if the given chainhash is valid (with the iterations and datablock which contains data that is used by the chainhash)
-    static bool isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock);
+    static ErrorStruct<bool> isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock) noexcept;
     static ChainHashData askForData(const CHModes chainhash_mode);    //gets data from the user that is needed for this chainhash mode
     //two methods for actually performing the chainhash, one for Bytes input and one for string input
     static Bytes performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const Bytes data);

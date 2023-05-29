@@ -86,19 +86,32 @@ bool ChainHashModes::isModeValid(const CHModes chainhash_mode) noexcept{
     return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
 }
 
-bool ChainHashModes::isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock){
+ErrorStruct<bool> ChainHashModes::isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock) noexcept{
     //checks if the chainhash is valid
+    ErrorStruct<bool> es;
+    if(!ChainHashModes::isModeValid(chainhash_mode)){
+        es.error = "chainhash mode is not valid";
+        es.success = false;
+        return es;   //chainhash mode is not valid
+    }
     if(!(iters > 0 && iters <= MAX_ITERATIONS)){
-        return false;   //iteration number is not valid
+        es.error = "iteration number is not valid";
+        es.success = false;
+        return es;   //iteration number is not valid
     }
-    if(datablock.getDataBlock().getLen() > 255){
-        return false;   //datablock is too long
-    }
-    if(datablock.isCompletedFormat(Format(chainhash_mode))){
+    if(!datablock.isCompletedFormat(Format(chainhash_mode))){
         //checks if the datablock is already completed
-        return true;
+        es.error = "datablock is not yet completed";
+        es.success = false;
+        return es;
     }
-    return false;
+    if(datablock.getLen() > 255){
+        es.error = "datablock is too long";
+        es.success = false;
+        return es;   //datablock is too long
+    }
+    es.success = true;
+    return es;
 }
 
 ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode){
@@ -131,8 +144,9 @@ ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode){
 
 Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const Bytes data){
     //performs a chainhash on bytes
-    if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
-        throw std::invalid_argument("ChainHash arguments are not valid");   //chainhash is not valid
+    ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock); //check if the chainhash is valid
+    if(!err.success){
+        throw std::invalid_argument(err.error);   //chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);      //init the pwfunc object with the given hash function
     std::string constant_salt{};    //init all variables we might need, because in the switch statement no variables can be declared
@@ -166,8 +180,9 @@ Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int
 
 Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const std::string data){
     //performs a chainhash on a string
-    if(!ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock)){
-        throw std::invalid_argument("ChainHash arguments are not valid");   //chainhash is not valid
+    ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock); //check if the chainhash is valid
+    if(!err.success){
+        throw std::invalid_argument(err.error);   //chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);      //init the pwfunc object with the given hash function
     std::string constant_salt{};    //init all variables we might need, because in the switch statement no variables can be declared
