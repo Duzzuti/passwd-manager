@@ -31,6 +31,9 @@ $ docker build -t passwd-manager . --build-arg USERNAME=`whoami`
 $ docker run --name passwd-manager -v <passwd-manager root folder>:/home/`whoami`/passwd-manager -it passwd-manager
 ```
 
+## How to run and debug the code
+We need to install `CMake`: `twxs.cmake` and `CMake Tools`: `ms-vscode.cmake-tools` in VSCode. Then follow this tutorial: https://code.visualstudio.com/docs/cpp/cmake-linux. This setup will allow us to run the code as well as debug it with the all the features that VSCode offers (breakpoints, step by step, highlight current instruction, etc.)
+
 4. Open the `Remote Explorer` tab in VSCode:
 <img src="docs/DevContainers.png"
         alt="Remote Explorer"
