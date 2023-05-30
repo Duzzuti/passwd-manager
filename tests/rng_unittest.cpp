@@ -71,7 +71,7 @@ TEST(RNGClass, gen_byte_io){
             upper = RNG::get_random_bytes(1)[0];
             buffer = 1;
         }
-        if(lower >= upper || buffer == 0 || buffer > 8){
+        if(lower > upper || buffer == 0 || buffer > 8){
             //should throw due to invalid input
             EXPECT_THROW(RNG::get_random_byte(lower, upper, buffer), std::logic_error);
         }else{

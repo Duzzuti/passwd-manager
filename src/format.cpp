@@ -47,7 +47,7 @@ std::vector<NameLen> Format::getNameLenList() const{
     //for docs view chainhash_modes.md
     //format infos in chainhash_modes.md
     //format <length in bytes>B <name>
-    std::string format = this->format;
+    std::string format{this->format};
     if(format.empty()){
         //got an empty format, user wants an empty datablock
         return std::vector<NameLen>();
@@ -66,7 +66,12 @@ std::vector<NameLen> Format::getNameLenList() const{
     //stores the length of the next data (because we get the length before the name)
     unsigned char data_len = 0;
     //loops over every format substring seperated by " "
-    while ((ind = format.find(" ")) != std::string::npos) {
+    while (!format.empty()) {
+        ind = format.find(" "); //finds the next " " in the format string
+        if(ind == std::string::npos){
+            //no more " " in the format string
+            ind = format.size();
+        }
         std::string substring = format.substr(0, ind);  //gets the substring with the given index
         if(substring.empty()){
             throw std::invalid_argument("format is not valid. Got some empty substring");
@@ -112,14 +117,15 @@ std::vector<NameLen> Format::getNameLenList() const{
                 throw std::invalid_argument("format is not valid. Found multiple parts with the same name");
             }
             data_names.push_back(substring);
-            name_lens.push_back(NameLen(substring, data_len));
+            name_lens.emplace_back(substring, data_len);
         }
         format.erase(0, ind + 1);    //erase the substring + the separator " ", which's length is 1
         data_name = !data_name;     //flip the bool, data names and sizes are alternating
     }
-    if(!(0 < name_lens.size() < 256)){
+    if(!(0 < name_lens.size() && name_lens.size() < 256)){
         //the algorithm did not add anything to the list, but the user entered a non empty format string
         //or the user inputs more than 256 datasets
+        std::cout << "Format: " << this->format << std::endl;
         std::cout << "Format has to contain between 0 and 256 entries exclusive";
         std::cout << "or the format string has to be empty for 0 entries" << std::endl;
         throw std::invalid_argument("format is not valid. Got invalid entry number from a non empty format");

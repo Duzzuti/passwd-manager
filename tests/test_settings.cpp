@@ -67,12 +67,15 @@ const constexpr int TEST_MAX_PW_LEN = 30;       //up to which password length sh
 //+++++++++++++++++dataheader++++++++++++++++++++++++++++++
 //{S; A}
 const constexpr u_int64_t TEST_DH_ITERS = 10000; //number of dataheaders tested
-
+//{S; T<1000>}
+const constexpr u_int64_t TEST_DH_MAX_PW_ITERS = 10000; //number of iterations for the chainhash functions in dataheader
+//{S; A}
+const constexpr u_int64_t TEST_DH_CALC_ITERS = 15; //number of iterations for the calculation test of the dataheader
 
 
 // //####################### MEDIUM MODE (tests are running normally) #############################
 // const constexpr int TEST_HASH_MAX_LEN = 512;
-// const constexpr u_int64_t TEST_HASH_ITERS = 10;10000
+// const constexpr u_int64_t TEST_HASH_ITERS = 10;
 // const constexpr u_int64_t TEST_RNG_ITERS_ENTROPY = 5000000;
 // const constexpr double TEST_RNG_ENTROPY_ERROR = 0.0005;
 // const constexpr u_int64_t TEST_RNG_ITERS_IO = 1000000;
@@ -88,6 +91,8 @@ const constexpr u_int64_t TEST_DH_ITERS = 10000; //number of dataheaders tested
 // const constexpr int TEST_MAX_PW_LEN = 30;
 
 // const constexpr u_int64_t TEST_DH_ITERS = 20000;
+// const constexpr u_int64_t TEST_DH_MAX_PW_ITERS = 20000;
+// const constexpr u_int64_t TEST_DH_CALC_ITERS = 30;
 
 // //####################### HARD MODE (tests are running slow) ###################################
 // const constexpr int TEST_HASH_MAX_LEN = 512;
@@ -108,4 +113,6 @@ const constexpr u_int64_t TEST_DH_ITERS = 10000; //number of dataheaders tested
 // const constexpr int TEST_MAX_PW_LEN = 30;
 
 // const constexpr u_int64_t TEST_DH_ITERS = 50000;
+// const constexpr u_int64_t TEST_DH_MAX_PW_ITERS = 20000;
+// const constexpr u_int64_t TEST_DH_CALC_ITERS = 50;
 

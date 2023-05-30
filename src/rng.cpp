@@ -21,12 +21,17 @@ unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned cha
     //and calculate a random number in that range by shorting it down to the range (long mod range + lower)
     //the buffer size should be long if really random numbers are needed
     //it can be short (1) if the range is 255.WORK
-    if(upper <= lower){
-        throw std::logic_error("upper bound cannot be <= lower bound");
-    }
     if(buffer_size < 1 || buffer_size > 8){
         throw std::logic_error("buffer size cannot be zero or greater than 8");
     }
+    if(upper <= lower){
+        if(upper == lower){
+            return upper;   //if upper and lower are equal, return it (there is no need to randomize)
+        }else{
+            throw std::logic_error("upper bound cannot be <= lower bound");
+        }
+    }
+
     unsigned char rand_bytes[buffer_size];      //creates a new buffer with a given length
     Bytes tmp_bytes{};
     if(RAND_bytes(rand_bytes, sizeof(rand_bytes)) == 1){
