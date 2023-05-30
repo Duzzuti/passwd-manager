@@ -88,6 +88,15 @@ void ChainHashData::addBytes(Bytes bytes){
     this->data_parts.push_back(bytes);  //add the new byte part
     if(this->getLen() > 255){
         //datablock is too long
+        std::cout << "Length of datablock: " << this->getLen() << std::endl;
         throw std::logic_error("you added some bytes to the datablock. Now the datablock exceeded the length limit");
     }
+}
+
+bool operator==(const ChainHashData &chd1, const ChainHashData &chd2){
+    if(chd1.isComplete() && chd2.isComplete()){
+        //both objects are complete, compare the data parts
+        return (chd1.getDataBlock() == chd2.getDataBlock());
+    }
+    return false;   //if one of the objects is not complete, they cannot be equal
 }
