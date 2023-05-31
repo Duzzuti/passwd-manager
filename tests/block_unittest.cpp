@@ -1,11 +1,10 @@
 #include "gtest/gtest.h"
 
-#define private public  //setting everything public for testing
+#define private public  // setting everything public for testing
 #include "block.h"
 
-
-TEST(BlockClass, constructors){
-    //testing the constructors
+TEST(BlockClass, constructors) {
+    // testing the constructors
     Block block1 = Block();
     Block block2 = Block(286, Bytes(286), Bytes(286), Bytes(286));
     Block block3 = Block(Bytes(28));
@@ -24,13 +23,13 @@ TEST(BlockClass, constructors){
     EXPECT_EQ(28, block3.getEncoded().getLen());
 }
 
-TEST(BlockClass, setter){
-    //testing the setters of the Block class
+TEST(BlockClass, setter) {
+    // testing the setters of the Block class
     Block block1 = Block();
     Block block2 = Block(286, Bytes(286), Bytes(286), Bytes(286));
     Block block3 = Block(Bytes(28));
     Bytes dummy = Bytes();
-    
+
     EXPECT_THROW(block1.setData(dummy), std::length_error);
     EXPECT_THROW(block1.setEncoded(dummy), std::length_error);
     EXPECT_THROW(block1.setPasswordHash(dummy), std::length_error);
@@ -92,8 +91,8 @@ TEST(BlockClass, setter){
     EXPECT_THROW(block3.setLen(28), std::length_error);
 }
 
-TEST(BlockClass, getter){
-    //testing the getter of the block class
+TEST(BlockClass, getter) {
+    // testing the getter of the block class
     Block block1 = Block();
     Bytes encoded1(286);
     Bytes encoded2(28);
@@ -114,12 +113,14 @@ TEST(BlockClass, getter){
     EXPECT_EQ(data2, block3.getData());
 }
 
-TEST(BlockClass, clear){
-    //testing the clear method
+TEST(BlockClass, clear) {
+    // testing the clear method
     Block block1 = Block();
     Block block2 = Block(286, Bytes(286), Bytes(286), Bytes(286));
     Block block3 = Block(Bytes(28));
-    block1.clear();block2.clear();block3.clear();
+    block1.clear();
+    block2.clear();
+    block3.clear();
 
     EXPECT_EQ(0, block1.getLen());
     EXPECT_EQ(0, block2.getLen());
@@ -141,8 +142,8 @@ TEST(BlockClass, clear){
     EXPECT_NO_THROW(block3.setLen(1));
 }
 
-TEST(BlockClass, encode){
-    //testing encoding in a block
+TEST(BlockClass, encode) {
+    // testing encoding in a block
     Bytes data(1);
     Bytes password(1);
     Bytes salt(1);
@@ -160,7 +161,7 @@ TEST(BlockClass, encode){
     EXPECT_FALSE(block1.isEncoded());
     EXPECT_FALSE(block2.isEncoded());
     EXPECT_TRUE(block3.isEncoded());
-    
+
     EXPECT_NO_THROW(block1.setLen(1));
     EXPECT_NO_THROW(block1.setData(data));
     EXPECT_NO_THROW(block1.setSalt(salt));
@@ -172,22 +173,22 @@ TEST(BlockClass, encode){
     EXPECT_TRUE(block2.isReadyForEncode());
     EXPECT_NO_THROW(block2.calcEncoded());
     EXPECT_EQ(286, block2.getEncoded().getBytes().size());
-    EXPECT_EQ(data1+password1+salt1, block2.getEncoded());
+    EXPECT_EQ(data1 + password1 + salt1, block2.getEncoded());
     EXPECT_NO_THROW(block3.setData(data2));
     EXPECT_NO_THROW(block3.setSalt(salt2));
     EXPECT_NO_THROW(block3.setPasswordHash(password2));
     EXPECT_TRUE(block3.isReadyForEncode());
     EXPECT_NO_THROW(block3.calcEncoded());
     EXPECT_EQ(28, block3.getEncoded().getBytes().size());
-    EXPECT_EQ(data2+salt2+password2, block3.getEncoded());
-    
+    EXPECT_EQ(data2 + salt2 + password2, block3.getEncoded());
+
     EXPECT_TRUE(block1.isEncoded());
     EXPECT_TRUE(block2.isEncoded());
     EXPECT_TRUE(block3.isEncoded());
 }
 
-TEST(BlockClass, decode){
-    //testing decoding in a block
+TEST(BlockClass, decode) {
+    // testing decoding in a block
     Bytes encode(1);
     Bytes password(1);
     Bytes salt(1);
@@ -220,16 +221,15 @@ TEST(BlockClass, decode){
     EXPECT_TRUE(block2.isReadyForDecode());
     EXPECT_NO_THROW(block2.calcData());
     EXPECT_EQ(286, block2.getData().getBytes().size());
-    EXPECT_EQ(encode1-password1-salt1, block2.getData());
+    EXPECT_EQ(encode1 - password1 - salt1, block2.getData());
     EXPECT_NO_THROW(block3.setSalt(salt2));
     EXPECT_NO_THROW(block3.setPasswordHash(password2));
     EXPECT_TRUE(block3.isReadyForDecode());
     EXPECT_NO_THROW(block3.calcData());
     EXPECT_EQ(28, block3.getData().getBytes().size());
-    EXPECT_EQ(encode2-salt2-password2, block3.getData());
-    
+    EXPECT_EQ(encode2 - salt2 - password2, block3.getData());
+
     EXPECT_TRUE(block1.isDecoded());
     EXPECT_TRUE(block2.isDecoded());
     EXPECT_TRUE(block3.isDecoded());
 }
-
