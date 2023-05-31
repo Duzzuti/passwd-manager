@@ -1,12 +1,6 @@
 name: Clang_Format
 
-on:
-  push:
-    branches:
-      - experimental
-  pull_request:
-    branches:
-      - experimental
+on: [push, pull_request]
 
 jobs:
   clang-format:
