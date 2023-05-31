@@ -1,7 +1,8 @@
 #include <iostream>
+
 #include "app.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     // for (int i = 0; i < argc; i++){
     //     std::cout << "a"<<argv[i]<<"b" << std::endl;
     //     if (argv[i] == "-f"){

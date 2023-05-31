@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "base_attacker.h"
+#include "gtest/gtest.h"
 
-TEST(Attacker, WORK){
-    //WORK
+TEST(Attacker, WORK) {
+    // WORK
 }
