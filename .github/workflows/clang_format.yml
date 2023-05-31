@@ -23,10 +23,10 @@ jobs:
       - name: Check for modifications
         id: check_modifications
         run: |
-          echo "modified=$(git status --porcelain)" >> $GITHUB_ENV
+          git diff --exit-code > /dev/null || echo "modified=true" >> $GITHUB_ENV
 
       - name: Commit and push changes
-        if: env.modified == 'M'
+        if: env.modified == 'true'
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
