@@ -1,7 +1,8 @@
-#include "gtest/gtest.h"
 #include "utility.h"
 
-TEST(UtilityClass, endswith){
+#include "gtest/gtest.h"
+
+TEST(UtilityClass, endswith) {
     std::string s1 = "isdahfaksjdfas asdf asdf sadffsaasdfkoö-.:fp9pfdas ";
     std::string e1 = "isdahfaksjdfas asdf asdf sadffsaasdfkoö-.:fp9pfdas ";
     std::string e2 = "";
@@ -29,17 +30,16 @@ TEST(UtilityClass, endswith){
     EXPECT_TRUE(endsWith(s3, e31));
     EXPECT_FALSE(endsWith(s3, e32));
     EXPECT_FALSE(endsWith(s3, e33));
-
 }
 
-TEST(UtilityClass, Longtocharvec){
+TEST(UtilityClass, Longtocharvec) {
     u_int64_t l1 = 0;
     u_int64_t l2 = 1;
     u_int64_t l3 = -1;
     u_int64_t l4 = -2;
-    u_int64_t l5 = l3/256;
-    u_int64_t l6 = l3/256 -1;
-    u_int64_t l7 = l3/256 +1;
+    u_int64_t l5 = l3 / 256;
+    u_int64_t l6 = l3 / 256 - 1;
+    u_int64_t l7 = l3 / 256 + 1;
     std::vector<unsigned char> v1;
     std::vector<unsigned char> v2;
     std::vector<unsigned char> v3;
@@ -50,11 +50,11 @@ TEST(UtilityClass, Longtocharvec){
     v5.push_back(0);
     v6.push_back(0);
     v7.push_back(1);
-    for(int i=0; i<6; i++){
+    for (int i = 0; i < 6; i++) {
         v6.push_back(255);
     }
     v6.push_back(254);
-    for(int i=0; i<7; i++){
+    for (int i = 0; i < 7; i++) {
         v1.push_back(0);
         v2.push_back(0);
         v3.push_back(255);
@@ -76,18 +76,18 @@ TEST(UtilityClass, Longtocharvec){
     EXPECT_EQ(v7, LongToCharVec(l7));
 }
 
-TEST(UtilityClass, getLongLen){
+TEST(UtilityClass, getLongLen) {
     u_int64_t l1 = 0;
     u_int64_t l2 = 1;
     u_int64_t l3 = -1;
     u_int64_t l4 = -2;
-    u_int64_t l5 = l3/256;
-    u_int64_t l6 = l3/256 -1;
-    u_int64_t l7 = l3/256 +1;
+    u_int64_t l5 = l3 / 256;
+    u_int64_t l6 = l3 / 256 - 1;
+    u_int64_t l7 = l3 / 256 + 1;
     u_int64_t l8 = 256;
     u_int64_t l9 = 255;
-    u_int64_t l10 = (u_int64_t)256*256*256*256;
-    u_int64_t l11 = (u_int64_t)256*256*256*256 - 1;
+    u_int64_t l10 = (u_int64_t)256 * 256 * 256 * 256;
+    u_int64_t l11 = (u_int64_t)256 * 256 * 256 * 256 - 1;
     EXPECT_EQ(0, getLongLen(l1));
     EXPECT_EQ(1, getLongLen(l2));
     EXPECT_EQ(8, getLongLen(l3));
