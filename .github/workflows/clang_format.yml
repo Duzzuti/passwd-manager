@@ -36,22 +36,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
-
-  formatting-check:
-    name: Formatting Check
-    needs: clang-format
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        path:
-          - 'src'
-          - 'include'
-          - 'tests'
-    steps:
-    - uses: actions/checkout@v3
-    - name: Run clang-format style check for C/C++/Protobuf programs.
-      uses: jidicula/clang-format-action@v4.11.0
-      with:
-        clang-format-version: '13'
-        check-path: ${{ matrix.path }}
-        fallback-style: 'Google'
