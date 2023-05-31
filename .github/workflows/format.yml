@@ -3,6 +3,8 @@ name: Clang_Format
 on:
   schedule:
     - cron:  '0 5,20 * * *'
+  pull_request:
+  
 jobs:
   formatting-check:
     name: Formatting Check
