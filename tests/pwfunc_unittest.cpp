@@ -7,14 +7,35 @@
 #include "test_settings.cpp"
 #include "test_utils.h"  //provide gen_random for random strings
 
+TEST(PWFUNCClass, returnTypes){
+    //check if the return types are correct
+    Hash* hash = new sha256();
+    PwFunc pwf = PwFunc(hash);
+
+    EXPECT_EQ(typeid(ErrorStruct<bool>), typeid(pwf.isPasswordValid("test")));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhash("test", 1)));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithConstantSalt("test", 1, "test")));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithCountAndConstantSalt("test", 1, 1, "test")));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithCountSalt("test", 1, 1)));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithQuadraticCountSalt("test", 1, 10, 89, 28, 18)));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhash(Bytes(10), 1)));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithConstantSalt(Bytes(10), 1, "test")));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithCountAndConstantSalt(Bytes(10), 1, 1, "test")));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithCountSalt(Bytes(10), 1, 1)));
+    EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithQuadraticCountSalt(Bytes(10), 1, 10, 89, 28, 18)));
+    
+    delete hash;
+}
+
 TEST(PWFUNCClass, input_output) {
+    //check if the input and output has the correct format
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
 
     for (int i = 0; i < TEST_MAX_PW_LEN; i++) {
         Bytes rand_b;
-        rand_b.setBytes(RNG::get_random_bytes(2));
-        u_int64_t l1 = toLong(rand_b) / 6;
+        rand_b.setBytes(RNG::get_random_bytes(2));  //max ca. 65000
+        u_int64_t l1 = toLong(rand_b) / 6;          //max ca. 10000 iterations
         if (MIN_ITERATIONS > l1) {
             l1 = MIN_ITERATIONS;
         } else if (MAX_ITERATIONS < l1) {
@@ -52,7 +73,8 @@ TEST(PWFUNCClass, input_output) {
     delete hash;
 }
 
-TEST(PWFUNCClass, concistency) {
+TEST(PWFUNCClass, consistency) {
+    //check if the output is consistent (same input -> same output)
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
 
@@ -90,6 +112,7 @@ TEST(PWFUNCClass, concistency) {
 }
 
 TEST(PWFUNCClass, correctness) {
+    //checks if the output is correct
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
     std::string p = "Password";
@@ -111,6 +134,10 @@ TEST(PWFUNCClass, correctness) {
     for (auto& c : phashchainccount) c = toupper(c);
     std::string phashchainccountnoargs = "a2930b8c9f4e5d9c10d06534b4cf8b204fbfba8ca12ef4f3aa0092f7ac707269";
     for (auto& c : phashchainccountnoargs) c = toupper(c);
+    std::string phashchainquad = "63498771e61f08553a6d510290659c5d80b77e065efbd686180ed7b97195e20e";
+    for (auto& c : phashchainquad) c = toupper(c);
+    std::string phashchainquadnoargs = "701254884c61f81db5f59c7b386fb8356bc04d59c6edeb31741d21bfc8161dbb";
+    for (auto& c : phashchainquadnoargs) c = toupper(c);
 
     EXPECT_EQ(phashchain, toHex(pwf.chainhash(p, 3)));
     EXPECT_EQ(phashchaincnoargs, toHex(pwf.chainhashWithConstantSalt(p, 3)));
@@ -119,6 +146,8 @@ TEST(PWFUNCClass, correctness) {
     EXPECT_EQ(phashchaincount, toHex(pwf.chainhashWithCountSalt(p, 3, 100)));
     EXPECT_EQ(phashchainccountnoargs, toHex(pwf.chainhashWithCountAndConstantSalt(p, 3)));
     EXPECT_EQ(phashchainccount, toHex(pwf.chainhashWithCountAndConstantSalt(p, 3, 100, s)));
+    EXPECT_EQ(phashchainquadnoargs, toHex(pwf.chainhashWithQuadraticCountSalt(p, 3)));
+    EXPECT_EQ(phashchainquad, toHex(pwf.chainhashWithQuadraticCountSalt(p, 3, 90, 5, 8, 3)));
 
     delete hash;
 }

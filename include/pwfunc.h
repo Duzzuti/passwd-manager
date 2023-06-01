@@ -15,7 +15,6 @@ class PwFunc {
     */
    private:
     const Hash* hash;   // stores the hash function that should be used
-    std::string error;  // stores the last occured error
    public:
     // checks the password for illegal characters and length
     static ErrorStruct<bool> isPasswordValid(const std::string password) noexcept;
