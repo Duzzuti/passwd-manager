@@ -8,19 +8,19 @@ Block::Block() {
     this->salt = Bytes();
 }
 
-Block::Block(const int len, const Bytes data, const Bytes salt, const Bytes password) {
+Block::Block(const int len, const Bytes data, const Bytes salt, const Bytes passwordhash) {
     if (len <= 0) {
         // invalid block length
         throw std::range_error("length of the block cannot be negative or zero");
     }
-    if (!((salt.getLen() == len) && (password.getLen() == len) && (len == data.getLen()))) {
+    if (!((salt.getLen() == len) && (passwordhash.getLen() == len) && (len == data.getLen()))) {
         // block length was not fulfilled by the data
         throw std::length_error("lengths of bytes dont match with the given length");
     }
     this->len = len;
     this->data = data;
     this->encoded = Bytes();
-    this->passwordhash = password;
+    this->passwordhash = passwordhash;
     this->salt = salt;
 }
 

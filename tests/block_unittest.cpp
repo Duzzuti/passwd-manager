@@ -23,6 +23,38 @@ TEST(BlockClass, constructors) {
     EXPECT_EQ(28, block3.getEncoded().getLen());
 }
 
+TEST(BlockClass, returnType){
+    //testing the return types
+    EXPECT_EQ(typeid(Bytes), typeid(Block().getSalt()));
+    EXPECT_EQ(typeid(Bytes), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).getSalt()));
+    EXPECT_EQ(typeid(Bytes), typeid(Block().getPasswordHash()));
+    EXPECT_EQ(typeid(Bytes), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).getPasswordHash()));
+    EXPECT_EQ(typeid(Bytes), typeid(Block().getData()));
+    EXPECT_EQ(typeid(Bytes), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).getData()));
+    EXPECT_EQ(typeid(void), typeid(Block().setLen(10)));
+    EXPECT_EQ(typeid(void), typeid(Block().setData(Bytes(10))));
+    EXPECT_EQ(typeid(void), typeid(Block().setSalt(Bytes(10))));
+    EXPECT_EQ(typeid(void), typeid(Block().setPasswordHash(Bytes(10))));
+    EXPECT_EQ(typeid(int), typeid(Block().getLen()));
+    EXPECT_EQ(typeid(int), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).getLen()));
+    EXPECT_EQ(typeid(Bytes), typeid(Block().getEncoded()));
+    EXPECT_EQ(typeid(Bytes), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).getEncoded()));
+    EXPECT_EQ(typeid(bool), typeid(Block().isReadyForEncode()));
+    EXPECT_EQ(typeid(bool), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).isReadyForEncode()));
+    EXPECT_EQ(typeid(void), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).calcEncoded()));
+    EXPECT_EQ(typeid(bool), typeid(Block().isEncoded()));
+    EXPECT_EQ(typeid(void), typeid(Block().setEncoded(Bytes(10))));
+    EXPECT_EQ(typeid(bool), typeid(Block().isReadyForDecode()));
+    EXPECT_EQ(typeid(bool), typeid(Block(Bytes(10)).isReadyForDecode()));
+    Block b1(Bytes(10));
+    b1.setPasswordHash(Bytes(10));
+    b1.setSalt(Bytes(10));
+    EXPECT_EQ(typeid(void), typeid(b1.calcData()));
+    EXPECT_EQ(typeid(bool), typeid(b1.isDecoded()));
+    EXPECT_EQ(typeid(void), typeid(b1.clear()));
+}
+
+
 TEST(BlockClass, setter) {
     // testing the setters of the Block class
     Block block1 = Block();
