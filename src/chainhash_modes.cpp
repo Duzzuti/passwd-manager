@@ -54,7 +54,7 @@ Bytes ChainHashModes::askForSaltString(const std::string msg, const unsigned cha
         return bytes;
     }
     // loops over the string and add each char as a byte to the Bytes object
-    for (unsigned char i = 0; i < inp.length(); i++) {
+    for (size_t i = 0; i < inp.length(); i++) {
         bytes.addByte(inp[i]);  // implicit char -> unsigned char
     }
     return bytes;
