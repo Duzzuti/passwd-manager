@@ -24,7 +24,7 @@ void Bytes::setBytes(const std::vector<unsigned char> bytes) noexcept { this->by
 
 std::vector<unsigned char> Bytes::getBytes() const noexcept { return this->bytes; }
 
-int Bytes::getLen() const noexcept { return this->bytes.size(); }
+size_t Bytes::getLen() const noexcept { return this->bytes.size(); }
 
 void Bytes::addByte(const unsigned char byte) noexcept { this->bytes.push_back(byte); }
 
@@ -147,7 +147,7 @@ std::string toHex(const Bytes b) noexcept {
     return ret;
 }
 
-u_int64_t toLong(const unsigned char byte) noexcept { return (long)byte; }
+u_int64_t toLong(const unsigned char byte) noexcept { return (u_int64_t)byte; }
 
 u_int64_t toLong(const Bytes b) noexcept {
     u_int64_t ret = 0;

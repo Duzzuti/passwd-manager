@@ -1,4 +1,5 @@
 #include "bytes.h"
+#include "rng.h"
 
 #include "gtest/gtest.h"
 
@@ -10,6 +11,32 @@ TEST(BytesClass, generatingBytes) {
     EXPECT_EQ(0, Bytes(0).getLen());
     EXPECT_EQ(0, Bytes().getLen());
     EXPECT_THROW(Bytes(-20), std::range_error);
+}
+
+TEST(BytesClass, returnTypes){
+    // testing return types
+    EXPECT_EQ(typeid(void), typeid(Bytes().print()));
+    EXPECT_EQ(typeid(void), typeid(Bytes().setBytes(RNG::get_random_bytes(10))));
+    EXPECT_EQ(typeid(std::vector<unsigned char>), typeid(Bytes(10).getBytes()));
+    EXPECT_EQ(typeid(size_t), typeid(Bytes(10).getLen()));
+    EXPECT_EQ(typeid(void), typeid(Bytes(10).addByte(1)));
+    EXPECT_EQ(typeid(void), typeid(Bytes(10).addBytes(Bytes(10))));
+    EXPECT_EQ(typeid(std::optional<Bytes>), typeid(Bytes(10).popFirstBytes(5)));
+    EXPECT_EQ(typeid(std::optional<Bytes>), typeid(Bytes(10).getFirstBytes(5)));
+    EXPECT_EQ(typeid(Bytes), typeid(Bytes(10).getFirstBytesFilledUp(5)));
+    EXPECT_EQ(typeid(Bytes), typeid(Bytes(10).getFirstBytesFilledUp(5, 9)));
+    EXPECT_EQ(typeid(Bytes), typeid(Bytes(10).popFirstBytesFilledUp(5)));
+    EXPECT_EQ(typeid(Bytes), typeid(Bytes(10).popFirstBytesFilledUp(5, 9)));
+    EXPECT_EQ(typeid(bool), typeid(Bytes(10).isEmpty()));
+    EXPECT_EQ(typeid(bool), typeid(Bytes().isEmpty()));
+    EXPECT_EQ(typeid(void), typeid(Bytes(10).clear()));
+    EXPECT_EQ(typeid(bool), typeid(Bytes(10) == Bytes(10)));
+    EXPECT_EQ(typeid(Bytes), typeid(Bytes(10) + Bytes(10)));
+    EXPECT_EQ(typeid(Bytes), typeid(Bytes(10) - Bytes(10)));
+    EXPECT_EQ(typeid(std::string), typeid(toHex(Bytes(10))));
+    EXPECT_EQ(typeid(std::string), typeid(toHex(78)));
+    EXPECT_EQ(typeid(u_int64_t), typeid(toLong(Bytes(10))));
+    EXPECT_EQ(typeid(u_int64_t), typeid(toLong(78)));
 }
 
 TEST(BytesClass, getter) {
@@ -188,6 +215,7 @@ TEST(BytesClass, popfillup) {
 }
 
 TEST(BytesClass, addByte) {
+    //testing add one byte to a bytes object
     std::vector<Bytes> bytes;
     std::vector<unsigned char> addbytes;
     Bytes testBytes1(12);
@@ -278,6 +306,7 @@ TEST(Utils, toHex) {
 }
 
 TEST(Utils, toLong) {
+    //testing function toLong
     u_int64_t max_long = -1;
     u_int64_t max_long_one_less = -2;
     u_int64_t zero = 0;
@@ -304,6 +333,7 @@ TEST(Utils, toLong) {
 }
 
 TEST(Utils, bytesOperator) {
+    //testing the overloaded operators on bytes
     std::vector<unsigned char> testv1 = {123, 43, 23, 113, 213, 32, 0};
     std::vector<unsigned char> testv2 = {89, 255, 0, 189, 11, 67, 254};
     std::vector<unsigned char> testv12 = {123 + 89, (43 + 255) % 256, 23, (113 + 189) % 256, 224, 99, 254};
