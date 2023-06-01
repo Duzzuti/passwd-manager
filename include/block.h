@@ -23,17 +23,17 @@ class Block {
     Bytes getData() const noexcept;          // getter for the data bytes
    public:
     // encrypt
-    Block();                                                                         // creates a block with a length of zero (you have to call setLen to use this block)
+    Block();                                                                             // creates a block with a length of zero (you have to call setLen to use this block)
     Block(const int len, const Bytes data, const Bytes salt, const Bytes passwordhash);  // creates a block with all neccessary data to encode
-    void setLen(const int len);                                                      // sets the len of the block (note that this only works if no other data is set yet)
-    void setData(const Bytes data);                                                  // sets the data of the block (note that the length has to be right)
-    void setPasswordHash(const Bytes passwordhash);                                  // sets the passwordhash of the block (note that the length has to be right)
-    void setSalt(const Bytes salt);                                                  // sets the salt of the block (note that the length has to be right)
-    int getLen() const noexcept;                                                     // getter for the block length
-    Bytes getEncoded() const noexcept;                                               // getter for the encoded bytes
-    bool isReadyForEncode() const noexcept;                                          // returns true if the block has all data to compute the encoded data
-    void calcEncoded();                                                              // computes the encoded data
-    bool isEncoded() const noexcept;                                                 // returns true if the data has been encoded
+    void setLen(const int len);                                                          // sets the len of the block (note that this only works if no other data is set yet)
+    void setData(const Bytes data);                                                      // sets the data of the block (note that the length has to be right)
+    void setPasswordHash(const Bytes passwordhash);                                      // sets the passwordhash of the block (note that the length has to be right)
+    void setSalt(const Bytes salt);                                                      // sets the salt of the block (note that the length has to be right)
+    int getLen() const noexcept;                                                         // getter for the block length
+    Bytes getEncoded() const noexcept;                                                   // getter for the encoded bytes
+    bool isReadyForEncode() const noexcept;                                              // returns true if the block has all data to compute the encoded data
+    void calcEncoded();                                                                  // computes the encoded data
+    bool isEncoded() const noexcept;                                                     // returns true if the data has been encoded
 
     // decrypt
     Block(const Bytes encoded);              // creates a block with only encoded data (to decrypt you have to set a passwword hash and a salt)

@@ -23,8 +23,8 @@ TEST(BlockClass, constructors) {
     EXPECT_EQ(28, block3.getEncoded().getLen());
 }
 
-TEST(BlockClass, returnType){
-    //testing the return types
+TEST(BlockClass, returnType) {
+    // testing the return types
     EXPECT_EQ(typeid(Bytes), typeid(Block().getSalt()));
     EXPECT_EQ(typeid(Bytes), typeid(Block(10, Bytes(10), Bytes(10), Bytes(10)).getSalt()));
     EXPECT_EQ(typeid(Bytes), typeid(Block().getPasswordHash()));
@@ -53,7 +53,6 @@ TEST(BlockClass, returnType){
     EXPECT_EQ(typeid(bool), typeid(b1.isDecoded()));
     EXPECT_EQ(typeid(void), typeid(b1.clear()));
 }
-
 
 TEST(BlockClass, setter) {
     // testing the setters of the Block class
