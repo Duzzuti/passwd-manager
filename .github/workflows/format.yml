@@ -8,7 +8,6 @@ on:
 jobs:
   formatting-check:
     name: Formatting Check
-    needs: clang-format
     runs-on: ubuntu-latest
     strategy:
       matrix:
