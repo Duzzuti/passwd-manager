@@ -7,6 +7,7 @@ if a functionality is used in different files or scenarios, it should be defined
 #define UTILITY_H
 
 #include <iostream>
+#include <vector>
 
 // checks if a string ends with a string
 bool endsWith(const std::string& fullString, const std::string& ending) noexcept;

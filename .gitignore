@@ -3,10 +3,12 @@ build
 
 #private folders
 deleted
+Todos.txt
 
 #vs code
 settings.json
 tasks.json
+
 # Prerequisites
 *.d
 # Compiled Object files
