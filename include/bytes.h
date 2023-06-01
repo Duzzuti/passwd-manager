@@ -19,7 +19,7 @@ class Bytes {
     void print() const noexcept;                                                       // prints the hex string of this byte vector
     void setBytes(const std::vector<unsigned char> bytes) noexcept;                    // set the bytes to a given value
     std::vector<unsigned char> getBytes() const noexcept;                              // getter for the byte vector
-    size_t getLen() const noexcept;                                                       // getter for the length in bytes
+    size_t getLen() const noexcept;                                                    // getter for the length in bytes
     void addByte(const unsigned char byte) noexcept;                                   // adds one byte at the end of the byte vector
     void addBytes(const Bytes b1) noexcept;                                            // adds a other byte object at the end of the byte vector
     std::optional<Bytes> popFirstBytes(const int num);                                 // calls getFirstBytes and removes them from the vector (if it returns a valid value)

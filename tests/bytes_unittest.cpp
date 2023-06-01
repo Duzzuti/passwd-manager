@@ -1,7 +1,7 @@
 #include "bytes.h"
-#include "rng.h"
 
 #include "gtest/gtest.h"
+#include "rng.h"
 
 TEST(BytesClass, generatingBytes) {
     // testing constructors
@@ -13,7 +13,7 @@ TEST(BytesClass, generatingBytes) {
     EXPECT_THROW(Bytes(-20), std::range_error);
 }
 
-TEST(BytesClass, returnTypes){
+TEST(BytesClass, returnTypes) {
     // testing return types
     EXPECT_EQ(typeid(void), typeid(Bytes().print()));
     EXPECT_EQ(typeid(void), typeid(Bytes().setBytes(RNG::get_random_bytes(10))));
@@ -215,7 +215,7 @@ TEST(BytesClass, popfillup) {
 }
 
 TEST(BytesClass, addByte) {
-    //testing add one byte to a bytes object
+    // testing add one byte to a bytes object
     std::vector<Bytes> bytes;
     std::vector<unsigned char> addbytes;
     Bytes testBytes1(12);
@@ -306,7 +306,7 @@ TEST(Utils, toHex) {
 }
 
 TEST(Utils, toLong) {
-    //testing function toLong
+    // testing function toLong
     u_int64_t max_long = -1;
     u_int64_t max_long_one_less = -2;
     u_int64_t zero = 0;
@@ -333,7 +333,7 @@ TEST(Utils, toLong) {
 }
 
 TEST(Utils, bytesOperator) {
-    //testing the overloaded operators on bytes
+    // testing the overloaded operators on bytes
     std::vector<unsigned char> testv1 = {123, 43, 23, 113, 213, 32, 0};
     std::vector<unsigned char> testv2 = {89, 255, 0, 189, 11, 67, 254};
     std::vector<unsigned char> testv12 = {123 + 89, (43 + 255) % 256, 23, (113 + 189) % 256, 224, 99, 254};
