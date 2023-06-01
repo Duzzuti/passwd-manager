@@ -7,8 +7,8 @@
 #include "test_settings.cpp"
 #include "test_utils.h"  //provide gen_random for random strings
 
-TEST(PWFUNCClass, returnTypes){
-    //check if the return types are correct
+TEST(PWFUNCClass, returnTypes) {
+    // check if the return types are correct
     Hash* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
 
@@ -23,19 +23,19 @@ TEST(PWFUNCClass, returnTypes){
     EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithCountAndConstantSalt(Bytes(10), 1, 1, "test")));
     EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithCountSalt(Bytes(10), 1, 1)));
     EXPECT_EQ(typeid(Bytes), typeid(pwf.chainhashWithQuadraticCountSalt(Bytes(10), 1, 10, 89, 28, 18)));
-    
+
     delete hash;
 }
 
 TEST(PWFUNCClass, input_output) {
-    //check if the input and output has the correct format
+    // check if the input and output has the correct format
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
 
     for (int i = 0; i < TEST_MAX_PW_LEN; i++) {
         Bytes rand_b;
-        rand_b.setBytes(RNG::get_random_bytes(2));  //max ca. 65000
-        u_int64_t l1 = toLong(rand_b) / 6;          //max ca. 10000 iterations
+        rand_b.setBytes(RNG::get_random_bytes(2));  // max ca. 65000
+        u_int64_t l1 = toLong(rand_b) / 6;          // max ca. 10000 iterations
         if (MIN_ITERATIONS > l1) {
             l1 = MIN_ITERATIONS;
         } else if (MAX_ITERATIONS < l1) {
@@ -74,7 +74,7 @@ TEST(PWFUNCClass, input_output) {
 }
 
 TEST(PWFUNCClass, consistency) {
-    //check if the output is consistent (same input -> same output)
+    // check if the output is consistent (same input -> same output)
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
 
@@ -112,7 +112,7 @@ TEST(PWFUNCClass, consistency) {
 }
 
 TEST(PWFUNCClass, correctness) {
-    //checks if the output is correct
+    // checks if the output is correct
     sha256* hash = new sha256();
     PwFunc pwf = PwFunc(hash);
     std::string p = "Password";

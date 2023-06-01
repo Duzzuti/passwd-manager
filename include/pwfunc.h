@@ -14,7 +14,7 @@ class PwFunc {
     you will get to the same hash.
     */
    private:
-    const Hash* hash;   // stores the hash function that should be used
+    const Hash* hash;  // stores the hash function that should be used
    public:
     // checks the password for illegal characters and length
     static ErrorStruct<bool> isPasswordValid(const std::string password) noexcept;
