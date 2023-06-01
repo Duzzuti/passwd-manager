@@ -31,5 +31,5 @@ class Timer {
         unsigned long peekTime();  // returns the timedelta between the start and stop call
         unsigned long getAverageTime(); // returns the average time per record and stop (getTime() / getLaps())
         unsigned long getTime(); // returns the timedelta between the start and stop call
-        unsigned long getLaps(); // returns the number of recordTime() and stop() calls (the total number of measurements you made)/ returns the number of laps (record and stop calls)
+        size_t getLaps(); // returns the number of recordTime() and stop() calls (the total number of measurements you made)/ returns the number of laps (record and stop calls)
 };

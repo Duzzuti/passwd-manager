@@ -12,7 +12,7 @@ void timer::start(){
 void timer::stop(){
         this->require_started();
         this->stopped = true;
-        this->duration = std::chrono::steady_clock::now() - this->start_time;
+        recordTime();
 }
 
 unsigned long timer::recordTime(){
@@ -21,6 +21,7 @@ unsigned long timer::recordTime(){
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time);
         laps.push_back(elapsed.count());
         last_time = now;
+        return elapsed.count();
 }
 
 unsigned long timer::peekTime(){
@@ -48,7 +49,7 @@ unsigned long timer::getTime(){
         return getAverageTime() * laps.size();
 }
 
-unsigned long timer::getLaps(){
+size_t timer::getLaps(){
         require_stopped();
         return laps.size();
 }
