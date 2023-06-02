@@ -1,56 +1,90 @@
+/*
+implementation of timer.h
+*/
 #include "timer.h"
 
-void timer::start(){
-    if (started) {
-        throw std::runtime_error("Timer has already been started");
-    }
-    started = true;
-    stopped = false;
-    last_time = std::chrono::steady_clock::now();
+void Timer::start(){
+    //start the timer
+    this->require_not_started();    // it has not been started
+    this->started = true;
+    this->stopped = false;
+    this->last_time = std::chrono::steady_clock::now();
 }
 
-void timer::stop(){
-        this->require_started();
-        this->stopped = true;
-        recordTime();
+void Timer::stop(){
+    //stop the timer
+    this->require_not_stopped();    // it has not been stopped
+    this->require_started();    // it has been started
+    this->recordTime();
+    this->stopped = true;
 }
 
-unsigned long timer::recordTime(){
-        require_started();
-        auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time);
-        laps.push_back(elapsed.count());
-        last_time = now;
-        return elapsed.count();
+u_int64_t Timer::recordTime(){
+    //save the time needed since the last start() or recordTime() call
+    this->require_started();    // it has been started
+    this->require_not_stopped();    // it has not been stopped
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->last_time);
+    this->laps.push_back(elapsed.count());
+    this->last_time = now;
+    return elapsed.count();
 }
 
-unsigned long timer::peekTime(){
-        require_started();
-        auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time);
-        return elapsed.count();
+u_int64_t Timer::peekTime(){
+    //returns the timedelta between the start and stop call
+    this->require_started();    // it has been started
+    this->require_not_stopped();    // it has not been stopped
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->last_time);
+    return elapsed.count();
 }
 
-unsigned long timer::getAverageTime() {
-        require_stopped();
-        if (laps.empty()) {
+u_int64_t Timer::getAverageTime() {
+    //returns the average time per record and stop (getTime() / getLaps())
+    this->require_stopped();    // it has been stopped
+    if (this->laps.empty()) {
         return 0;
-        } else {
-        unsigned long sum = 0;
-        for (auto lap : laps) {
+    } else {
+        u_int64_t sum = 0;
+        for (auto lap : this->laps) {
             sum += lap;
         }
-        return sum / laps.size();
-        }
+        return sum / this->laps.size();
+    }
 }
 
-unsigned long timer::getTime(){
-        require_stopped();
-        return getAverageTime() * laps.size();
+u_int64_t Timer::getTime(){
+    //returns the timedelta between the start and stop call
+    this->require_stopped();  // it has been stopped
+    return this->getAverageTime() * this->laps.size();
 }
 
-size_t timer::getLaps(){
-        require_stopped();
-        return laps.size();
+size_t Timer::getLaps(){
+    //returns the number of recordTime() and stop() calls (the total number of measurements you made)/ returns the number of laps (record and stop calls)
+    this->require_stopped();
+    return this->laps.size();
 }
 
+void Timer::require_started() {
+    if (!this->started) {
+        throw std::logic_error("Timer must be started before calling this method");
+    }
+}
+
+void Timer::require_stopped() {
+    if (!this->stopped) {
+        throw std::logic_error("Timer must be stopped before calling this method");
+    }
+}
+
+void Timer::require_not_started() {
+    if (this->started) {
+        throw std::logic_error("This method is only available before the timer gets started");
+    }
+}
+
+void Timer::require_not_stopped() {
+    if (this->stopped) {
+        throw std::logic_error("This method is only available before the timer gets stopped");
+    }
+}
