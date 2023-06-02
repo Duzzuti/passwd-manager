@@ -1,7 +1,6 @@
 #include "rng.h"
 
 #include <tgmath.h>
-
 #include <sstream>
 
 #include "gtest/gtest.h"
@@ -20,6 +19,12 @@ struct entropyData {
     }
     entropyData() = default;
 };
+
+TEST(RNGClass, returnTypes){
+    // tests if the return types of the RNG class are correct
+    EXPECT_EQ(typeid(unsigned char), typeid(RNG::get_random_byte()));
+    EXPECT_EQ(typeid(std::vector<unsigned char>), typeid(RNG::get_random_bytes(1)));
+}
 
 TEST(RNGClass, entropy_bytes) {
     // calculates the entropy of the RNG gen bytes
