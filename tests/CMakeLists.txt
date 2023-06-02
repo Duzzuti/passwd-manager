@@ -42,7 +42,8 @@ target_link_libraries(pman_test_rng gtest_main)
 target_link_libraries(pman_test_rng ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_rng PUBLIC ${INCLUDE_DIR})
 
-add_executable(pman_test_pwfunc main_test.cpp test_utils.cpp pwfunc_unittest.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
+add_executable(pman_test_pwfunc main_test.cpp test_utils.cpp pwfunc_unittest.cpp ${SRC_DIR}/utility.cpp
+    ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_test_pwfunc gtest_main)
 target_link_libraries(pman_test_pwfunc ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_pwfunc PUBLIC ${TEST_INCLUDE_DIR})

@@ -1,6 +1,9 @@
 #include "utility.h"
 
 #include "gtest/gtest.h"
+#include "rng.h"
+
+// testing the utility functions
 
 TEST(UtilityClass, endswith) {
     std::string s1 = "isdahfaksjdfas asdf asdf sadffsaasdfkoö-.:fp9pfdas ";
@@ -99,4 +102,15 @@ TEST(UtilityClass, getLongLen) {
     EXPECT_EQ(1, getLongLen(l9));
     EXPECT_EQ(5, getLongLen(l10));
     EXPECT_EQ(4, getLongLen(l11));
+}
+
+TEST(UtilityClass, stringToBytes) {
+    Bytes b1;
+    for (u_int64_t i = 0; i < 1000; i++) {
+        b1.setBytes(RNG::get_random_bytes(10));
+        EXPECT_EQ(b1, stringToBytes(charVecToString(b1.getBytes())));
+    }
+    std::string s1 = "moin";
+    b1.setBytes(std::vector<unsigned char>(s1.begin(), s1.end()));
+    EXPECT_EQ(b1, stringToBytes(s1));
 }

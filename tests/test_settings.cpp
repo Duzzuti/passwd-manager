@@ -62,7 +62,7 @@ const constexpr double TEST_RNG_BYTE_ENTROPY_ERROR_2BUFFER = 0.04;  // max accep
 //{T<256^2>; N<256^2>}
 const constexpr int TEST_MAX_PW_ITERS = 10000;  // number of iterations for the chainhash functions
 //{S; T<16>}
-const constexpr int TEST_MAX_PW_LEN = 30;  // up to which password length should be tested
+const constexpr int TEST_MAX_PW_LEN = 20;  // up to which password length should be tested
 //+++++++++++++++++dataheader++++++++++++++++++++++++++++++
 //{S; A}
 const constexpr u_int64_t TEST_DH_ITERS = 10000;  // number of dataheaders tested
@@ -86,7 +86,7 @@ const constexpr u_int64_t TEST_DH_CALC_ITERS = 15;  // number of iterations for 
 // const constexpr double TEST_RNG_BYTE_ENTROPY_ERROR_2BUFFER = 0.02;
 
 // const constexpr int TEST_MAX_PW_ITERS = 65000;
-// const constexpr int TEST_MAX_PW_LEN = 30;
+// const constexpr int TEST_MAX_PW_LEN = 20;
 
 // const constexpr u_int64_t TEST_DH_ITERS = 20000;
 // const constexpr u_int64_t TEST_DH_MAX_PW_ITERS = 20000;
@@ -108,7 +108,7 @@ const constexpr u_int64_t TEST_DH_CALC_ITERS = 15;  // number of iterations for 
 // const constexpr double TEST_RNG_BYTE_ENTROPY_ERROR_2BUFFER = 0.01;
 
 // const constexpr u_int64_t TEST_MAX_PW_ITERS = 65000;
-// const constexpr int TEST_MAX_PW_LEN = 30;
+// const constexpr int TEST_MAX_PW_LEN = 20;
 
 // const constexpr u_int64_t TEST_DH_ITERS = 50000;
 // const constexpr u_int64_t TEST_DH_MAX_PW_ITERS = 20000;

@@ -36,6 +36,13 @@ std::string charVecToString(const std::vector<unsigned char> v) noexcept {
     return ret;
 }
 
+Bytes stringToBytes(const std::string str) noexcept {
+    // transforms a string into a Bytes object
+    Bytes ret;
+    ret.setBytes(std::vector<unsigned char>(str.begin(), str.end()));
+    return ret;
+}
+
 unsigned int getLongLen(const u_int64_t num) noexcept {
     // gets the byte length of a long number
     unsigned int ret = 0;
