@@ -1,9 +1,9 @@
-#include "gtest/gtest.h"
-
 #include "timer.h"
 
+#include "gtest/gtest.h"
+
 TEST(TimerClass, returnTypes) {
-    //test that the return types are correct
+    // test that the return types are correct
     Timer t;
     EXPECT_EQ(typeid(void), typeid(t.start()));
     EXPECT_EQ(typeid(u_int64_t), typeid(t.recordTime()));
@@ -16,7 +16,7 @@ TEST(TimerClass, returnTypes) {
 }
 
 TEST(TimerClass, throws) {
-    //test that the timer starts and stops
+    // test that the timer starts and stops
     EXPECT_NO_THROW(Timer().start());
     EXPECT_THROW(Timer().stop(), std::logic_error);
     EXPECT_THROW(Timer().recordTime(), std::logic_error);
@@ -45,16 +45,16 @@ TEST(TimerClass, throws) {
     EXPECT_NO_THROW(t.getLaps());
 }
 
-TEST(TimerClass, behaviour){
-    //test the behaviour of the timer
+TEST(TimerClass, behaviour) {
+    // test the behaviour of the timer
     u_int64_t lap1;
     u_int64_t lap2;
     u_int64_t peek1;
     u_int64_t peek2;
     Timer t;
 
-    //testing one measurement
-    //with start, stop, recordTime, peekTime, getAverageTime, getTime, getLaps
+    // testing one measurement
+    // with start, stop, recordTime, peekTime, getAverageTime, getTime, getLaps
 
     t.start();
     usleep(100000);
@@ -74,5 +74,5 @@ TEST(TimerClass, behaviour){
     EXPECT_EQ(100, lap2);
     EXPECT_EQ(10, peek2);
     EXPECT_NEAR(340, t.getTime(), 1);
-    EXPECT_NEAR(340/3, t.getAverageTime(), 1);
+    EXPECT_NEAR(340 / 3, t.getAverageTime(), 1);
 }

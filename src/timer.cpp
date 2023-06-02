@@ -3,26 +3,26 @@ implementation of timer.h
 */
 #include "timer.h"
 
-void Timer::start(){
-    //start the timer
-    this->require_not_started();    // it has not been started
+void Timer::start() {
+    // start the timer
+    this->require_not_started();  // it has not been started
     this->started = true;
     this->stopped = false;
     this->last_time = std::chrono::steady_clock::now();
 }
 
-void Timer::stop(){
-    //stop the timer
-    this->require_not_stopped();    // it has not been stopped
-    this->require_started();    // it has been started
+void Timer::stop() {
+    // stop the timer
+    this->require_not_stopped();  // it has not been stopped
+    this->require_started();      // it has been started
     this->recordTime();
     this->stopped = true;
 }
 
-u_int64_t Timer::recordTime(){
-    //save the time needed since the last start() or recordTime() call
-    this->require_started();    // it has been started
-    this->require_not_stopped();    // it has not been stopped
+u_int64_t Timer::recordTime() {
+    // save the time needed since the last start() or recordTime() call
+    this->require_started();      // it has been started
+    this->require_not_stopped();  // it has not been stopped
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->last_time);
     this->laps.push_back(elapsed.count());
@@ -30,18 +30,18 @@ u_int64_t Timer::recordTime(){
     return elapsed.count();
 }
 
-u_int64_t Timer::peekTime(){
-    //returns the timedelta between the start and stop call
-    this->require_started();    // it has been started
-    this->require_not_stopped();    // it has not been stopped
+u_int64_t Timer::peekTime() {
+    // returns the timedelta between the start and stop call
+    this->require_started();      // it has been started
+    this->require_not_stopped();  // it has not been stopped
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->last_time);
     return elapsed.count();
 }
 
 u_int64_t Timer::getAverageTime() {
-    //returns the average time per record and stop (getTime() / getLaps())
-    this->require_stopped();    // it has been stopped
+    // returns the average time per record and stop (getTime() / getLaps())
+    this->require_stopped();  // it has been stopped
     if (this->laps.empty()) {
         return 0;
     } else {
@@ -53,14 +53,14 @@ u_int64_t Timer::getAverageTime() {
     }
 }
 
-u_int64_t Timer::getTime(){
-    //returns the timedelta between the start and stop call
+u_int64_t Timer::getTime() {
+    // returns the timedelta between the start and stop call
     this->require_stopped();  // it has been stopped
     return this->getAverageTime() * this->laps.size();
 }
 
-size_t Timer::getLaps(){
-    //returns the number of recordTime() and stop() calls (the total number of measurements you made)/ returns the number of laps (record and stop calls)
+size_t Timer::getLaps() {
+    // returns the number of recordTime() and stop() calls (the total number of measurements you made)/ returns the number of laps (record and stop calls)
     this->require_stopped();
     return this->laps.size();
 }
