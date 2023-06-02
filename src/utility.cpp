@@ -36,7 +36,7 @@ std::string charVecToString(const std::vector<unsigned char> v) noexcept {
     return ret;
 }
 
-Bytes stringToBytes(const std::string str) noexcept { 
+Bytes stringToBytes(const std::string str) noexcept {
     // transforms a string into a Bytes object
     Bytes ret;
     ret.setBytes(std::vector<unsigned char>(str.begin(), str.end()));
