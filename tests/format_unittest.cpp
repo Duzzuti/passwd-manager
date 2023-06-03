@@ -1,17 +1,16 @@
 #include "format.h"
 
 #include "gtest/gtest.h"
-
 #include "settings.h"
 
-TEST(FormatClass, returnTypes){
+TEST(FormatClass, returnTypes) {
     // tests if the return types of the functions are correct
     Format f{CHAINHASH_NORMAL};
     EXPECT_EQ(typeid(CHModes), typeid(f.getChainMode()));
     EXPECT_EQ(typeid(std::vector<NameLen>), typeid(f.getNameLenList()));
 }
 
-TEST(FormatClass, constructor){
+TEST(FormatClass, constructor) {
     // tests if the constructor throws for illegal values
     EXPECT_THROW(Format f{CHModes(0)}, std::invalid_argument);
     EXPECT_THROW(Format f{CHModes(-1)}, std::invalid_argument);
@@ -19,7 +18,7 @@ TEST(FormatClass, constructor){
     EXPECT_THROW(Format f{CHModes(MAX_CHAINHASHMODE_NUMBER + 1)}, std::invalid_argument);
 }
 
-TEST(FormatClass, getChainHashMode){
+TEST(FormatClass, getChainHashMode) {
     // tests if the getChainHashMode function returns the correct chainhash mode
     Format f{CHAINHASH_NORMAL};
     EXPECT_EQ(CHAINHASH_NORMAL, f.getChainMode());
@@ -33,7 +32,7 @@ TEST(FormatClass, getChainHashMode){
     EXPECT_EQ(CHAINHASH_QUADRATIC, f5.getChainMode());
 }
 
-TEST(FormatClass, getNameLenList){
+TEST(FormatClass, getNameLenList) {
     // tests if the getNameLenList function returns the correct list
     Format f{CHAINHASH_NORMAL};
     EXPECT_EQ(0, f.getNameLenList().size());
@@ -41,24 +40,24 @@ TEST(FormatClass, getNameLenList){
     Format f2{CHAINHASH_CONSTANT_SALT};
     std::vector<NameLen> name_lens2;
     name_lens2.push_back(NameLen{"S", 0});
-    for(int i = 0; i < f2.getNameLenList().size(); i++){
+    for (int i = 0; i < f2.getNameLenList().size(); i++) {
         EXPECT_EQ(name_lens2[i].name, f2.getNameLenList()[i].name);
         EXPECT_EQ(name_lens2[i].len, f2.getNameLenList()[i].len);
     }
-    
+
     Format f3{CHAINHASH_COUNT_SALT};
     std::vector<NameLen> name_lens3;
     name_lens3.push_back(NameLen{"SN", 8});
-    for(int i = 0; i < f3.getNameLenList().size(); i++){
+    for (int i = 0; i < f3.getNameLenList().size(); i++) {
         EXPECT_EQ(name_lens3[i].name, f3.getNameLenList()[i].name);
         EXPECT_EQ(name_lens3[i].len, f3.getNameLenList()[i].len);
     }
-    
+
     Format f4{CHAINHASH_CONSTANT_COUNT_SALT};
     std::vector<NameLen> name_lens4;
     name_lens4.push_back(NameLen{"SN", 8});
     name_lens4.push_back(NameLen{"S", 0});
-    for(int i = 0; i < f4.getNameLenList().size(); i++){
+    for (int i = 0; i < f4.getNameLenList().size(); i++) {
         EXPECT_EQ(name_lens4[i].name, f4.getNameLenList()[i].name);
         EXPECT_EQ(name_lens4[i].len, f4.getNameLenList()[i].len);
     }
@@ -69,13 +68,13 @@ TEST(FormatClass, getNameLenList){
     name_lens5.push_back(NameLen{"A", 8});
     name_lens5.push_back(NameLen{"B", 8});
     name_lens5.push_back(NameLen{"C", 8});
-    for(int i = 0; i < f5.getNameLenList().size(); i++){
+    for (int i = 0; i < f5.getNameLenList().size(); i++) {
         EXPECT_EQ(name_lens5[i].name, f5.getNameLenList()[i].name);
         EXPECT_EQ(name_lens5[i].len, f5.getNameLenList()[i].len);
     }
 }
 
-TEST(FormatClass, operatorEquals){
+TEST(FormatClass, operatorEquals) {
     // tests if the operator== works correctly
     Format f{CHAINHASH_NORMAL};
     Format f2{CHAINHASH_NORMAL};
