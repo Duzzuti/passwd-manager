@@ -5,7 +5,6 @@
 #include "settings.h"
 #include "sha256.h"
 #include "test_settings.cpp"
-#include "test_utils.h"  //provide gen_random for random strings
 #include "utility.h"
 
 TEST(PWFUNCClass, returnTypes) {
@@ -121,7 +120,7 @@ TEST(PWFUNCClass, input_output) {
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp.getLen());
         Bytes tmp2 = pwf.chainhashWithConstantSalt(password, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp2.getLen());
-        Bytes tmp3 = pwf.chainhashWithConstantSalt(password, l1, gen_random_string(100));
+        Bytes tmp3 = pwf.chainhashWithConstantSalt(password, l1, charVecToString(Bytes(100).getBytes()));
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp3.getLen());
         Bytes tmp4 = pwf.chainhashWithCountSalt(password, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp4.getLen());
@@ -129,7 +128,7 @@ TEST(PWFUNCClass, input_output) {
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp5.getLen());
         Bytes tmp6 = pwf.chainhashWithCountAndConstantSalt(password, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp6.getLen());
-        Bytes tmp7 = pwf.chainhashWithCountAndConstantSalt(password, l1, l2, gen_random_string(100));
+        Bytes tmp7 = pwf.chainhashWithCountAndConstantSalt(password, l1, l2, charVecToString(Bytes(100).getBytes()));
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp7.getLen());
         Bytes tmp8 = pwf.chainhashWithQuadraticCountSalt(password, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp8.getLen());
@@ -141,7 +140,7 @@ TEST(PWFUNCClass, input_output) {
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp10.getLen());
         Bytes tmp12 = pwf.chainhashWithConstantSalt(passwordbytes, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp12.getLen());
-        Bytes tmp13 = pwf.chainhashWithConstantSalt(passwordbytes, l1, gen_random_string(100));
+        Bytes tmp13 = pwf.chainhashWithConstantSalt(passwordbytes, l1, charVecToString(Bytes(100).getBytes()));
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp13.getLen());
         Bytes tmp14 = pwf.chainhashWithCountSalt(passwordbytes, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp14.getLen());
@@ -149,7 +148,7 @@ TEST(PWFUNCClass, input_output) {
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp15.getLen());
         Bytes tmp16 = pwf.chainhashWithCountAndConstantSalt(passwordbytes, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp16.getLen());
-        Bytes tmp17 = pwf.chainhashWithCountAndConstantSalt(passwordbytes, l1, l2, gen_random_string(100));
+        Bytes tmp17 = pwf.chainhashWithCountAndConstantSalt(passwordbytes, l1, l2, charVecToString(Bytes(100).getBytes()));
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp17.getLen());
         Bytes tmp18 = pwf.chainhashWithQuadraticCountSalt(passwordbytes, l1);
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp18.getLen());
@@ -173,7 +172,7 @@ TEST(PWFUNCClass, consistency) {
         password = charVecToString(passwordbytes.getBytes());
 
         // create same random salt
-        std::string s = gen_random_string(100);
+        std::string s = charVecToString(Bytes(100).getBytes());
 
         Bytes rand_b;
         rand_b.setBytes(RNG::get_random_bytes(2));

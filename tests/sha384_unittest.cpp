@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "test_settings.cpp"
-#include "test_utils.h"  //provide gen_random for random strings
+#include "utility.h"
 
 TEST(SHA384Class, returnTypes) {
     // testing the return types of the sha384 class
@@ -21,7 +21,7 @@ TEST(SHA384Class, att_strings) {
     sha384 shaObj = sha384();
     for (int len = 4; len < TEST_HASH_MAX_LEN; len++) {
         for (u_int64_t num = 0; num < TEST_HASH_ITERS; num++) {
-            std::string tmpstr = gen_random_string(len);
+            std::string tmpstr = charVecToString(Bytes(len).getBytes());
             Bytes tmp = shaObj.hash(tmpstr);
             EXPECT_EQ(tmp, shaObj.hash(tmpstr));
             hashv.push_back(tmp);

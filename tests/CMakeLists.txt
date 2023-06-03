@@ -19,19 +19,19 @@ target_link_libraries(pman_test_block gtest_main)
 target_link_libraries(pman_test_block ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_block PUBLIC ${INCLUDE_DIR})
 
-add_executable(pman_test_sha256 main_test.cpp sha256_unittest.cpp test_utils.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
+add_executable(pman_test_sha256 main_test.cpp sha256_unittest.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_test_sha256 gtest_main)
 target_link_libraries(pman_test_sha256 ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_sha256 PUBLIC ${INCLUDE_DIR})
 target_include_directories(pman_test_sha256 PUBLIC ${TEST_INCLUDE_DIR})
 
-add_executable(pman_test_sha384 main_test.cpp sha384_unittest.cpp test_utils.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
+add_executable(pman_test_sha384 main_test.cpp sha384_unittest.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_test_sha384 gtest_main)
 target_link_libraries(pman_test_sha384 ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_sha384 PUBLIC ${INCLUDE_DIR})
 target_include_directories(pman_test_sha384 PUBLIC ${TEST_INCLUDE_DIR})
 
-add_executable(pman_test_sha512 main_test.cpp sha512_unittest.cpp test_utils.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
+add_executable(pman_test_sha512 main_test.cpp sha512_unittest.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_test_sha512 gtest_main)
 target_link_libraries(pman_test_sha512 ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_sha512 PUBLIC ${INCLUDE_DIR})
@@ -42,7 +42,7 @@ target_link_libraries(pman_test_rng gtest_main)
 target_link_libraries(pman_test_rng ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_rng PUBLIC ${INCLUDE_DIR})
 
-add_executable(pman_test_pwfunc main_test.cpp test_utils.cpp pwfunc_unittest.cpp ${SRC_DIR}/utility.cpp
+add_executable(pman_test_pwfunc main_test.cpp pwfunc_unittest.cpp ${SRC_DIR}/utility.cpp
     ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_test_pwfunc gtest_main)
 target_link_libraries(pman_test_pwfunc ${OPENSSL_LIBRARIES} pthread)
