@@ -1,8 +1,7 @@
 #include "chainhash_data.h"
-
 #include "gtest/gtest.h"
 
-TEST(ChainHashDataClass, returnTypes){
+TEST(ChainHashDataClass, returnTypes) {
     // testing the return types of the ChainHashData class
     ChainHashData chd{Format(CHAINHASH_QUADRATIC)};
     EXPECT_EQ(typeid(bool), typeid(chd.isComplete()));
@@ -15,7 +14,7 @@ TEST(ChainHashDataClass, returnTypes){
     EXPECT_EQ(typeid(bool), typeid(chd == chd));
 }
 
-TEST(ChainHashDataClass, isComplete){
+TEST(ChainHashDataClass, isComplete) {
     // testing the isComplete methods of the ChainHashData class
     ChainHashData chd{Format(CHAINHASH_QUADRATIC)};
     EXPECT_FALSE(chd.isComplete());
@@ -75,7 +74,7 @@ TEST(ChainHashDataClass, isComplete){
     EXPECT_FALSE(chd5.isCompletedFormat(Format(CHAINHASH_QUADRATIC)));
 }
 
-TEST(ChainHashDataClass, getPartsNumber){
+TEST(ChainHashDataClass, getPartsNumber) {
     // testing the getPartsNumber method of the ChainHashData class
     ChainHashData chd{Format(CHAINHASH_NORMAL)};
     EXPECT_EQ(0, chd.getPartsNumber());
@@ -109,7 +108,7 @@ TEST(ChainHashDataClass, getPartsNumber){
     EXPECT_EQ(4, chd5.getPartsNumber());
 }
 
-TEST(ChainHashDataClass, getDataBlock){
+TEST(ChainHashDataClass, getDataBlock) {
     // testing the getDataBlock method of the ChainHashData class
     ChainHashData chd{Format(CHAINHASH_NORMAL)};
     EXPECT_EQ(Bytes(), chd.getDataBlock());
@@ -183,7 +182,7 @@ TEST(ChainHashDataClass, getDataBlock){
     EXPECT_EQ(startnum5, chd8.getDataBlock());
 }
 
-TEST(ChainHashDataClass, getPart){
+TEST(ChainHashDataClass, getPart) {
     // testing the getPart method of the ChainHashData class
     ChainHashData chd{Format(CHAINHASH_NORMAL)};
     EXPECT_THROW(chd.getPart("S"), std::logic_error);
@@ -279,7 +278,7 @@ TEST(ChainHashDataClass, getPart){
     EXPECT_THROW(chd7.getPart("D"), std::logic_error);
 }
 
-TEST(ChainHashDataClass, getLen){
+TEST(ChainHashDataClass, getLen) {
     // testing the getLen method of the ChainHashData class
 
     ChainHashData chd{Format(CHAINHASH_NORMAL)};
@@ -306,7 +305,7 @@ TEST(ChainHashDataClass, getLen){
     chd5.addBytes(Bytes(0));
     EXPECT_EQ(255, chd4.getLen());
     EXPECT_EQ(8, chd5.getLen());
-    
+
     ChainHashData chd6{Format(CHAINHASH_COUNT_SALT)};
     EXPECT_EQ(0, chd6.getLen());
     chd6.addBytes(Bytes(8));
@@ -324,7 +323,7 @@ TEST(ChainHashDataClass, getLen){
     EXPECT_EQ(32, chd7.getLen());
 }
 
-TEST(ChainHashDataClass, addBytes){
+TEST(ChainHashDataClass, addBytes) {
     // testing the addBytes method of the ChainHashData class
 
     ChainHashData chd{Format(CHAINHASH_NORMAL)};
@@ -393,11 +392,9 @@ TEST(ChainHashDataClass, addBytes){
     EXPECT_THROW(chd9.addBytes(Bytes(4)), std::logic_error);
     EXPECT_THROW(chd9.addBytes(Bytes(255)), std::logic_error);
     EXPECT_THROW(chd9.addBytes(Bytes(8)), std::logic_error);
-
-
 }
 
-TEST(ChainHashDataClass, operator){
+TEST(ChainHashDataClass, operator) {
     // testing the operator overloads of the ChainHashData class
 
     ChainHashData chd{Format(CHAINHASH_NORMAL)};
@@ -470,7 +467,7 @@ TEST(ChainHashDataClass, operator){
     EXPECT_TRUE(chd9 == chd10);
     EXPECT_FALSE(chd9 == chd11);
     EXPECT_FALSE(chd10 == chd11);
-    
+
     ChainHashData chd12{Format(CHAINHASH_COUNT_SALT)};
     ChainHashData chd13{Format(CHAINHASH_COUNT_SALT)};
     ChainHashData chd14{Format(CHAINHASH_COUNT_SALT)};
