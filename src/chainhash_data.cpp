@@ -62,9 +62,9 @@ Bytes ChainHashData::getPart(std::string data_name) const {
     throw std::invalid_argument("Could not find data name in data parts");
 }
 
-unsigned int ChainHashData::getLen() const noexcept {
+size_t ChainHashData::getLen() const noexcept {
     // gets the length of the set data parts
-    unsigned int len = 0;
+    size_t len = 0;
     for (Bytes part : this->data_parts) {
         // loops through all data parts and adds the length of each part
         len += part.getLen();
@@ -89,6 +89,7 @@ void ChainHashData::addBytes(Bytes bytes) {
     this->data_parts.push_back(bytes);  // add the new byte part
     if (this->getLen() > 255) {
         // datablock is too long
+        this->data_parts.pop_back();  // remove the last added part
         std::cout << "Length of datablock: " << this->getLen() << std::endl;
         throw std::logic_error("you added some bytes to the datablock. Now the datablock exceeded the length limit");
     }

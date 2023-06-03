@@ -25,14 +25,14 @@ class ChainHashData {
     // checks if the datablock is complete and it has the given format
     bool isCompletedFormat(Format format) const noexcept;
 
-    // gets the number of goten parts
+    // gets the number of gotten parts
     unsigned char getPartsNumber() const noexcept;
     // gets one Bytes object that is a concatination of all byte parts, throws if not complete
     Bytes getDataBlock() const;
     // gets the bytes for a given part name, throws if the part name is not found (or set)
     Bytes getPart(std::string data_name) const;
 
-    unsigned int getLen() const noexcept;  // gets the length of the datablock (the sum of all parts length)
+    size_t getLen() const noexcept;  // gets the length of the datablock (the sum of all parts length)
 
     // add bytes to the datablock; it is assumed that these bytes corresponds to the next part
     // the bytes have to be provided in the format string order

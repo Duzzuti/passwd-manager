@@ -88,6 +88,14 @@ target_link_libraries(pman_test_format gtest_main)
 target_link_libraries(pman_test_format ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_format PUBLIC ${INCLUDE_DIR})
 
+add_executable(pman_test_chainhashdata main_test.cpp chainhashdata_unittest.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/bytes.cpp
+    ${SRC_DIR}/format.cpp ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/rng.cpp
+    ${SRC_DIR}/app.cpp ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/file_modes.cpp ${SRC_DIR}/password_data.cpp
+    ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp)
+target_link_libraries(pman_test_chainhashdata gtest_main)
+target_link_libraries(pman_test_chainhashdata ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(pman_test_chainhashdata PUBLIC ${INCLUDE_DIR})
+
 add_test(bytes pman_test_bytes)
 add_test(block pman_test_block)
 add_test(sha256 pman_test_sha256)
@@ -100,3 +108,4 @@ add_test(dataheader pman_test_dataheader)
 add_test(attacker pman_test_attacker)
 add_test(timer pman_test_timer)
 add_test(format pman_test_format)
+add_test(chainhashdata pman_test_chainhashdata)
