@@ -6,6 +6,7 @@
 ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
     // checks the password for illegal format, sets an error if it is not valid
     ErrorStruct<bool> ret;
+    ret.returnValue = false;
     for (int i = 0; i < password.length(); i++) {
         // loops through the password characters
         bool found = false;
@@ -16,7 +17,7 @@ ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
             }
         }
         if (!found) {  // invalid character, is not in charset
-            ret.error = "Password conatins illegal character: '";
+            ret.error = "Password contains illegal character: '";
             ret.error += password[i];
             ret.error += "'";
             ret.success = false;  // passwd contains illegal char
@@ -29,6 +30,7 @@ ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
         ret.success = false;  // passwd too short
         return ret;
     }
+    ret.returnValue = true;
     ret.success = true;  // passwd is valid
     return ret;
 }

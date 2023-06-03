@@ -48,7 +48,7 @@ const constexpr u_int64_t TEST_RNG_ITERS_IO = 100000;  // number of calls made t
 const constexpr unsigned char TEST_RNG_BYTE_BUFFER_SIZE = 8;  // buffer size for entropy byte test
 //{S; A}
 const constexpr u_int64_t TEST_RNG_ITERS_BYTE_ENTROPY = 10000;  // num of bytes for the entropy byte test with one setting
-//{S; T<2>}
+//{S; T2}
 const constexpr unsigned char TEST_RNG_VALUES_PER_RANGE = 2;  // num of tested settings per range (lower, upper bound)
 //{N; DiTEST_RNG_ITERS_BYTE_ENTROPY, B}
 const constexpr double TEST_RNG_BYTE_ENTROPY_ERROR = 0.025;  // max accepted error for the entropy byte test with big buffer
@@ -59,14 +59,14 @@ const constexpr double TEST_RNG_BYTE_ENTROPY_ERROR_1BUFFER = 0.2;  // max accept
 //{N; DiTEST_RNG_ITERS_BYTE_ENTROPY, B}
 const constexpr double TEST_RNG_BYTE_ENTROPY_ERROR_2BUFFER = 0.04;  // max accepted error for the entropy byte test with 2 byte buffer
 //+++++++++++++++++pwfunc++++++++++++++++++++++++++++++++++
-//{T<256^2>; N<256^2>}
+//{T256^2; N256^2}
 const constexpr int TEST_MAX_PW_ITERS = 10000;  // number of iterations for the chainhash functions
-//{S; T<16>}
+//{S; T16}
 const constexpr int TEST_MAX_PW_LEN = 20;  // up to which password length should be tested
 //+++++++++++++++++dataheader++++++++++++++++++++++++++++++
 //{S; A}
 const constexpr u_int64_t TEST_DH_ITERS = 10000;  // number of dataheaders tested
-//{S; T<1000>}
+//{S; T1000}
 const constexpr u_int64_t TEST_DH_MAX_PW_ITERS = 10000;  // number of iterations for the chainhash functions in dataheader
 //{S; A}
 const constexpr u_int64_t TEST_DH_CALC_ITERS = 15;  // number of iterations for the calculation test of the dataheader
