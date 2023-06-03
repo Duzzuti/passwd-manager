@@ -4,6 +4,17 @@
 #include "test_settings.cpp"
 #include "test_utils.h"  //provide gen_random for random strings
 
+TEST(SHA256Class, returnTypes){
+    // testing the return types of the sha256 class
+    sha256 shaObj = sha256();
+    EXPECT_EQ(SHA256_DIGEST_LENGTH, shaObj.getHashSize());
+    EXPECT_EQ(typeid(int), typeid(shaObj.getHashSize()));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes())));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes(10))));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("")));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("sadfasd .-fsa")));
+}
+
 TEST(SHA256Class, att_strings) {
     // testing the sha256 function on strings
     std::vector<Bytes> hashv = std::vector<Bytes>();

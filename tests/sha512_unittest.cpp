@@ -4,6 +4,17 @@
 #include "test_settings.cpp"
 #include "test_utils.h"  //provide gen_random for random strings
 
+TEST(SHA512Class, returnTypes){
+    // testing the return types of the sha512 class
+    sha512 shaObj = sha512();
+    EXPECT_EQ(SHA512_DIGEST_LENGTH, shaObj.getHashSize());
+    EXPECT_EQ(typeid(int), typeid(shaObj.getHashSize()));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes())));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes(10))));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("")));
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("sadfasd .-fsa")));
+}
+
 TEST(SHA512Class, att_strings) {
     // testing the sha512 function on strings
     std::vector<Bytes> hashv = std::vector<Bytes>();
