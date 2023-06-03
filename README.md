@@ -28,7 +28,7 @@ $ cd <passwd-manager root folder>
 
 $ docker build -t passwd-manager . --build-arg USERNAME=`whoami`
 
-$ docker run --name passwd-manager -v <passwd-manager root folder>:/home/`whoami`/passwd-manager -it passwd-manager
+$ docker run --name passwd-manager -h passwd-manager-container -v <passwd-manager root folder>:/home/`whoami`/passwd-manager -it passwd-manager
 ```
 
 ## How to run and debug the code
