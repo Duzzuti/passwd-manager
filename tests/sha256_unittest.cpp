@@ -4,7 +4,7 @@
 #include "test_settings.cpp"
 #include "test_utils.h"  //provide gen_random for random strings
 
-TEST(SHA256Class, returnTypes){
+TEST(SHA256Class, returnTypes) {
     // testing the return types of the sha256 class
     sha256 shaObj = sha256();
     EXPECT_EQ(SHA256_DIGEST_LENGTH, shaObj.getHashSize());

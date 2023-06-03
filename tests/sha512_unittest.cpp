@@ -4,7 +4,7 @@
 #include "test_settings.cpp"
 #include "test_utils.h"  //provide gen_random for random strings
 
-TEST(SHA512Class, returnTypes){
+TEST(SHA512Class, returnTypes) {
     // testing the return types of the sha512 class
     sha512 shaObj = sha512();
     EXPECT_EQ(SHA512_DIGEST_LENGTH, shaObj.getHashSize());

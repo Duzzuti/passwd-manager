@@ -4,7 +4,7 @@
 #include "test_settings.cpp"
 #include "test_utils.h"  //provide gen_random for random strings
 
-TEST(SHA384Class, returnTypes){
+TEST(SHA384Class, returnTypes) {
     // testing the return types of the sha384 class
     sha384 shaObj = sha384();
     EXPECT_EQ(SHA384_DIGEST_LENGTH, shaObj.getHashSize());
