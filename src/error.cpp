@@ -18,16 +18,16 @@ std::string getErrorMessage(ErrorCode error_code, std::string error_info) noexce
 
         case ERR_DATABLOCK_NOT_COMPLETED:
             return "Datablock is not completed";
-        
+
         case ERR_DATABLOCK_TOO_LONG:
             return "Datablock is too long";
 
         case ERR_INVALID_PASSWD_CHAR:
             return "Password contains illegal character: '" + error_info + "'";
-        
+
         case ERR_PASSWD_TOO_SHORT:
             return "Password is too short, it has to be at least " + error_info + " characters long";
-        
+
         default:
             return "Unknown error";
     }
