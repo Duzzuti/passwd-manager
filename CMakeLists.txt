@@ -30,6 +30,15 @@ endif()
 find_package(OpenSSL REQUIRED)
 enable_testing()
 
+FetchContent_Declare(
+  plog
+  GIT_REPOSITORY https://github.com/SergiusTheBest/plog
+  GIT_TAG 1.1.9
+)
+FetchContent_MakeAvailable(plog)
+# add to includes
+include_directories(${plog_SOURCE_DIR}/include)
+
 # Print all the variables
 get_cmake_property(_variableNames VARIABLES)
 
@@ -49,18 +58,6 @@ if(NOT WIN32)
 else()
   #win32
 endif()
-
-FetchContent_Declare(
-  plog
-  GIT_REPOSITORY https://github.com/SergiusTheBest/plog
-  GIT_TAG 1.1.9
-)
-FetchContent_MakeAvailable(plog)
-message(STATUS "plog_SOURCE_DIR: ${plog_SOURCE_DIR}")
-target_include_directories(pman INTERFACE ${plog_SOURCE_DIR}/include)
-# Print target include directories
-get_target_property(_dir pman INTERFACE_INCLUDE_DIRECTORIES)
-message(STATUS "pman include dirs: ${_dir}")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_subdirectory(${TEST_DIR})
