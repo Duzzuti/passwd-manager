@@ -26,6 +26,27 @@ endif()
 find_package(OpenSSL REQUIRED)
 enable_testing()
 
+# --- Fetch FTXUI --------------------------------------------------------------
+include(FetchContent)
+ 
+set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
+set(FETCHCONTENT_QUIET FALSE)
+
+FetchContent_Declare(ftxui
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
+  GIT_TAG v4.1.1
+  GIT_PROGRESS TRUE
+  GIT_SHALLOW FALSE
+)
+
+FetchContent_GetProperties(ftxui)
+if(NOT ftxui_POPULATED)
+  FetchContent_Populate(ftxui)
+  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+ 
+# ------------------------------------------------------------------------------
+
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
