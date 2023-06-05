@@ -3,6 +3,7 @@
 #define CHAINHASHMODES_H
 
 #include "base.h"
+#include "error.h"
 #include "chainhash_data.h"
 #include "hash.h"
 

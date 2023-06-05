@@ -2,7 +2,7 @@
 #ifndef PWFUNC_H
 #define PWFUNC_H
 
-#include "base.h"
+#include "error.h"
 #include "hash.h"
 
 class PwFunc {
