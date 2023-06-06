@@ -6,6 +6,7 @@
 #include "chainhash_data.h"
 #include "chainhash_modes.h"
 #include "hash_modes.h"
+#include "settings.h"
 
 struct DataHeaderParts {
    public:
@@ -22,6 +23,31 @@ struct DataHeaderParts {
     ChainHashData chainhash2_datablock{Format(CHAINHASH_NORMAL)};  // the second datablock
     Bytes valid_passwordhash;                                      // saves the hash that should be the result of the second chainhash
     Bytes enc_salt;                                                // saves the encoded salt
+};
+
+struct DataHeaderSettingsIters {
+    // holds the settings used for the dataheader
+    // the values that should not be choosen randomly
+    public:
+    u_int64_t chainhash1_iters;                                    // iterations for the first chainhash
+    u_int64_t chainhash2_iters;                                    // iterations for the second chainhash
+    FModes file_mode;                                              // the file data mode that is choosen (content of the file)
+    HModes hash_mode{HModes(STANDARD_HASHMODE)};                   // the hash mode that is choosen (hash function)
+    CHModes chainhash1_mode = CHModes(STANDARD_CHAINHASHMODE);     // chainhash mode for the first chainhash (password -> passwordhash)
+    CHModes chainhash2_mode = CHModes(STANDARD_CHAINHASHMODE);     // chainhash mode for the second chainhash (passwordhash -> validate password)
+};
+
+struct DataHeaderSettingsTime {
+    // dataheader iterations are calculated by a time limit
+    // holds the settings used for the dataheader
+    // the values that should not be choosen randomly
+    public:
+    u_int64_t chainhash1_time;                                     // max miliseconds for the first chainhash
+    u_int64_t chainhash2_time;                                     // max miliseconds for the second chainhash
+    FModes file_mode;                                              // the file data mode that is choosen (content of the file)
+    HModes hash_mode{HModes(STANDARD_HASHMODE)};                   // the hash mode that is choosen (hash function)
+    CHModes chainhash1_mode = CHModes(STANDARD_CHAINHASHMODE);     // chainhash mode for the first chainhash (password -> passwordhash)
+    CHModes chainhash2_mode = CHModes(STANDARD_CHAINHASHMODE);     // chainhash mode for the second chainhash (passwordhash -> validate password)
 };
 
 class DataHeader {
@@ -63,6 +89,8 @@ class DataHeader {
     unsigned int getHeaderLength() const noexcept;
     // gets the dataheader parts if they are complete
     DataHeaderParts getDataHeaderParts() const;
+    //WORK
+    DataHeaderSettingsIters getSettings() const;  // gets the settings that are used for the dataheader
 };
 
 #endif  // DATAHEADER_H
