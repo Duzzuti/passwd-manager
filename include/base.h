@@ -3,8 +3,6 @@ this file contains some structs and enums that requires no import (excluding c++
 you can include this file everywhere without creating circular includes
 */
 #pragma once
-#ifndef BASE_H
-#define BASE_H
 
 #include <iostream>
 
@@ -46,4 +44,3 @@ struct NameLen {
     }
 };
 
-#endif  // BASE_H
