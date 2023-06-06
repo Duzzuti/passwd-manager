@@ -1,6 +1,5 @@
 #pragma once
-#ifndef HASHMODES_H
-#define HASHMODES_H
+
 
 #include <sstream>
 
@@ -22,4 +21,3 @@ class HashModes {
     static std::string getInfo(const HModes hash_mode);
 };
 
-#endif  // HASHMODES_H

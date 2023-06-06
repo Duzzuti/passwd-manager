@@ -1,6 +1,5 @@
 #pragma once
-#ifndef PWFUNC_H
-#define PWFUNC_H
+
 
 #include "error.h"
 #include "hash.h"
@@ -44,4 +43,3 @@ class PwFunc {
                                           const u_int64_t c = 1) const noexcept;
 };
 
-#endif  // PWFUNC_H

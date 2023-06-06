@@ -1,6 +1,5 @@
 #pragma once
-#ifndef FILEMODES_H
-#define FILEMODES_H
+
 
 #include <iostream>
 
@@ -23,4 +22,3 @@ class FileModes {
     static FileData* getFileDataClass(const FModes file_mode);
 };
 
-#endif  // FILEMODES_H

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef HASH_H
-#define HASH_H
+
+
 #include "bytes.h"
 class Hash {
     /*
@@ -15,4 +15,3 @@ class Hash {
     virtual ~Hash(){};
 };
 
-#endif  // HASH_H

@@ -1,6 +1,5 @@
 #pragma once
-#ifndef FILEDATA_H
-#define FILEDATA_H
+
 
 #include "bytes.h"
 
@@ -25,4 +24,3 @@ class FileData {
     virtual std::string getError() const noexcept = 0;  // gets the last error from other methods
 };
 
-#endif  // FILEDATA_H

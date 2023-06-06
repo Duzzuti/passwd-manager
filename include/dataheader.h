@@ -1,6 +1,5 @@
 #pragma once
-#ifndef DATAHEADER_H
-#define DATAHEADER_H
+
 
 #include "bytes.h"
 #include "chainhash_data.h"
@@ -65,4 +64,3 @@ class DataHeader {
     DataHeaderParts getDataHeaderParts() const;
 };
 
-#endif  // DATAHEADER_H

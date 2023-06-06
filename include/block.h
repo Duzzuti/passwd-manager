@@ -1,8 +1,8 @@
 #pragma once
+
 #include "blockchainBase.h"
 #include "bytes.h"
-#ifndef BLOCK_H
-#define BLOCK_H
+
 
 class Block {
     /*
@@ -45,4 +45,3 @@ class Block {
     void clear() noexcept;  // clears the block data and sets length to zero
 };
 
-#endif  //(BLOCK_H)

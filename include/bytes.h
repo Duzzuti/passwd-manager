@@ -1,6 +1,5 @@
 #pragma once
-#ifndef BYTES_H
-#define BYTES_H
+
 
 #include <iostream>
 #include <optional>
@@ -37,5 +36,3 @@ std::string toHex(const unsigned char byte) noexcept;  // returns a string (with
 std::string toHex(const Bytes b) noexcept;             // returns a string (with 2*len chars) that is the hexadecimal representation of the Bytes
 u_int64_t toLong(const unsigned char byte) noexcept;   // returns a long that is the decimal representation of the byte
 u_int64_t toLong(const Bytes b) noexcept;              // returns a long that is the decimal representation of the Bytes
-
-#endif  // BYTES_H

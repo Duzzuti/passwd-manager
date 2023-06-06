@@ -1,6 +1,5 @@
 #pragma once
-#ifndef RNG_H
-#define RNG_H
+
 
 #include <iostream>
 #include <vector>
@@ -19,4 +18,3 @@ class RNG {
     static unsigned char get_random_byte(const unsigned char lower = 0, const unsigned char upper = -1, const unsigned int buffer_size = 4);
 };
 
-#endif  // RNG_H

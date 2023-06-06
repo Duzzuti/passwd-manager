@@ -1,6 +1,5 @@
 #pragma once
-#ifndef PWDDATA_H
-#define PWDDATA_H
+
 
 #include <unordered_map>
 
@@ -23,4 +22,3 @@ class PasswordData : public FileData {
     std::string getError() const noexcept;
 };
 
-#endif  // PWDDATA_H
