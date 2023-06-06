@@ -3,6 +3,7 @@
 #define ERROR_H
 
 #include <iostream>
+#include "base.h"
 
 enum ErrorCode{
     NO_ERR,
@@ -17,7 +18,7 @@ enum ErrorCode{
 // used in a function that could fail, it returns a success type, a value and an error message
 template <typename T>
 struct ErrorStruct {
-    bool success;       // true if the operation was successful
+    SuccessType success;       // true if the operation was successful
     ErrorCode errorCode = NO_ERR;    // error code
     std::string errorInfo;  // some specific data about the error can be stored here
     T returnValue;      // return value

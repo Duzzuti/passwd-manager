@@ -164,7 +164,7 @@ std::string App::askForPasswd() const noexcept {
         getline(std::cin, pw);
         std::cout << std::endl;
         ErrorStruct err_struct = PwFunc::isPasswordValid(pw);  // checks whether the password is valid
-        if (!err_struct.success) {
+        if (!err_struct.success == SUCCESS) {
             // no success, password not valid
             std::cout << getErrorMessage(err_struct.errorCode, err_struct.errorInfo) << std::endl;  // prints the reason why the password is not valid
             continue;
@@ -265,7 +265,7 @@ Bytes App::askForHeader() const {
     // for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
     ChainHashData datablock1 = ChainHashModes::askForData(chainhash_mode1);                              // gets the datablock for chainhash1
     ErrorStruct err1 = ChainHashModes::isChainHashValid(chainhash_mode1, chainhash_iters1, datablock1);  // checks whether the chainhash1 is valid
-    if (!err1.success) {
+    if (!err1.success == SUCCESS) {
         // checks whether the datablock1 has a valid format
         throw std::length_error(getErrorMessage(err1.errorCode, err1.errorInfo));
     }
@@ -281,7 +281,7 @@ Bytes App::askForHeader() const {
     // for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
     ChainHashData datablock2 = ChainHashModes::askForData(chainhash_mode2);                              // gets the datablock for chainhash2
     ErrorStruct err2 = ChainHashModes::isChainHashValid(chainhash_mode2, chainhash_iters2, datablock2);  // checks whether the chainhash2 is valid
-    if (!err2.success) {
+    if (!err2.success == SUCCESS) {
         // checks whether the datablock2 has a valid format
         throw std::length_error(getErrorMessage(err2.errorCode, err2.errorInfo));
     }
