@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "bytes.h"
 #include "format.h"
 

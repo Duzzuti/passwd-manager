@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <unordered_map>
 
 #include "file_data.h"
@@ -21,4 +20,3 @@ class PasswordData : public FileData {
     Bytes run(const Bytes bytes);
     std::string getError() const noexcept;
 };
-

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <iostream>
 #include <vector>
 
@@ -28,4 +27,3 @@ class Format {
     // it is possible to compare two formats (depending on their format strings)
     friend bool operator==(const Format& f1, const Format& f2);
 };
-

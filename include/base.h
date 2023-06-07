@@ -43,4 +43,3 @@ struct NameLen {
         this->len = len;
     }
 };
-

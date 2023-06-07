@@ -14,4 +14,3 @@ class sha384 : public Hash {
     Bytes hash(const Bytes bytes) const;                               // performs the sha384 on a Bytes object
     Bytes hash(const std::string str) const;                           // performs the sha384 on a string
 };
-

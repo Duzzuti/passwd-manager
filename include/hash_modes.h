@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <sstream>
 
 #include "base.h"
@@ -20,4 +19,3 @@ class HashModes {
     // gets some information about that hash mode (info about the hash function)
     static std::string getInfo(const HModes hash_mode);
 };
-

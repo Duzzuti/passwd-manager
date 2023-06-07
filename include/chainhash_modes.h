@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "base.h"
 #include "chainhash_data.h"
 #include "error.h"
@@ -28,4 +27,3 @@ class ChainHashModes {
     static Bytes performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const Bytes data);
     static Bytes performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const std::string data);
 };
-

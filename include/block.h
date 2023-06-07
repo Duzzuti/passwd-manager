@@ -3,7 +3,6 @@
 #include "blockchainBase.h"
 #include "bytes.h"
 
-
 class Block {
     /*
     the block class represents one block of the blockchain
@@ -44,4 +43,3 @@ class Block {
 
     void clear() noexcept;  // clears the block data and sets length to zero
 };
-

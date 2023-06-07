@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "base.h"
 #include "bytes.h"
 #include "dataheader.h"
@@ -31,4 +30,3 @@ class BaseAttacker {
     // testing the worst case scenario: the attacker got information about the dataheader parts the saved data encrypted and decrypted
     virtual AttackerReturn attack(DataHeaderParts dhp, Bytes data, std::string decrypted_content) const noexcept = 0;
 };
-

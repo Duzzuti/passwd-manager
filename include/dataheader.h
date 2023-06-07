@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "bytes.h"
 #include "chainhash_data.h"
 #include "chainhash_modes.h"
@@ -91,4 +90,3 @@ class DataHeader {
     // WORK
     DataHeaderSettingsIters getSettings() const;  // gets the settings that are used for the dataheader
 };
-

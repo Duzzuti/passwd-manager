@@ -4,7 +4,6 @@ the run() method is the encapsulated main method
 */
 #pragma once
 
-
 #include <iostream>
 
 #include "base.h"
@@ -35,4 +34,3 @@ class App {
     // checks if the entered number (u_int64_t) is valid, underflow upper bound to get the max long value
     static bool isValidNumber(const std::string number, const bool accept_blank = false, const u_int64_t lower_bound = 0, const u_int64_t upper_bound = -1) noexcept;
 };
-

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <iostream>
 #include <vector>
 
@@ -17,4 +16,3 @@ class RNG {
     // get a random byte between a lower and upper bound
     static unsigned char get_random_byte(const unsigned char lower = 0, const unsigned char upper = -1, const unsigned int buffer_size = 4);
 };
-

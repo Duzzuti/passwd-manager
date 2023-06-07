@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "error.h"
 #include "hash.h"
 
@@ -42,4 +41,3 @@ class PwFunc {
     Bytes chainhashWithQuadraticCountSalt(const Bytes data, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t a = 1, const u_int64_t b = 1,
                                           const u_int64_t c = 1) const noexcept;
 };
-

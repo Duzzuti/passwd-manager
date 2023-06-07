@@ -14,4 +14,3 @@ class sha512 : public Hash {
     Bytes hash(const Bytes bytes) const;                               // performs the sha512 on a Bytes object
     Bytes hash(const std::string str) const;                           // performs the sha512 on a string
 };
-

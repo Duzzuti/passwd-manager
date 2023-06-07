@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <iostream>
 
 #include "base.h"
@@ -18,4 +17,3 @@ struct ErrorStruct {
 
 // returns an error message based on the error code and the error info
 std::string getErrorMessage(ErrorCode error_code, std::string error_info) noexcept;
-

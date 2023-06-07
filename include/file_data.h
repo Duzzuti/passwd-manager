@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "bytes.h"
 
 class FileData {
@@ -23,4 +22,3 @@ class FileData {
     // returns the last occured error: all methods returning a success bool should overwrite the error if success is false
     virtual std::string getError() const noexcept = 0;  // gets the last error from other methods
 };
-

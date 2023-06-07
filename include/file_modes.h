@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <iostream>
 
 #include "base.h"
@@ -21,4 +20,3 @@ class FileModes {
     // it can be used to perform data specific actions (e.g. to modify the plain data)
     static FileData* getFileDataClass(const FModes file_mode);
 };
-
