@@ -1,10 +1,10 @@
 #pragma once
 
 #include "base.h"
-#include "error.h"
 #include "bytes.h"
+#include "error.h"
 
-struct FileDataStruct{
+struct FileDataStruct {
     /*
     this struct is used to construct the FileData objects.
     These objects are used to store the data of the file in a way that the user can interact with it
@@ -32,4 +32,3 @@ class FileData {
 
     virtual ~FileData(){};
 };
-

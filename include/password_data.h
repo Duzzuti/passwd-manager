@@ -4,7 +4,7 @@
 
 #include "file_data.h"
 
-class PasswordData : public FileData{
+class PasswordData : public FileData {
    private:
     std::unordered_map<std::string, std::vector<std::string>> siteMap;
     std::string error;
@@ -25,7 +25,7 @@ class PasswordData : public FileData{
     FileDataStruct getFileData() const noexcept override final;
 
     // returns the file mode that corresponds to the file data object
-    FModes getFileMode() const noexcept override final{return FILEMODE_PASSWORD;};
+    FModes getFileMode() const noexcept override final { return FILEMODE_PASSWORD; };
 
     Bytes run(const Bytes bytes);
     std::string getError() const noexcept;

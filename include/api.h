@@ -24,15 +24,14 @@ enum Workflow {
 template <typename FData, typename = std::enable_if_t<std::is_base_of_v<FileData, FData>>>
 struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
-    //only contains value if no error occured
-    std::optional<FData> file_data;                // file data object that contains the decrypted content
-    std::optional<DataHeader> dh;                  // data header of the file
+    // only contains value if no error occured
+    std::optional<FData> file_data;  // file data object that contains the decrypted content
+    std::optional<DataHeader> dh;    // data header of the file
 };
 
 enum WorkflowState {
     // WORK
 };
-
 
 template <typename FData, typename = std::enable_if_t<std::is_base_of_v<FileData, FData>>>
 class API {
