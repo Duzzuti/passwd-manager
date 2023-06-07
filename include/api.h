@@ -20,17 +20,21 @@ enum Workflow {
     DELETE_FILE              // WORKFLOW 3: DELETE FILE
 };
 
-// struct that is returned by the API when the if you decode a file
+// struct that is returned by the API if you decode a file
+template <typename FData, typename = std::enable_if_t<std::is_base_of_v<FileData, FData>>>
 struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
-    FileData* file_data;            // file data object that contains the decrypted content
-    DataHeader dh;                  // data header of the file
+    //only contains value if no error occured
+    std::optional<FData> file_data;                // file data object that contains the decrypted content
+    std::optional<DataHeader> dh;                  // data header of the file
 };
 
 enum WorkflowState {
     // WORK
 };
 
+
+template <typename FData, typename = std::enable_if_t<std::is_base_of_v<FileData, FData>>>
 class API {
     /*
     API class between the front-end and the back-end
@@ -39,15 +43,14 @@ class API {
    private:
     Workflow current_workflow;    // the current workflow of the API (see documentation for more info)
     WorkflowState current_state;  // the current state of the API (makes sure that the API is used correctly)
-    Bytes correct_password_hash;  // the correct password hash of the file
+    Bytes correct_password_hash;  // the correct password hash for the dataheader
     DataHeader dh;                // the data header for the correct password
-    // stores all file contents that were encrypted by the algorithm
-    // only those are valid if you write to the file
-    std::vector<Bytes> encrypted_data;
-    // stores pahts to files that have the same header as one of the valid_headers
-    // the user can also add files to this approved files vector
-    std::vector<DataHeader> valid_headers;
-    std::vector<std::filesystem::path> valid_files;
+    // stores the file content that was encrypted by the algorithm
+    // only this file content is valid to write to a file
+    Bytes encrypted_data;
+    // stores the path to the file from that the data was read
+    // or an different file if the user wants to write to a different file (setFile())
+    std::filesystem::path valid_file;
 
    public:
     // constructs the API in a given worflow mode and initializes the private variables
@@ -55,19 +58,21 @@ class API {
 
     //*************** WORKFLOW 1 *****************
     // decoder: gets the file data and data header from the file
-    WorkflowDecStruct runWorflow1dec(const std::filesystem::path file_path, const std::string password) noexcept;
+    WorkflowDecStruct<FData> runWorflow1dec(const std::filesystem::path file_path, const std::string password) noexcept;
+    // you can work with the file data object gotten from the WorkflowDecStruct
     // call createDataHeader in between to change the encryption settings
     // encoder: writes the file data and data header to the file
-    // this can fail due to a non valid file. You have to call addFile() manually before calling this function again
-    ErrorStruct<bool> runWorflow1enc(const std::filesystem::path file_path, const FileData* file_data) noexcept;
+    // this can fail due to a non valid file. You have to call setFile() manually before calling this function again
+    ErrorStruct<bool> runWorflow1enc(const std::filesystem::path file_path, const FData file_data) noexcept;
 
     //*************** WORKFLOW 2 *****************
     // create a new file with createEncFile()
     // create a new dataheader first with createDataHeader()
-    // call getNewFileData() to get the file data object
+    // call getNewFileData() to get an empty file data object
+    // you can work with the file data object gotten from the getNewFileData() function
     // encoder: writes the file data and data header to the file
-    // this fails if file_path is not the same as in createEncFile(). You have to call addFile() manually before calling this function again
-    WorkflowDecStruct runWorflow2enc(const std::filesystem::path file_path, const FileData* file_data) noexcept;
+    // this fails if file_path is not the same as in createEncFile(). You have to call setFile() manually before calling this function again
+    ErrorStruct<bool> runWorflow2enc(const std::filesystem::path file_path, const FData file_data) noexcept;
 
     //*************** WORKFLOW 3 *****************
     // get the file location of the file to delete
@@ -80,7 +85,10 @@ class API {
     static ErrorStruct<std::filesystem::path> getEncDirPath() noexcept;
 
     // gets the names of all .enc files in the given directory
-    static ErrorStruct<std::vector<std::string>> getEncFileNames(std::filesystem::path dir) noexcept;
+    static ErrorStruct<std::vector<std::string>> getAllEncFileNames(std::filesystem::path dir) noexcept;
+
+    // gets the names of all .enc files in the given directory which are storing the wished file data
+    ErrorStruct<std::vector<std::string>> getRelevantFileNames(std::filesystem::path dir) noexcept;
 
     // creates a new .enc file at the given path (path contains the name of the file)
     ErrorStruct<bool> createEncFile(std::filesystem::path file_path) noexcept;
@@ -89,6 +97,7 @@ class API {
     ErrorStruct<bool> deleteEncFile(std::filesystem::path file_path) const noexcept;
 
     // gets the content of a given file path (e.g. enc_dir_path/file_name or enc_dir_path/file_name.enc)
+    // fails if the file contains data that is not encrypted by the algorithm or does not belong to the templated file data type
     ErrorStruct<Bytes> getFileContent(const std::filesystem::path file_path) noexcept;
 
     // extract the data header from the file content
@@ -114,13 +123,13 @@ class API {
     // returns the decrypted content (without the data header)
     // uses the password and data header that were passed to verifyPassword
     ErrorStruct<Bytes> getDecryptedData(const Bytes enc_data) const noexcept;
-    ErrorStruct<Bytes> getDecryptedData(const FileData* file_data) const noexcept;
+    ErrorStruct<Bytes> getDecryptedData(const FData file_data) const noexcept;
 
-    // gets the file data (requires successful verifyPassword or createDataHeader run)
-    // returns the correct file data object with the decrypted content already gotten
-    ErrorStruct<FileData*> getFileData(const Bytes dec_data) const noexcept;
-    // gets a new file data object with the no content
-    ErrorStruct<FileData*> getNewFileData() const noexcept;
+    // gets the file data object (requires successful verifyPassword or createDataHeader run)
+    // returns the templated file data object with the decrypted content
+    ErrorStruct<FData> getFileData(const Bytes dec_data) const noexcept;
+    // gets a new file data object with no content
+    ErrorStruct<FData> getNewFileData() const noexcept;
 
     // encrypts the data (requires successful verifyPassword or createDataHeader run) returns the encrypted data
     // uses the password and data header that were passed to verifyPassword
@@ -131,9 +140,9 @@ class API {
     // as well as files with a older dataheader (the dataheader was changed)
     ErrorStruct<bool> checkFile(const std::filesystem::path file_path) noexcept;
 
-    // adds a file to the valid files vector (note that this does not check if the file is valid)
-    // the user should be asked before adding a file to the valid files vector
-    ErrorStruct<bool> addFile(const std::filesystem::path file_path) noexcept;
+    // sets the valid file (note that this does not check if the file is valid)
+    // the user should be asked before setting a valid file
+    ErrorStruct<bool> setFile(const std::filesystem::path file_path) noexcept;
 
     // writes encrypted data to a file adds the dataheader (requires successful verifyPassword or createDataHeader run)
     ErrorStruct<bool> writeToFile(const std::filesystem::path file_path, const Bytes enc_data) const noexcept;
