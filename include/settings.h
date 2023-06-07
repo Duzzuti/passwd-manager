@@ -2,8 +2,7 @@
 this file stores some global used settings
 */
 #pragma once
-#ifndef SETTINGS_H
-#define SETTINGS_H
+
 
 #include <iostream>
 
@@ -39,4 +38,4 @@ const constexpr u_int64_t MIN_ITERATIONS = 1;
 // stores the minimum accepted iterations
 const constexpr u_int64_t MAX_ITERATIONS = 1000000000;
 
-#endif  // SETTINGS_H
+

@@ -1,6 +1,5 @@
 #pragma once
-#ifndef DATAHEADER_H
-#define DATAHEADER_H
+
 
 #include "bytes.h"
 #include "chainhash_data.h"
@@ -93,4 +92,3 @@ class DataHeader {
     DataHeaderSettingsIters getSettings() const;  // gets the settings that are used for the dataheader
 };
 
-#endif  // DATAHEADER_H

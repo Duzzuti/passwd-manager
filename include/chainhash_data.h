@@ -1,6 +1,5 @@
 #pragma once
-#ifndef CHAINHASHDATA_H
-#define CHAINHASHDATA_H
+
 
 #include "bytes.h"
 #include "format.h"
@@ -44,5 +43,3 @@ class ChainHashData {
     // both have to be complete, otherwise there are not equal
     friend bool operator==(const ChainHashData& chd1, const ChainHashData& chd2);
 };
-
-#endif  // CHAINHASHDATA_H

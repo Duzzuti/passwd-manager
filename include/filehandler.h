@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FILEHANDLER_H
-#define FILEHANDLER_H
 
 #include <sys/stat.h>
 
@@ -49,5 +47,3 @@ class FileHandler {
     std::string getEncryptionFilePath() const noexcept;  // gets the path to the encryption file
     Bytes getFirstBytes(const int num) const;            // reads the first num Bytes from the encryption file
 };
-
-#endif  // FILEHANDLER_H

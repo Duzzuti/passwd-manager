@@ -1,6 +1,5 @@
 #pragma once
-#ifndef CHAINHASHMODES_H
-#define CHAINHASHMODES_H
+
 
 #include "base.h"
 #include "chainhash_data.h"
@@ -30,4 +29,3 @@ class ChainHashModes {
     static Bytes performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const std::string data);
 };
 
-#endif  // HASHMODES_H

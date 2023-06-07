@@ -1,6 +1,5 @@
 #pragma once
-#ifndef BASEATTACKER_H
-#define BASEATTACKER_H
+
 
 #include "base.h"
 #include "bytes.h"
@@ -33,4 +32,3 @@ class BaseAttacker {
     virtual AttackerReturn attack(DataHeaderParts dhp, Bytes data, std::string decrypted_content) const noexcept = 0;
 };
 
-#endif  // BASEATTACKER_H

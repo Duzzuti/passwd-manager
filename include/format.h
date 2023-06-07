@@ -1,6 +1,5 @@
 #pragma once
-#ifndef FORMAT_H
-#define FORMAT_H
+
 
 #include <iostream>
 #include <vector>
@@ -30,4 +29,3 @@ class Format {
     friend bool operator==(const Format& f1, const Format& f2);
 };
 
-#endif  // FORMAT_H
