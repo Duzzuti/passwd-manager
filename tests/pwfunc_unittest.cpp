@@ -35,15 +35,15 @@ TEST(PWFUNCClass, passwordvalid) {
     // too short
     ErrorStruct<bool> tmp;
     tmp = PwFunc::isPasswordValid("testtes");
-    EXPECT_EQ(false, tmp.success);
+    EXPECT_EQ(FAIL, tmp.success);
     EXPECT_EQ("Password is too short, it has to be at least 8 characters long", getErrorMessage(tmp.errorCode, tmp.errorInfo));
     EXPECT_EQ(false, tmp.returnValue);
     tmp = PwFunc::isPasswordValid("");
-    EXPECT_EQ(false, tmp.success);
+    EXPECT_EQ(FAIL, tmp.success);
     EXPECT_EQ("Password is too short, it has to be at least 8 characters long", getErrorMessage(tmp.errorCode, tmp.errorInfo));
     EXPECT_EQ(false, tmp.returnValue);
     tmp = PwFunc::isPasswordValid("1234567");
-    EXPECT_EQ(false, tmp.success);
+    EXPECT_EQ(FAIL, tmp.success);
     EXPECT_EQ("Password is too short, it has to be at least 8 characters long", getErrorMessage(tmp.errorCode, tmp.errorInfo));
     EXPECT_EQ(false, tmp.returnValue);
 
@@ -51,11 +51,11 @@ TEST(PWFUNCClass, passwordvalid) {
     for (unsigned char c = 0; c < 255; c++) {
         tmp = PwFunc::isPasswordValid("testtes" + std::string(1, c));
         if (VALID_PASS_CHARSET.find(c) == std::string::npos) {
-            EXPECT_EQ(false, tmp.success);
+            EXPECT_EQ(FAIL, tmp.success);
             EXPECT_EQ("Password contains illegal character: '" + std::string(1, c) + "'", getErrorMessage(tmp.errorCode, tmp.errorInfo));
             EXPECT_EQ(false, tmp.returnValue);
         } else {
-            EXPECT_EQ(true, tmp.success);
+            EXPECT_EQ(SUCCESS, tmp.success);
             EXPECT_EQ("No error occurred", getErrorMessage(tmp.errorCode, tmp.errorInfo));
             EXPECT_EQ(true, tmp.returnValue);
         }
@@ -63,11 +63,11 @@ TEST(PWFUNCClass, passwordvalid) {
     for (unsigned char c = 0; c < 255; c++) {
         tmp = PwFunc::isPasswordValid(std::string(1, c) + "testtes");
         if (VALID_PASS_CHARSET.find(c) == std::string::npos) {
-            EXPECT_EQ(false, tmp.success);
+            EXPECT_EQ(FAIL, tmp.success);
             EXPECT_EQ("Password contains illegal character: '" + std::string(1, c) + "'", getErrorMessage(tmp.errorCode, tmp.errorInfo));
             EXPECT_EQ(false, tmp.returnValue);
         } else {
-            EXPECT_EQ(true, tmp.success);
+            EXPECT_EQ(SUCCESS, tmp.success);
             EXPECT_EQ("No error occurred", getErrorMessage(tmp.errorCode, tmp.errorInfo));
             EXPECT_EQ(true, tmp.returnValue);
         }
@@ -75,11 +75,11 @@ TEST(PWFUNCClass, passwordvalid) {
     for (unsigned char c = 0; c < 255; c++) {
         tmp = PwFunc::isPasswordValid("tes" + std::string(1, c) + "test");
         if (VALID_PASS_CHARSET.find(c) == std::string::npos) {
-            EXPECT_EQ(false, tmp.success);
+            EXPECT_EQ(FAIL, tmp.success);
             EXPECT_EQ("Password contains illegal character: '" + std::string(1, c) + "'", getErrorMessage(tmp.errorCode, tmp.errorInfo));
             EXPECT_EQ(false, tmp.returnValue);
         } else {
-            EXPECT_EQ(true, tmp.success);
+            EXPECT_EQ(SUCCESS, tmp.success);
             EXPECT_EQ("No error occurred", getErrorMessage(tmp.errorCode, tmp.errorInfo));
             EXPECT_EQ(true, tmp.returnValue);
         }
