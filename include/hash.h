@@ -1,6 +1,5 @@
 #pragma once
-#ifndef HASH_H
-#define HASH_H
+
 #include "bytes.h"
 class Hash {
     /*
@@ -14,5 +13,3 @@ class Hash {
     virtual Bytes hash(const std::string str) const = 0;  // a second hash function that takes a string
     virtual ~Hash(){};
 };
-
-#endif  // HASH_H

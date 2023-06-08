@@ -91,27 +91,27 @@ ErrorStruct<bool> ChainHashModes::isChainHashValid(const CHModes chainhash_mode,
     // checks if the chainhash is valid
     ErrorStruct<bool> es;
     if (!ChainHashModes::isModeValid(chainhash_mode)) {
-        es.error = "chainhash mode is not valid";
-        es.success = false;
+        es.errorCode = ERR_CHAINHASH_MODE_INVALID;
+        es.success = FAIL;
         return es;  // chainhash mode is not valid
     }
     if (!(iters > 0 && iters <= MAX_ITERATIONS)) {
-        es.error = "iteration number is not valid";
-        es.success = false;
+        es.errorCode = ERR_ITERATIONS_INVALID;
+        es.success = FAIL;
         return es;  // iteration number is not valid
     }
     if (!datablock.isCompletedFormat(Format(chainhash_mode))) {
         // checks if the datablock is already completed
-        es.error = "datablock is not yet completed";
-        es.success = false;
+        es.errorCode = ERR_DATABLOCK_NOT_COMPLETED;
+        es.success = FAIL;
         return es;
     }
     if (datablock.getLen() > 255) {
-        es.error = "datablock is too long";
-        es.success = false;
+        es.errorCode = ERR_DATABLOCK_TOO_LONG;
+        es.success = FAIL;
         return es;  // datablock is too long
     }
-    es.success = true;
+    es.success = SUCCESS;
     return es;
 }
 
@@ -146,8 +146,8 @@ ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode) {
 Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const Bytes data) {
     // performs a chainhash on bytes
     ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock);  // check if the chainhash is valid
-    if (!err.success) {
-        throw std::invalid_argument(err.error);  // chainhash is not valid
+    if (!err.success == SUCCESS) {
+        throw std::invalid_argument(getErrorMessage(err.errorCode, err.errorInfo));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
     std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared
@@ -182,8 +182,8 @@ Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int
 Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const std::string data) {
     // performs a chainhash on a string
     ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock);  // check if the chainhash is valid
-    if (!err.success) {
-        throw std::invalid_argument(err.error);  // chainhash is not valid
+    if (!err.success == SUCCESS) {
+        throw std::invalid_argument(getErrorMessage(err.errorCode, err.errorInfo));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
     std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared

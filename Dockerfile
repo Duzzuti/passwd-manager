@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install locales -y
 RUN locale-gen en_US.UTF-8  
 ENV LANG en_US.UTF-8  
 ENV LANGUAGE en_US:en  
-ENV LC_ALL en_US.UTF-8  
+ENV LC_ALL en_US.UTF-8
 
 RUN useradd -m -s /bin/bash $USERNAME
 USER $USERNAME

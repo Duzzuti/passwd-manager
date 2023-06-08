@@ -1,6 +1,5 @@
 #pragma once
-#ifndef SHA512_H
-#define SHA512_H
+
 #include <openssl/sha.h>
 
 #include "hash.h"
@@ -15,5 +14,3 @@ class sha512 : public Hash {
     Bytes hash(const Bytes bytes) const;                               // performs the sha512 on a Bytes object
     Bytes hash(const std::string str) const;                           // performs the sha512 on a string
 };
-
-#endif  // SHA512_H

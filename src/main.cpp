@@ -1,4 +1,9 @@
 #include <iostream>
+// include plog
+#include <plog/Appenders/ColorConsoleAppender.h>
+#include <plog/Formatters/TxtFormatter.h>
+#include <plog/Init.h>
+#include <plog/Log.h>
 
 #include "app.h"
 
@@ -19,5 +24,10 @@ int main(int argc, char* argv[]) {
     //     }
     // }
     App app;
+    // init plog
+    static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
+    plog::init(plog::verbose, &consoleAppender);
+    PLOG_DEBUG << "Message to show that debugging logs work."
+                  " Initializing app...";
     return app.run();
 }

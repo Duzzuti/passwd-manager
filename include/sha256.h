@@ -1,6 +1,5 @@
 #pragma once
-#ifndef SHA256_H
-#define SHA256_H
+
 #include <openssl/sha.h>
 
 #include "hash.h"
@@ -15,5 +14,3 @@ class sha256 : public Hash {
     Bytes hash(const Bytes bytes) const;                               // performs the sha256 on a Bytes object
     Bytes hash(const std::string str) const;                           // performs the sha256 on a string
 };
-
-#endif  // SHA256_H

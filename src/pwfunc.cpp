@@ -17,21 +17,20 @@ ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
             }
         }
         if (!found) {  // invalid character, is not in charset
-            ret.error = "Password contains illegal character: '";
-            ret.error += password[i];
-            ret.error += "'";
-            ret.success = false;  // passwd contains illegal char
+            ret.errorCode = ERR_INVALID_PASSWD_CHAR;
+            ret.errorInfo = password[i];
+            ret.success = FAIL;  // passwd contains illegal char
             return ret;
         }
     }
     if (password.length() < MIN_PASS_LEN) {  // password length does not match the min length
-        ret.error = "Password is too short, it has to be at least " + std::to_string(MIN_PASS_LEN);
-        ret.error += " characters long";
-        ret.success = false;  // passwd too short
+        ret.errorCode = ERR_PASSWD_TOO_SHORT;
+        ret.errorInfo = std::to_string(MIN_PASS_LEN);
+        ret.success = FAIL;  // passwd too short
         return ret;
     }
     ret.returnValue = true;
-    ret.success = true;  // passwd is valid
+    ret.success = SUCCESS;  // passwd is valid
     return ret;
 }
 

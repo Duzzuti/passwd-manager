@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FILEMODES_H
-#define FILEMODES_H
 
 #include <iostream>
 
@@ -20,7 +18,5 @@ class FileModes {
     static bool isModeValid(const FModes file_mode) noexcept;
     // gets the FileData class that matches with the given file mode
     // it can be used to perform data specific actions (e.g. to modify the plain data)
-    static FileData* getFileDataClass(const FModes file_mode);
+    // static FileData* getFileDataClass(const FModes file_mode);
 };
-
-#endif  // FILEMODES_H
