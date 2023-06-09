@@ -1,16 +1,42 @@
+
 #include "cli.h"
 
-#include "ftxui/component/button.hpp"
-#include "ftxui/component/checkbox.hpp"
-#include "ftxui/component/container.hpp"
-#include "ftxui/component/input.hpp"
-#include "ftxui/component/menu.hpp"
-#include "ftxui/component/radiobox.hpp"
-#include "ftxui/component/screen_interactive.hpp"
-#include "ftxui/component/toggle.hpp"
-#include "ftxui/dom/elements.hpp"
+#include <iostream>
 
-/**
- * Here goes the code for the CLI frontend
- * 
-*/
+#include "ftxui/dom/elements.hpp"
+#include "ftxui/screen/screen.hpp"
+#include "ftxui/screen/string.hpp"
+
+using namespace ftxui;
+
+int cli_example() {
+    auto summary = [&] {
+    auto content = vbox({
+        hbox({text(L"- done:   "), text(L"3") | bold}) | color(Color::Green),
+        hbox({text(L"- active: "), text(L"2") | bold}) | color(Color::RedLight),
+        hbox({text(L"- queue:  "), text(L"9") | bold}) | color(Color::Red),
+    });
+    return window(text(L" Summary "), content);
+    };
+
+    auto document =  //
+        vbox({
+            hbox({
+                summary(),
+                summary(),
+                summary() | flex,
+            }),
+            summary(),
+            summary(),
+        });
+
+    // Limit the size of the document to 80 char.
+    document = document | size(WIDTH, LESS_THAN, 80);
+
+    auto screen = Screen::Create(Dimension::Full(), Dimension::Fit(document));
+    Render(screen, document);
+
+    std::cout << screen.ToString() << '\0' << std::endl;
+
+    return EXIT_SUCCESS;
+}

@@ -5,6 +5,7 @@
 #include <plog/Init.h>
 #include <plog/Log.h>
 
+#include "cli.h"
 #include "app.h"
 
 int main(int argc, char* argv[]) {
@@ -23,6 +24,7 @@ int main(int argc, char* argv[]) {
     //         continue;
     //     }
     // }
+    cli_example();
     App app;
     // init plog
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
