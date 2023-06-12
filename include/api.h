@@ -34,8 +34,9 @@ enum WorkflowState {
 };
 
 
-template <typename FData, typename = std::enable_if_t<std::is_base_of_v<FileData, FData>>>
+template <typename FData>
 class API {
+    static_assert(std::is_base_of_v<FileData, FData>, "FData must be derived from FileData");
     /*
     API class between the front-end and the back-end
     encapsulates the backend implementations
@@ -79,7 +80,7 @@ class API {
     // delete the file with deleteEncFile()
 
     // gets the path of the current working directory
-    static ErrorStruct<std::filesystem::path> getCurrentDirPath() noexcept;
+    static std::filesystem::path getCurrentDirPath() noexcept;
 
     // gets the path of the directory where the .enc files are stored at default
     static ErrorStruct<std::filesystem::path> getEncDirPath() noexcept;
