@@ -39,13 +39,12 @@ struct ErrorStruct {
 
 // returns an error message based on the error code and the error info
 template <typename T>
-std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg=true) noexcept {
-    //verbose_err_msg triggers the return of a more detailed error message
-    // returns an error message based on the error code and the error info
+std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
+    // verbose_err_msg triggers the return of a more detailed error message
+    //  returns an error message based on the error code and the error info
     std::string err_msg = "";
-    if(verbose_err_msg)
-        err_msg = "\nException message: " + err.what;
-        
+    if (verbose_err_msg) err_msg = "\nException message: " + err.what;
+
     switch (err.errorCode) {
         case NO_ERR:
             return "No error occurred" + err_msg;
@@ -76,7 +75,7 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg=true) noexc
 
         case ERR_ITERATIONS_INVALID:
             return "Iterations number is invalid" + err_msg;
-        
+
         case ERR_LEN_INVALID:
             return "Invalid length from object: " + err.errorInfo + err_msg;
 
