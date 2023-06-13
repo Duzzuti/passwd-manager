@@ -22,7 +22,7 @@ TEST(DataHeaderClass, Constructor) {
             EXPECT_THROW(DataHeader(HModes(hash_modes[i])), std::invalid_argument);
         } else {
             EXPECT_NO_THROW(DataHeader(HModes(hash_modes[i])));
-            EXPECT_EQ(hash_sizes[i-1], DataHeader(HModes(hash_modes[i])).getHashSize());
+            EXPECT_EQ(hash_sizes[i - 1], DataHeader(HModes(hash_modes[i])).getHashSize());
         }
     }
     // some edge cases
