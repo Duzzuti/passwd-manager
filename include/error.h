@@ -4,26 +4,26 @@
 
 #include "base.h"
 
-enum ErrorCode { 
-    NO_ERR, 
+enum ErrorCode {
+    NO_ERR,
     ERR,
     ERR_FILEMODE_INVALID,
     ERR_HASHMODE_INVALID,
-    ERR_CHAINHASH_MODE_INVALID, 
+    ERR_CHAINHASH_MODE_INVALID,
     ERR_CHAINHASHMODE_FORMAT_INVALID,
     ERR_CHAINHASH_DATAPART_INVALID,
     ERR_CHAINHASH_DATABLOCK_OUTOFRANGE,
     ERR_CHAINHASH_DATABLOCK_ALREADY_COMPLETED,
     ERR_CHAINHASH1_INVALID,
-    ERR_ITERATIONS_INVALID, 
-    ERR_DATABLOCK_NOT_COMPLETED, 
-    ERR_DATABLOCK_TOO_LONG, 
-    ERR_INVALID_PASSWD_CHAR, 
+    ERR_ITERATIONS_INVALID,
+    ERR_DATABLOCK_NOT_COMPLETED,
+    ERR_DATABLOCK_TOO_LONG,
+    ERR_INVALID_PASSWD_CHAR,
     ERR_PASSWD_TOO_SHORT,
     ERR_EMPTY_FILEPATH,
     ERR_INVALID_FILEPATH,
     ERR_NOT_ENOUGH_DATA
-    };
+};
 
 // used in a function that could fail, it returns a success type, a value and an error message
 template <typename T>
@@ -46,7 +46,7 @@ std::string getErrorMessage(ErrorStruct<T> err) noexcept {
 
         case ERR_CHAINHASH_MODE_INVALID:
             return "Chainhash mode is invalid" + err_msg;
-        
+
         case ERR_CHAINHASHMODE_FORMAT_INVALID:
             return "Chainhash mode format is invalid for chainhash mode: " + err.errorInfo + err_msg;
 
@@ -81,22 +81,20 @@ std::string getErrorMessage(ErrorStruct<T> err) noexcept {
             return "Password is too short, it has to be at least " + err.errorInfo + " characters long" + err_msg;
 
         case ERR_EMPTY_FILEPATH:
-            if (err.errorInfo.empty())
-                return "Filepath is empty" + err_msg;
+            if (err.errorInfo.empty()) return "Filepath is empty" + err_msg;
             return err.errorInfo + " filepath is empty" + err_msg;
 
         case ERR_INVALID_FILEPATH:
             return "Filepath is invalid: " + err.errorInfo + err_msg;
-        
+
         case ERR_NOT_ENOUGH_DATA:
             return "Not enough data to read information: " + err.errorInfo + err_msg;
-        
+
         case ERR_FILEMODE_INVALID:
             return "File mode is invalid: " + err.errorInfo + err_msg;
 
         case ERR:
-            if(err.errorInfo.empty())
-                return "An error occurred" + err_msg;
+            if (err.errorInfo.empty()) return "An error occurred" + err_msg;
             return err.errorInfo + err_msg;
 
         default:
