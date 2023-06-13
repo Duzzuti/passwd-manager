@@ -89,7 +89,7 @@ ErrorStruct<Bytes> API<FData>::getData(const Bytes file_content) noexcept {
     err.errorCode = err_header.errorCode;
     err.errorInfo = err_header.errorInfo;
     err.what = err_header.what;
-    if(err_header.success) {
+    if (err_header.success) {
         Bytes data = file_content_copy;
         // remove the header from the data
         data.popFirstBytes(err_header.returnValue.getLen());
