@@ -47,7 +47,7 @@ void DataHeader::setChainHash1(const CHModes mode, const u_int64_t iters, const 
     ErrorStruct err = ChainHashModes::isChainHashValid(mode, iters, datablock);  // validates the chainhash
     if (!err.success == SUCCESS) {
         // validates the chainhash
-        throw std::invalid_argument(getErrorMessage(err.errorCode, err.errorInfo));
+        throw std::invalid_argument(getErrorMessage(err));
     }
     // set the information to the object
     this->dh.chainhash1_mode = mode;
@@ -64,7 +64,7 @@ void DataHeader::setChainHash2(const CHModes mode, const u_int64_t iters, const 
     ErrorStruct err = ChainHashModes::isChainHashValid(mode, iters, datablock);  // validates the chainhash
     if (!err.success == SUCCESS) {
         // validates the chainhash
-        throw std::invalid_argument(getErrorMessage(err.errorCode, err.errorInfo));
+        throw std::invalid_argument(getErrorMessage(err));
     }
     // set the information to the object
     this->dh.chainhash2_mode = mode;

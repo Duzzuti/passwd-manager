@@ -147,7 +147,7 @@ Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int
     // performs a chainhash on bytes
     ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock);  // check if the chainhash is valid
     if (!err.success == SUCCESS) {
-        throw std::invalid_argument(getErrorMessage(err.errorCode, err.errorInfo));  // chainhash is not valid
+        throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
     std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared
@@ -183,7 +183,7 @@ Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int
     // performs a chainhash on a string
     ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock);  // check if the chainhash is valid
     if (!err.success == SUCCESS) {
-        throw std::invalid_argument(getErrorMessage(err.errorCode, err.errorInfo));  // chainhash is not valid
+        throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
     std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared

@@ -166,7 +166,7 @@ std::string App::askForPasswd() const noexcept {
         ErrorStruct err_struct = PwFunc::isPasswordValid(pw);  // checks whether the password is valid
         if (!err_struct.success == SUCCESS) {
             // no success, password not valid
-            std::cout << getErrorMessage(err_struct.errorCode, err_struct.errorInfo) << std::endl;  // prints the reason why the password is not valid
+            std::cout << getErrorMessage(err_struct) << std::endl;  // prints the reason why the password is not valid
             continue;
         }
         break;
@@ -267,7 +267,7 @@ Bytes App::askForHeader() const {
     ErrorStruct err1 = ChainHashModes::isChainHashValid(chainhash_mode1, chainhash_iters1, datablock1);  // checks whether the chainhash1 is valid
     if (!err1.success == SUCCESS) {
         // checks whether the datablock1 has a valid format
-        throw std::length_error(getErrorMessage(err1.errorCode, err1.errorInfo));
+        throw std::length_error(getErrorMessage(err1));
     }
     unsigned char datablock_len1 = datablock1.getLen();  // gets the length in Bytes from the datablock1
     // ask for chainhash2 data, which is used to get the passwordhashhash from the passwordhash (for validating the passwordhash)
@@ -283,7 +283,7 @@ Bytes App::askForHeader() const {
     ErrorStruct err2 = ChainHashModes::isChainHashValid(chainhash_mode2, chainhash_iters2, datablock2);  // checks whether the chainhash2 is valid
     if (!err2.success == SUCCESS) {
         // checks whether the datablock2 has a valid format
-        throw std::length_error(getErrorMessage(err2.errorCode, err2.errorInfo));
+        throw std::length_error(getErrorMessage(err2));
     }
     unsigned char datablock_len2 = datablock2.getLen();  // gets the length in Bytes from the datablock2
 
