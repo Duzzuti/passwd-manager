@@ -39,7 +39,7 @@ unsigned int DataHeader::getHeaderLength() const noexcept {
     }
 }
 
-unsigned char DataHeader::getHashSize() const noexcept{
+unsigned char DataHeader::getHashSize() const noexcept {
     // gets the hash size
     return this->hash_size;
 }
@@ -124,40 +124,40 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
-    try{
+    try {
         fmode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "File mode";
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the file mode";
         err.what = ex.what();
         return err;
     }
-    
+
     // ********************* HASH FUNCTION *********************
     unsigned char hmode;
-    try{
+    try {
         hmode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
         *this = DataHeader(HModes(hmode));
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Hash mode";
         err.what = ex.what();
         return err;
-    }catch (const std::invalid_argument& ex) {
+    } catch (const std::invalid_argument& ex) {
         // the hash mode is invalid
         err.errorCode = ERR_HASHMODE_INVALID;
         err.errorInfo = hmode;
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the hash mode";
@@ -166,15 +166,15 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
 
     // setting the file data mode
-    try{
+    try {
         this->setFileDataMode(FModes(fmode));
-    }catch (const std::invalid_argument& ex) {
+    } catch (const std::invalid_argument& ex) {
         // the file mode is invalid
         err.errorCode = ERR_FILEMODE_INVALID;
         err.errorInfo = fmode;
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while setting the file mode";
@@ -186,23 +186,23 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     Format format1{CHModes(CHAINHASH_NORMAL)};
     ChainHashData chd1{format1};
     unsigned char ch1mode;
-    try{
+    try {
         ch1mode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
         format1 = Format(CHModes(ch1mode));
         chd1 = ChainHashData(format1);
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash mode 1";
         err.what = ex.what();
         return err;
-    }catch (const std::invalid_argument& ex) {
+    } catch (const std::invalid_argument& ex) {
         // the chainhash mode is invalid
         err.errorCode = ERR_CHAINHASHMODE_FORMAT_INVALID;
         err.errorInfo = ch1mode;
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the chainhash mode 1";
@@ -211,15 +211,15 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
     // chainhash 1 iters
     u_int64_t ch1iters;
-    try{
+    try {
         ch1iters = toLong(file_bytes_copy.popFirstBytes(8).value());
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash iters 1";
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the chainhash iters 1";
@@ -228,15 +228,15 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
     // chainhash 1 data block len
     unsigned char ch1datablocklen;
-    try{
+    try {
         ch1datablocklen = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash data block len 1";
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the chainhash data block len 1";
@@ -244,36 +244,36 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
         return err;
     }
     // chainhash 1 data block
-    for(NameLen nl: format1.getNameLenList()){
+    for (NameLen nl : format1.getNameLenList()) {
         Bytes tmp;
-        try{
+        try {
             tmp = file_bytes_copy.popFirstBytes(nl.len).value();
             chd1.addBytes(tmp);
-        }catch (const std::bad_optional_access& ex) {
+        } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Chainhash data block 1";
             err.what = ex.what();
             return err;
-        }catch (const std::invalid_argument& ex) {
+        } catch (const std::invalid_argument& ex) {
             // the bytes have the wrong len
             err.errorCode = ERR_CHAINHASH_DATAPART_INVALID;
             err.errorInfo = toHex(tmp);
             err.what = ex.what();
             return err;
-        }catch (const std::length_error& ex) {
+        } catch (const std::length_error& ex) {
             // adding to much bytes
             err.errorCode = ERR_CHAINHASH_DATABLOCK_OUTOFRANGE;
             err.errorInfo = toHex(tmp);
             err.what = ex.what();
             return err;
-        }catch (const std::logic_error& ex) {
+        } catch (const std::logic_error& ex) {
             // adding but its completed
             err.errorCode = ERR_CHAINHASH_DATABLOCK_ALREADY_COMPLETED;
             err.errorInfo = toHex(tmp);
             err.what = ex.what();
             return err;
-        }catch (const std::exception& ex) {
+        } catch (const std::exception& ex) {
             // some other error occured
             err.errorCode = ERR;
             err.errorInfo = "An error occured while reading the chainhash data block 1";
@@ -282,14 +282,14 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
         }
     }
     // chainhash 1
-    try{
+    try {
         this->setChainHash1(CHModes(ch1mode), ch1iters, ch1datablocklen, chd1);
-    }catch(const std::invalid_argument& ex){
+    } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         err.errorCode = ERR_CHAINHASH1_INVALID;
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while setting the chainhash data block 1";
@@ -301,23 +301,23 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     Format format2{CHModes(CHAINHASH_NORMAL)};
     ChainHashData chd2{format2};
     unsigned char ch2mode;
-    try{
+    try {
         ch2mode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
         format2 = Format(CHModes(ch2mode));
         chd2 = ChainHashData(format2);
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash mode 2";
         err.what = ex.what();
         return err;
-    }catch (const std::invalid_argument& ex) {
+    } catch (const std::invalid_argument& ex) {
         // the chainhash mode is invalid
         err.errorCode = ERR_CHAINHASHMODE_FORMAT_INVALID;
         err.errorInfo = ch2mode;
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the chainhash mode 2";
@@ -326,15 +326,15 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
     // chainhash 2 iters
     u_int64_t ch2iters;
-    try{
+    try {
         ch2iters = toLong(file_bytes_copy.popFirstBytes(8).value());
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash iters 2";
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the chainhash iters 2";
@@ -343,15 +343,15 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
     // chainhash 2 data block len
     unsigned char ch2datablocklen;
-    try{
+    try {
         ch2datablocklen = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash data block len 2";
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while reading the chainhash data block len 2";
@@ -359,36 +359,36 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
         return err;
     }
     // chainhash 2 data block
-    for(NameLen nl: format2.getNameLenList()){
+    for (NameLen nl : format2.getNameLenList()) {
         Bytes tmp;
-        try{
+        try {
             tmp = file_bytes_copy.popFirstBytes(nl.len).value();
             chd2.addBytes(tmp);
-        }catch (const std::bad_optional_access& ex) {
+        } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Chainhash data block 2";
             err.what = ex.what();
             return err;
-        }catch (const std::invalid_argument& ex) {
+        } catch (const std::invalid_argument& ex) {
             // the bytes have the wrong len
             err.errorCode = ERR_CHAINHASH_DATAPART_INVALID;
             err.errorInfo = toHex(tmp);
             err.what = ex.what();
             return err;
-        }catch (const std::length_error& ex) {
+        } catch (const std::length_error& ex) {
             // adding to much bytes
             err.errorCode = ERR_CHAINHASH_DATABLOCK_OUTOFRANGE;
             err.errorInfo = toHex(tmp);
             err.what = ex.what();
             return err;
-        }catch (const std::logic_error& ex) {
+        } catch (const std::logic_error& ex) {
             // adding but its completed
             err.errorCode = ERR_CHAINHASH_DATABLOCK_ALREADY_COMPLETED;
             err.errorInfo = toHex(tmp);
             err.what = ex.what();
             return err;
-        }catch (const std::exception& ex) {
+        } catch (const std::exception& ex) {
             // some other error occured
             err.errorCode = ERR;
             err.errorInfo = "An error occured while reading the chainhash data block 2";
@@ -397,14 +397,14 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
         }
     }
     // chainhash 2
-    try{
+    try {
         this->setChainHash2(CHModes(ch2mode), ch2iters, ch2datablocklen, chd2);
-    }catch(const std::invalid_argument& ex){
+    } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         err.errorCode = ERR_CHAINHASH2_INVALID;
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while setting the chainhash data block 2";
@@ -414,22 +414,22 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
 
     // password validator hash
     Bytes tmp;
-    try{
+    try {
         tmp = file_bytes_copy.popFirstBytes(this->getHashSize()).value();
         this->setValidPasswordHashBytes(tmp);
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Password validator hash";
         err.what = ex.what();
         return err;
-    }catch (const std::length_error& ex) {
+    } catch (const std::length_error& ex) {
         // password validator hash has the wrong len
         err.errorCode = ERR_LEN_INVALID;
         err.errorInfo = toHex(tmp);
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while setting and reading the password validator hash";
@@ -437,23 +437,23 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
         return err;
     }
 
-    // encrypted salt 
-    try{
+    // encrypted salt
+    try {
         tmp = file_bytes_copy.popFirstBytes(this->getHashSize()).value();
         this->setSalt(tmp);
-    }catch (const std::bad_optional_access& ex) {
+    } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Password salt hash";
         err.what = ex.what();
         return err;
-    }catch (const std::length_error& ex) {
+    } catch (const std::length_error& ex) {
         // salt hash has the wrong len
         err.errorCode = ERR_LEN_INVALID;
         err.errorInfo = toHex(tmp);
         err.what = ex.what();
         return err;
-    }catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = "An error occured while setting and reading the salt hash";
