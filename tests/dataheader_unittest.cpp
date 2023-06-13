@@ -11,6 +11,7 @@ TEST(DataHeaderClass, Constructor) {
     // testing the dataheader constructor
     // creating a list of hash modes, where the first (0) and the last (MAX_HASHMODE +1) are invalid
     std::vector<unsigned char> hash_modes;
+    std::vector<unsigned char> hash_sizes = {32, 48, 64};
     for (int i = 0; i <= MAX_HASHMODE_NUMBER + 1; i++) {
         hash_modes.push_back(i);
     }
@@ -21,6 +22,7 @@ TEST(DataHeaderClass, Constructor) {
             EXPECT_THROW(DataHeader(HModes(hash_modes[i])), std::invalid_argument);
         } else {
             EXPECT_NO_THROW(DataHeader(HModes(hash_modes[i])));
+            EXPECT_EQ(hash_sizes[i-1], DataHeader(HModes(hash_modes[i])).getHashSize());
         }
     }
     // some edge cases
