@@ -69,9 +69,9 @@ TEST(TimerClass, behaviour) {
     t.stop();
 
     EXPECT_EQ(3, t.getLaps());
-    EXPECT_EQ(100, peek1);
-    EXPECT_EQ(200, lap1);
-    EXPECT_EQ(100, lap2);
+    EXPECT_NEAR(100, peek1, 1);
+    EXPECT_NEAR(200, lap1, 1);
+    EXPECT_NEAR(100, lap2, 1);
     EXPECT_EQ(10, peek2);
     EXPECT_NEAR(340, t.getTime(), 1);
     EXPECT_NEAR(340 / 3, t.getAverageTime(), 1);

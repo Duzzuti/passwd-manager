@@ -17,7 +17,7 @@ ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
             }
         }
         if (!found) {  // invalid character, is not in charset
-            ret.errorCode = ERR_INVALID_PASSWD_CHAR;
+            ret.errorCode = ERR_PASSWD_CHAR_INVALID;
             ret.errorInfo = password[i];
             ret.success = FAIL;  // passwd contains illegal char
             return ret;

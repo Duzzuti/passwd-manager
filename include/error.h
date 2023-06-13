@@ -15,13 +15,15 @@ enum ErrorCode {
     ERR_CHAINHASH_DATABLOCK_OUTOFRANGE,
     ERR_CHAINHASH_DATABLOCK_ALREADY_COMPLETED,
     ERR_CHAINHASH1_INVALID,
+    ERR_CHAINHASH2_INVALID,
     ERR_ITERATIONS_INVALID,
     ERR_DATABLOCK_NOT_COMPLETED,
     ERR_DATABLOCK_TOO_LONG,
-    ERR_INVALID_PASSWD_CHAR,
+    ERR_PASSWD_CHAR_INVALID,
+    ERR_LEN_INVALID,
     ERR_PASSWD_TOO_SHORT,
     ERR_EMPTY_FILEPATH,
-    ERR_INVALID_FILEPATH,
+    ERR_FILEPATH_INVALID,
     ERR_NOT_ENOUGH_DATA
 };
 
@@ -37,9 +39,13 @@ struct ErrorStruct {
 
 // returns an error message based on the error code and the error info
 template <typename T>
-std::string getErrorMessage(ErrorStruct<T> err) noexcept {
+std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg=true) noexcept {
+    //verbose_err_msg triggers the return of a more detailed error message
     // returns an error message based on the error code and the error info
-    std::string err_msg = "\nException message: " + err.what;
+    std::string err_msg = "";
+    if(verbose_err_msg)
+        err_msg = "\nException message: " + err.what;
+        
     switch (err.errorCode) {
         case NO_ERR:
             return "No error occurred" + err_msg;
@@ -62,11 +68,17 @@ std::string getErrorMessage(ErrorStruct<T> err) noexcept {
         case ERR_CHAINHASH1_INVALID:
             return "Chainhash1 is invalid" + err_msg;
 
+        case ERR_CHAINHASH2_INVALID:
+            return "Chainhash2 is invalid" + err_msg;
+
         case ERR_HASHMODE_INVALID:
             return "Hashmode is invalid: " + err.errorInfo + err_msg;
 
         case ERR_ITERATIONS_INVALID:
             return "Iterations number is invalid" + err_msg;
+        
+        case ERR_LEN_INVALID:
+            return "Invalid length from object: " + err.errorInfo + err_msg;
 
         case ERR_DATABLOCK_NOT_COMPLETED:
             return "Datablock is not completed" + err_msg;
@@ -74,7 +86,7 @@ std::string getErrorMessage(ErrorStruct<T> err) noexcept {
         case ERR_DATABLOCK_TOO_LONG:
             return "Datablock is too long" + err_msg;
 
-        case ERR_INVALID_PASSWD_CHAR:
+        case ERR_PASSWD_CHAR_INVALID:
             return "Password contains illegal character: '" + err.errorInfo + "'" + err_msg;
 
         case ERR_PASSWD_TOO_SHORT:
@@ -84,7 +96,7 @@ std::string getErrorMessage(ErrorStruct<T> err) noexcept {
             if (err.errorInfo.empty()) return "Filepath is empty" + err_msg;
             return err.errorInfo + " filepath is empty" + err_msg;
 
-        case ERR_INVALID_FILEPATH:
+        case ERR_FILEPATH_INVALID:
             return "Filepath is invalid: " + err.errorInfo + err_msg;
 
         case ERR_NOT_ENOUGH_DATA:
