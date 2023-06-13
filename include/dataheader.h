@@ -82,7 +82,8 @@ class DataHeader {
     void calcHeaderBytes(const Bytes passwordhash, const bool verify_pwhash = true);
     Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overrites this variable
     // sets the header bytes. Reads the first bytes that belongs to the header from the whole file content
-    ErrorStruct<bool> setHeaderBytes(const Bytes headerBytes) noexcept;  // sets the header bytes (if known)
+    //returns the data header bytes
+    ErrorStruct<Bytes> setHeaderBytes(const Bytes headerBytes) noexcept;  // sets the header bytes (if known)
     // gets the length of the currently set header bytes, if its not currently set, we try to calculate the expected len
     // all set data, such as chainhash data etc. are used to calculate this expected len. If the data is not enough we return 0
     unsigned int getHeaderLength() const noexcept;

@@ -71,10 +71,32 @@ ErrorStruct<DataHeader> API<FData>::getDataHeader(const Bytes file_content) noex
     ErrorStruct<DataHeader> err;
     err.success = false;
     err.returnValue = DataHeader(CHAINHASH_NORMAL);
-    ErrorStruct<bool> err_header = err.returnValue.setHeaderBytes(file_content_copy);
+    ErrorStruct<Bytes> err_header = err.returnValue.setHeaderBytes(file_content_copy);
     err.success = err_header.success;
     err.errorCode = err_header.errorCode;
     err.errorInfo = err_header.errorInfo;
     err.what = err_header.what;
+    return err;
+}
+
+template <typename FData>
+ErrorStruct<Bytes> API<FData>::getData(const Bytes file_content) noexcept {
+    // gets the data from the file content (removes the header)
+    Bytes file_content_copy = file_content;
+    ErrorStruct<Bytes> err;
+    // calculate the header bytes
+    ErrorStruct<Bytes> err_header = DataHeader(CHAINHASH_NORMAL).setHeaderBytes(file_content_copy);
+    err.errorCode = err_header.errorCode;
+    err.errorInfo = err_header.errorInfo;
+    err.what = err_header.what;
+    if(err_header.success) {
+        Bytes data = file_content_copy;
+        // remove the header from the data
+        data.popFirstBytes(err_header.returnValue.getLen());
+        err.returnValue = data;
+        err.success = true;
+    } else {
+        err.success = false;
+    }
     return err;
 }

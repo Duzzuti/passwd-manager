@@ -115,17 +115,20 @@ Bytes DataHeader::getHeaderBytes() const {
     return this->header_bytes;
 }
 
-ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
+ErrorStruct<Bytes> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // sets the header bytes by taking the first bytes of the file
     Bytes file_bytes_copy = fileBytes;
-    ErrorStruct<bool> err;
+    ErrorStruct<Bytes> err;
     err.success = FAIL;
-    err.returnValue = false;
+    err.returnValue = Bytes();
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
+    Bytes tmp;
     try {
-        fmode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
+        tmp = file_bytes_copy.popFirstBytes(1).value();
+        err.returnValue.addBytes(tmp);
+        fmode = tmp.getBytes()[0];
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -143,7 +146,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // ********************* HASH FUNCTION *********************
     unsigned char hmode;
     try {
-        hmode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
+        tmp = file_bytes_copy.popFirstBytes(1).value();
+        err.returnValue.addBytes(tmp);
+        hmode = tmp.getBytes()[0];
         *this = DataHeader(HModes(hmode));
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -187,7 +192,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     ChainHashData chd1{format1};
     unsigned char ch1mode;
     try {
-        ch1mode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
+        tmp = file_bytes_copy.popFirstBytes(1).value();
+        err.returnValue.addBytes(tmp);
+        ch1mode = tmp.getBytes()[0];
         format1 = Format(CHModes(ch1mode));
         chd1 = ChainHashData(format1);
     } catch (const std::bad_optional_access& ex) {
@@ -212,7 +219,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // chainhash 1 iters
     u_int64_t ch1iters;
     try {
-        ch1iters = toLong(file_bytes_copy.popFirstBytes(8).value());
+        tmp = file_bytes_copy.popFirstBytes(8).value();
+        err.returnValue.addBytes(tmp);
+        ch1iters = toLong(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -229,7 +238,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // chainhash 1 data block len
     unsigned char ch1datablocklen;
     try {
-        ch1datablocklen = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
+        tmp = file_bytes_copy.popFirstBytes(1).value();
+        err.returnValue.addBytes(tmp);
+        ch1datablocklen = tmp.getBytes()[0];
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -245,9 +256,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
     // chainhash 1 data block
     for (NameLen nl : format1.getNameLenList()) {
-        Bytes tmp;
         try {
             tmp = file_bytes_copy.popFirstBytes(nl.len).value();
+            err.returnValue.addBytes(tmp);
             chd1.addBytes(tmp);
         } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
@@ -302,7 +313,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     ChainHashData chd2{format2};
     unsigned char ch2mode;
     try {
-        ch2mode = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
+        tmp = file_bytes_copy.popFirstBytes(1).value();
+        err.returnValue.addBytes(tmp);
+        ch2mode = tmp.getBytes()[0];
         format2 = Format(CHModes(ch2mode));
         chd2 = ChainHashData(format2);
     } catch (const std::bad_optional_access& ex) {
@@ -327,7 +340,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // chainhash 2 iters
     u_int64_t ch2iters;
     try {
-        ch2iters = toLong(file_bytes_copy.popFirstBytes(8).value());
+        tmp = file_bytes_copy.popFirstBytes(8).value();
+        err.returnValue.addBytes(tmp);
+        ch2iters = toLong(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -344,7 +359,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // chainhash 2 data block len
     unsigned char ch2datablocklen;
     try {
-        ch2datablocklen = file_bytes_copy.popFirstBytes(1).value().getBytes()[0];
+        tmp = file_bytes_copy.popFirstBytes(1).value();
+        err.returnValue.addBytes(tmp);
+        ch2datablocklen = tmp.getBytes()[0];
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -360,9 +377,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
     // chainhash 2 data block
     for (NameLen nl : format2.getNameLenList()) {
-        Bytes tmp;
         try {
             tmp = file_bytes_copy.popFirstBytes(nl.len).value();
+            err.returnValue.addBytes(tmp);
             chd2.addBytes(tmp);
         } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
@@ -413,9 +430,9 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     }
 
     // password validator hash
-    Bytes tmp;
     try {
         tmp = file_bytes_copy.popFirstBytes(this->getHashSize()).value();
+        err.returnValue.addBytes(tmp);
         this->setValidPasswordHashBytes(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -440,6 +457,7 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
     // encrypted salt
     try {
         tmp = file_bytes_copy.popFirstBytes(this->getHashSize()).value();
+        err.returnValue.addBytes(tmp);
         this->setSalt(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -460,7 +478,6 @@ ErrorStruct<bool> DataHeader::setHeaderBytes(const Bytes fileBytes) noexcept {
         err.what = ex.what();
         return err;
     }
-    err.returnValue = true;
     err.success = SUCCESS;
     return err;
 }
