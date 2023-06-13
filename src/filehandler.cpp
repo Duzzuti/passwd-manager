@@ -239,7 +239,7 @@ bool FileHandler::setEncryptionFilePath(const std::string path) noexcept {
     return exist;  // return the success bool
 }
 
-std::string FileHandler::getEncryptionFilePath() const noexcept {
+std::filesystem::path FileHandler::getEncryptionFilePath() const noexcept {
     // getter for the encryption filepath
     return this->encryption_filepath;
 }

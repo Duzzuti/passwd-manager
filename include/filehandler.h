@@ -44,6 +44,6 @@ class FileHandler {
     FileHandler();
     // sets a new filepath to an encryption file, but only if this file exists (returns success bool)
     bool setEncryptionFilePath(const std::string path) noexcept;
-    std::string getEncryptionFilePath() const noexcept;  // gets the path to the encryption file
+    std::filesystem::path getEncryptionFilePath() const noexcept;  // gets the path to the encryption file
     Bytes getFirstBytes(const int num) const;            // reads the first num Bytes from the encryption file
 };

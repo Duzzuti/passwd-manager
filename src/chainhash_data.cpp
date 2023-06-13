@@ -91,7 +91,7 @@ void ChainHashData::addBytes(Bytes bytes) {
         // datablock is too long
         this->data_parts.pop_back();  // remove the last added part
         std::cout << "Length of datablock: " << this->getLen() << std::endl;
-        throw std::logic_error("you added some bytes to the datablock. Now the datablock exceeded the length limit");
+        throw std::length_error("you added some bytes to the datablock. Now the datablock exceeded the length limit");
     }
 }
 

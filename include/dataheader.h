@@ -76,15 +76,18 @@ class DataHeader {
     void setChainHash1(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
     void setChainHash2(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
     void setValidPasswordHashBytes(const Bytes validBytes);  // sets the passwordhashhash to validate the password hash
+    void setSalt(const Bytes salt);                          // sets the salt
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
     void calcHeaderBytes(const Bytes passwordhash, const bool verify_pwhash = true);
     Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overrites this variable
-
-    void setHeaderBytes(const Bytes headerBytes);  // sets the header bytes (if known)
+    // sets the header bytes. Reads the first bytes that belongs to the header from the whole file content
+    ErrorStruct<bool> setHeaderBytes(const Bytes headerBytes) noexcept;  // sets the header bytes (if known)
     // gets the length of the currently set header bytes, if its not currently set, we try to calculate the expected len
     // all set data, such as chainhash data etc. are used to calculate this expected len. If the data is not enough we return 0
     unsigned int getHeaderLength() const noexcept;
+    // gets the hash size of the hash function that is used
+    unsigned char getHashSize() const noexcept;
     // gets the dataheader parts if they are complete
     DataHeaderParts getDataHeaderParts() const;
     // WORK
