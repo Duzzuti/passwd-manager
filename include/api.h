@@ -87,7 +87,7 @@ class API {
     // gets the names of all .enc files in the given directory
     static ErrorStruct<std::vector<std::string>> getAllEncFileNames(std::filesystem::path dir) noexcept;
 
-    // gets the names of all .enc files in the given directory which are storing the wished file data
+    // gets the names of all .enc files in the given directory which are storing the wished file data or are empty
     ErrorStruct<std::vector<std::string>> getRelevantFileNames(std::filesystem::path dir) noexcept;
 
     // creates a new .enc file at the given path (path contains the name of the file)

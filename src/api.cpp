@@ -19,7 +19,7 @@ ErrorStruct<std::filesystem::path> API<FData>::getEncDirPath() noexcept {
     std::filesystem::path enc_path = fh.getEncryptionFilePath();
     ErrorStruct<std::filesystem::path> err;
     err.returnValue = enc_path;
-    err.success = false;
+    err.success = FAIL;
     if (enc_path.empty()) {
         // if the path is empty, the filehandler could not find the encryption dir
         err.errorCode = ERR_EMPTY_FILEPATH;
@@ -30,7 +30,7 @@ ErrorStruct<std::filesystem::path> API<FData>::getEncDirPath() noexcept {
         err.errorInfo = enc_path.c_str();
     } else {
         // otherwise the path is valid
-        err.success = true;
+        err.success = SUCCESS;
     }
     return err;
 }
@@ -40,7 +40,7 @@ ErrorStruct<std::vector<std::string>> API<FData>::getAllEncFileNames(std::filesy
     // gets all the .enc file names in the given directory
     std::vector<std::string> file_names;
     ErrorStruct<std::vector<std::string>> err;
-    err.success = false;
+    err.success = FAIL;
     if (dir.empty()) {
         // the given path is empty
         err.errorCode = ERR_EMPTY_FILEPATH;
@@ -59,28 +59,29 @@ ErrorStruct<std::vector<std::string>> API<FData>::getAllEncFileNames(std::filesy
             file_names.push_back(entry.path().filename().string());
         }
     }
-    err.success = true;
+    err.success = SUCCESS;
     err.returnValue = file_names;
     return err;
 }
 
 template <typename FData>
 ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::filesystem::path dir) noexcept {
-    // only gets the file names that have the same file mode as the given file data
+    // only gets the file names that have the same file mode as the given file data or are empty
     ErrorStruct<std::vector<std::string>> ret;
     // gets all file names
     ErrorStruct<std::vector<std::string>> err = API<FData>::getAllEncFileNames(dir);
     if (err.success != SUCCESS) {
         return err;
     }
-    ret.success = SUCCESS : ret.returnValue = std::vector<std::string>();
+    ret.success = SUCCESS;
+    ret.returnValue = std::vector<std::string>();
     for (int i = 0; i < err.returnValue.size(); i++) {
         // checks for every file if it has the same file mode as the given file data
         // build the complete file path
         std::filesystem::path fp = dir / err.returnValue[i];
         std::ifstream file(fp);
         FileHandler fh;
-        if (!fh.setEncryptionFilePath(fp);) {
+        if (!fh.setEncryptionFilePath(fp)) {
             // file path is invalid
             err.success = FAIL;
             err.errorCode = ERR_FILE_NOT_FOUND;
@@ -88,13 +89,21 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
             return err;
         }
         // gets the file mode (first byte of the file)
-        std::optional<Bytes> file_mode = fh.getFirstBytes(1);
-        if (file_mode.has_value()) {
-            // first byte was gotten successfully
-            if (FModes(file_mode.value()[0]) == FData.getFileMode()) {
-                // file mode is the same as the given file data
-                ret.returnValue.push_back(err.returnValue[i]);
-            }
+        Bytes file_mode;
+        try{
+            file_mode = fh.getFirstBytes(1);
+        }catch(std::length_error& e){
+            // the file is empty
+            ret.returnValue.push_back(err.returnValue[i]);
+            continue;
+        }catch(std::exception& e){
+            // some other error occured
+            continue;
+        }
+        // first byte was gotten successfully
+        if (FModes(file_mode.getBytes()[0]) == FData.getFileMode()) {
+            // file mode is the same as the given file data
+            ret.returnValue.push_back(err.returnValue[i]);
         }
     }
     return ret;
@@ -102,6 +111,7 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
 
 template <typename FData>
 ErrorStruct<bool> API<FData>::createEncFile(std::filesystem::path file_path) noexcept {
+    // creates a new .enc file at the given path and validates it
     ErrorStruct<bool> err;
     err.success = FAIL;
     if (file_path.empty()) {
@@ -138,11 +148,73 @@ ErrorStruct<bool> API<FData>::createEncFile(std::filesystem::path file_path) noe
 }
 
 template <typename FData>
+ErrorStruct<bool> API<FData>::deleteEncFile(std::filesystem::path file_path) const noexcept {
+    // deletes the given file if it matches with the file data mode or if the file is empty
+    ErrorStruct<bool> err;
+    err.success = FAIL;
+    if (file_path.empty()) {
+        // the given path is empty
+        err.errorCode = ERR_EMPTY_FILEPATH;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    if (file_path.extension() != FileHandler::extension) {
+        // the given path does not have the right extension
+        err.errorCode = ERR_EXTENSION_INVALID;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    if (!std::filesystem::exists(file_path)) {
+        // the given path already exists
+        err.errorCode = ERR_FILE_NOT_FOUND;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    FileHandler fh;
+    if(fh.setEncryptionFilePath(file_path) != SUCCESS) {
+        // the given file path is invalid
+        err.errorCode = ERR_FILE_NOT_FOUND;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    try{
+        Bytes file_mode;
+        file_mode = fh.getFirstBytes(1);
+        // the file is not empty
+        if (FModes(file_mode.getBytes()[0]) != FData.getFileMode()) {
+            // the file mode does not match with the file data mode
+            err.errorCode = ERR_FILEMODE_INVALID;
+            err.errorInfo = file_path.c_str();
+            return err;
+        }
+    }catch(std::length_error& e){
+        // the file is empty
+    }catch(std::exception& e){
+        // some other error occured
+        err.errorCode = ERR;
+        err.errorInfo = file_path.c_str();
+        err.what = e.what();
+        return err;
+    }
+        
+    // file is empty or file mode matches
+    if(!std::filesystem::remove(file_path)){
+        // the file could not be deleted
+        err.errorCode = ERR_FILE_NOT_DELETED;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    err.success = SUCCESS;
+    err.returnValue = true;
+    return err;
+}
+
+template <typename FData>
 ErrorStruct<DataHeader> API<FData>::getDataHeader(const Bytes file_content) noexcept {
     // gets the data header from the file content
     Bytes file_content_copy = file_content;
     ErrorStruct<DataHeader> err;
-    err.success = false;
+    err.success = FAIL;
     err.returnValue = DataHeader(CHAINHASH_NORMAL);
     ErrorStruct<Bytes> err_header = err.returnValue.setHeaderBytes(file_content_copy);
     err.success = err_header.success;
@@ -167,9 +239,9 @@ ErrorStruct<Bytes> API<FData>::getData(const Bytes file_content) noexcept {
         // remove the header from the data
         data.popFirstBytes(err_header.returnValue.getLen());
         err.returnValue = data;
-        err.success = true;
+        err.success = SUCCESS;
     } else {
-        err.success = false;
+        err.success = FAIL;
     }
     return err;
 }

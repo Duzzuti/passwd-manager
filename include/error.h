@@ -26,6 +26,8 @@ enum ErrorCode {
     ERR_EXTENSION_INVALID,
     ERR_FILEPATH_INVALID,
     ERR_FILE_EXISTS,
+    ERR_FILE_NOT_FOUND,
+    ERR_FILE_NOT_DELETED,
     ERR_FILE_NOT_CREATED,
     ERR_NOT_ENOUGH_DATA
 };
@@ -108,10 +110,18 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
         case ERR_FILE_EXISTS:
             if (err.errorInfo.empty()) return "File already exists" + err_msg;
             return err.errorInfo + " file already exists" + err_msg;
+        
+        case ERR_FILE_NOT_FOUND:
+            if (err.errorInfo.empty()) return "File could not be found" + err_msg;
+            return err.errorInfo + " file could not be found" + err_msg;
 
         case ERR_FILE_NOT_CREATED:
             if (err.errorInfo.empty()) return "File could not be created" + err_msg;
             return err.errorInfo + " file could not be created" + err_msg;
+
+        case ERR_FILE_NOT_DELETED:
+            if (err.errorInfo.empty()) return "File could not be deleted" + err_msg;
+            return err.errorInfo + " file could not be deleted" + err_msg;
 
         case ERR_NOT_ENOUGH_DATA:
             return "Not enough data to read information: " + err.errorInfo + err_msg;
