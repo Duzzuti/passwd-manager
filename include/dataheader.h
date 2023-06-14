@@ -64,6 +64,7 @@ class DataHeader {
    private:
     // checks if all data is set correctly
     bool isComplete() const noexcept;
+    void setSalt(const Bytes salt);                          // sets the salt
 
    public:
     // sets up the data header with a hash mode which is necessary to
@@ -76,7 +77,6 @@ class DataHeader {
     void setChainHash1(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
     void setChainHash2(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
     void setValidPasswordHashBytes(const Bytes validBytes);  // sets the passwordhashhash to validate the password hash
-    void setSalt(const Bytes salt);                          // sets the salt
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
     void calcHeaderBytes(const Bytes passwordhash, const bool verify_pwhash = true);

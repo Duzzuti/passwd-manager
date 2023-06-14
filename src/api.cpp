@@ -65,6 +65,43 @@ ErrorStruct<std::vector<std::string>> API<FData>::getAllEncFileNames(std::filesy
 }
 
 template <typename FData>
+ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::filesystem::path dir) noexcept {
+    // only gets the file names that have the same file mode as the given file data
+    ErrorStruct<std::vector<std::string>> ret;
+    // gets all file names
+    ErrorStruct<std::vector<std::string>> err = API<FData>::getAllEncFileNames(dir);
+    if (err.success != SUCCESS) {
+        return err;
+    }
+    ret.success = SUCCESS:
+    ret.returnValue = std::vector<std::string>();
+    for(int i = 0; i < err.returnValue.size(); i++) {
+        // checks for every file if it has the same file mode as the given file data
+        // build the complete file path
+        std::filesystem::path fp = dir / err.returnValue[i];
+        std::ifstream file(fp);
+        FileHandler fh;
+        if(!fh.setEncryptionFilePath(fp);){
+            // file path is invalid
+            err.success = FAIL;
+            err.errorCode = ERR_FILE_NOT_FOUND;
+            err.errorInfo = fp.c_str();
+            return err;
+        }
+        // gets the file mode (first byte of the file)
+        std::optional<Bytes> file_mode = fh.getFirstBytes(1);
+        if(file_mode.has_value()){
+            // first byte was gotten successfully
+            if(FModes(file_mode.value()[0]) == FData.getFileMode()){
+                // file mode is the same as the given file data
+                ret.returnValue.push_back(err.returnValue[i]);
+            }
+        }
+    }
+    return ret;
+}
+
+template <typename FData>
 ErrorStruct<DataHeader> API<FData>::getDataHeader(const Bytes file_content) noexcept {
     // gets the data header from the file content
     Bytes file_content_copy = file_content;
