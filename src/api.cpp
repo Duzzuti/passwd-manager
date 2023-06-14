@@ -73,15 +73,14 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
     if (err.success != SUCCESS) {
         return err;
     }
-    ret.success = SUCCESS:
-    ret.returnValue = std::vector<std::string>();
-    for(int i = 0; i < err.returnValue.size(); i++) {
+    ret.success = SUCCESS : ret.returnValue = std::vector<std::string>();
+    for (int i = 0; i < err.returnValue.size(); i++) {
         // checks for every file if it has the same file mode as the given file data
         // build the complete file path
         std::filesystem::path fp = dir / err.returnValue[i];
         std::ifstream file(fp);
         FileHandler fh;
-        if(!fh.setEncryptionFilePath(fp);){
+        if (!fh.setEncryptionFilePath(fp);) {
             // file path is invalid
             err.success = FAIL;
             err.errorCode = ERR_FILE_NOT_FOUND;
@@ -90,9 +89,9 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
         }
         // gets the file mode (first byte of the file)
         std::optional<Bytes> file_mode = fh.getFirstBytes(1);
-        if(file_mode.has_value()){
+        if (file_mode.has_value()) {
             // first byte was gotten successfully
-            if(FModes(file_mode.value()[0]) == FData.getFileMode()){
+            if (FModes(file_mode.value()[0]) == FData.getFileMode()) {
                 // file mode is the same as the given file data
                 ret.returnValue.push_back(err.returnValue[i]);
             }

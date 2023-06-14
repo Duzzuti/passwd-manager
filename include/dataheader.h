@@ -64,7 +64,7 @@ class DataHeader {
    private:
     // checks if all data is set correctly
     bool isComplete() const noexcept;
-    void setSalt(const Bytes salt);                          // sets the salt
+    void setSalt(const Bytes salt);  // sets the salt
 
    public:
     // sets up the data header with a hash mode which is necessary to
