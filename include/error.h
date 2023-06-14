@@ -23,7 +23,10 @@ enum ErrorCode {
     ERR_LEN_INVALID,
     ERR_PASSWD_TOO_SHORT,
     ERR_EMPTY_FILEPATH,
+    ERR_EXTENSION_INVALID,
     ERR_FILEPATH_INVALID,
+    ERR_FILE_EXISTS,
+    ERR_FILE_NOT_CREATED,
     ERR_NOT_ENOUGH_DATA
 };
 
@@ -97,6 +100,18 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_FILEPATH_INVALID:
             return "Filepath is invalid: " + err.errorInfo + err_msg;
+
+        case ERR_EXTENSION_INVALID:
+            if (err.errorInfo.empty()) return "File extension is invalid" + err_msg;
+            return err.errorInfo + " file extension is invalid" + err_msg;
+
+        case ERR_FILE_EXISTS:
+            if (err.errorInfo.empty()) return "File already exists" + err_msg;
+            return err.errorInfo + " file already exists" + err_msg;
+
+        case ERR_FILE_NOT_CREATED:
+            if (err.errorInfo.empty()) return "File could not be created" + err_msg;
+            return err.errorInfo + " file could not be created" + err_msg;
 
         case ERR_NOT_ENOUGH_DATA:
             return "Not enough data to read information: " + err.errorInfo + err_msg;

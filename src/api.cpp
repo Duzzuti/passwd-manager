@@ -101,6 +101,43 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
 }
 
 template <typename FData>
+ErrorStruct<bool> API<FData>::createEncFile(std::filesystem::path file_path) noexcept {
+    ErrorStruct<bool> err;
+    err.success = FAIL;
+    if(file_path.empty()) {
+        // the given path is empty
+        err.errorCode = ERR_EMPTY_FILEPATH;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    if(file_path.extension() != FileHandler::extension) {
+        // the given path does not have the right extension
+        err.errorCode = ERR_EXTENSION_INVALID;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    if(std::filesystem::exists(file_path)) {
+        // the given path already exists
+        err.errorCode = ERR_FILE_EXISTS;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    // create the file
+    std::ofstream file(file_path);
+    if(!file.is_open()) {
+        // the file could not be created
+        err.errorCode = ERR_FILE_NOT_CREATED;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    err.success = SUCCESS;
+    err.returnValue = true;
+    // validates this file path
+    this->valid_file = file_path;
+    return err;
+}
+
+template <typename FData>
 ErrorStruct<DataHeader> API<FData>::getDataHeader(const Bytes file_content) noexcept {
     // gets the data header from the file content
     Bytes file_content_copy = file_content;
