@@ -104,19 +104,19 @@ template <typename FData>
 ErrorStruct<bool> API<FData>::createEncFile(std::filesystem::path file_path) noexcept {
     ErrorStruct<bool> err;
     err.success = FAIL;
-    if(file_path.empty()) {
+    if (file_path.empty()) {
         // the given path is empty
         err.errorCode = ERR_EMPTY_FILEPATH;
         err.errorInfo = file_path.c_str();
         return err;
     }
-    if(file_path.extension() != FileHandler::extension) {
+    if (file_path.extension() != FileHandler::extension) {
         // the given path does not have the right extension
         err.errorCode = ERR_EXTENSION_INVALID;
         err.errorInfo = file_path.c_str();
         return err;
     }
-    if(std::filesystem::exists(file_path)) {
+    if (std::filesystem::exists(file_path)) {
         // the given path already exists
         err.errorCode = ERR_FILE_EXISTS;
         err.errorInfo = file_path.c_str();
@@ -124,7 +124,7 @@ ErrorStruct<bool> API<FData>::createEncFile(std::filesystem::path file_path) noe
     }
     // create the file
     std::ofstream file(file_path);
-    if(!file.is_open()) {
+    if (!file.is_open()) {
         // the file could not be created
         err.errorCode = ERR_FILE_NOT_CREATED;
         err.errorInfo = file_path.c_str();
