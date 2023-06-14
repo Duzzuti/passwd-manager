@@ -90,13 +90,13 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
         }
         // gets the file mode (first byte of the file)
         Bytes file_mode;
-        try{
+        try {
             file_mode = fh.getFirstBytes(1);
-        }catch(std::length_error& e){
+        } catch (std::length_error& e) {
             // the file is empty
             ret.returnValue.push_back(err.returnValue[i]);
             continue;
-        }catch(std::exception& e){
+        } catch (std::exception& e) {
             // some other error occured
             continue;
         }
@@ -171,13 +171,13 @@ ErrorStruct<bool> API<FData>::deleteEncFile(std::filesystem::path file_path) con
         return err;
     }
     FileHandler fh;
-    if(fh.setEncryptionFilePath(file_path) != SUCCESS) {
+    if (fh.setEncryptionFilePath(file_path) != SUCCESS) {
         // the given file path is invalid
         err.errorCode = ERR_FILE_NOT_FOUND;
         err.errorInfo = file_path.c_str();
         return err;
     }
-    try{
+    try {
         Bytes file_mode;
         file_mode = fh.getFirstBytes(1);
         // the file is not empty
@@ -187,18 +187,18 @@ ErrorStruct<bool> API<FData>::deleteEncFile(std::filesystem::path file_path) con
             err.errorInfo = file_path.c_str();
             return err;
         }
-    }catch(std::length_error& e){
+    } catch (std::length_error& e) {
         // the file is empty
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         // some other error occured
         err.errorCode = ERR;
         err.errorInfo = file_path.c_str();
         err.what = e.what();
         return err;
     }
-        
+
     // file is empty or file mode matches
-    if(!std::filesystem::remove(file_path)){
+    if (!std::filesystem::remove(file_path)) {
         // the file could not be deleted
         err.errorCode = ERR_FILE_NOT_DELETED;
         err.errorInfo = file_path.c_str();

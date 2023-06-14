@@ -110,7 +110,7 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
         case ERR_FILE_EXISTS:
             if (err.errorInfo.empty()) return "File already exists" + err_msg;
             return err.errorInfo + " file already exists" + err_msg;
-        
+
         case ERR_FILE_NOT_FOUND:
             if (err.errorInfo.empty()) return "File could not be found" + err_msg;
             return err.errorInfo + " file could not be found" + err_msg;
