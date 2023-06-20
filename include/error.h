@@ -6,6 +6,7 @@
 
 enum ErrorCode {
     NO_ERR,
+    NO_ERROR_WAS_SET,
     ERR,
     ERR_FILEMODE_INVALID,
     ERR_HASHMODE_INVALID,
@@ -35,8 +36,8 @@ enum ErrorCode {
 // used in a function that could fail, it returns a success type, a value and an error message
 template <typename T>
 struct ErrorStruct {
-    SuccessType success;           // true if the operation was successful
-    ErrorCode errorCode = NO_ERR;  // error code
+    SuccessType success = FAIL;           // true if the operation was successful
+    ErrorCode errorCode = NO_ERROR_WAS_SET;  // error code
     std::string errorInfo;         // some specific data about the error can be stored here
     std::string what;              // throw message
     T returnValue;                 // return value
@@ -47,10 +48,14 @@ template <typename T>
 std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
     // verbose_err_msg triggers the return of a more detailed error message
     //  returns an error message based on the error code and the error info
+    if err.success == SUCCESS return "getErrorMessage was called on a succeeded ErrorStruct";
     std::string err_msg = "";
     if (verbose_err_msg) err_msg = "\nException message: " + err.what;
 
     switch (err.errorCode) {
+        case NO_ERROR_WAS_SET:
+            return "Some developer forgot to set the right Error type" + err_msg;
+
         case NO_ERR:
             return "No error occurred" + err_msg;
 
