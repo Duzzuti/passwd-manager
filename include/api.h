@@ -25,7 +25,7 @@ struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
     // only contains value if no error occured
     std::optional<FileDataStruct> file_data;  // file data struct that contains the decrypted content
-    std::optional<DataHeader> dh;    // data header of the file
+    std::optional<DataHeader> dh;             // data header of the file
 };
 
 enum WorkflowState {
@@ -42,8 +42,8 @@ class API {
     WorkflowState current_state;  // the current state of the API (makes sure that the API is used correctly)
     // the file mode that should be used for the file is stored in the FileDataStruct
     FileDataStruct file_data_struct;  // the user can construct a file data object from this struct
-    Bytes correct_password_hash;  // the correct password hash for the dataheader
-    DataHeader dh;                // the data header for the correct password
+    Bytes correct_password_hash;      // the correct password hash for the dataheader
+    DataHeader dh;                    // the data header for the correct password
     // stores the file content that was encrypted by the algorithm
     // only this file content is valid to write to a file
     Bytes encrypted_data;
