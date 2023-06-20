@@ -171,9 +171,8 @@ DataHeaderParts DataHeader::getDataHeaderParts() const {
     return this->dh;
 }
 
-ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
+ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     // sets the header bytes by taking the first bytes of the file
-    Bytes file_bytes_copy = headerBytes;
     // init error struct
     ErrorStruct<DataHeader> err{
         FAIL, ERR, "An error occured while reading the header", "setHeaderBytes", DataHeader(HModes(STANDARD_HASHMODE))
@@ -184,7 +183,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     Bytes tmp;
     try {
         // loading file mode
-        tmp = file_bytes_copy.popFirstBytes(1).value();
+        tmp = fileBytes.popFirstBytes(1).value();
         fmode = tmp.getBytes()[0];
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -204,7 +203,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     unsigned char hmode;
     try {
         // loading and setting hash mode
-        tmp = file_bytes_copy.popFirstBytes(1).value();
+        tmp = fileBytes.popFirstBytes(1).value();
         hmode = tmp.getBytes()[0];
         err.returnValue = DataHeader(HModes(hmode));
     } catch (const std::bad_optional_access& ex) {
@@ -249,7 +248,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     ChainHashData chd1{format1};
     unsigned char ch1mode;
     try {
-        tmp = file_bytes_copy.popFirstBytes(1).value();
+        tmp = fileBytes.popFirstBytes(1).value();
         ch1mode = tmp.getBytes()[0];
         format1 = Format(CHModes(ch1mode));
         chd1 = ChainHashData(format1);
@@ -275,7 +274,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     // chainhash 1 iters
     u_int64_t ch1iters;
     try {
-        tmp = file_bytes_copy.popFirstBytes(8).value();
+        tmp = fileBytes.popFirstBytes(8).value();
         ch1iters = toLong(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -293,7 +292,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     // chainhash 1 data block len
     unsigned char ch1datablocklen;
     try {
-        tmp = file_bytes_copy.popFirstBytes(1).value();
+        tmp = fileBytes.popFirstBytes(1).value();
         ch1datablocklen = tmp.getBytes()[0];
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -311,7 +310,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     // chainhash 1 data block
     for (NameLen nl : format1.getNameLenList()) {
         try {
-            tmp = file_bytes_copy.popFirstBytes(nl.len).value();
+            tmp = fileBytes.popFirstBytes(nl.len).value();
             chd1.addBytes(tmp);
         } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
@@ -366,7 +365,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     ChainHashData chd2{format2};
     unsigned char ch2mode;
     try {
-        tmp = file_bytes_copy.popFirstBytes(1).value();
+        tmp = fileBytes.popFirstBytes(1).value();
         ch2mode = tmp.getBytes()[0];
         format2 = Format(CHModes(ch2mode));
         chd2 = ChainHashData(format2);
@@ -392,7 +391,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     // chainhash 2 iters
     u_int64_t ch2iters;
     try {
-        tmp = file_bytes_copy.popFirstBytes(8).value();
+        tmp = fileBytes.popFirstBytes(8).value();
         ch2iters = toLong(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -410,7 +409,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     // chainhash 2 data block len
     unsigned char ch2datablocklen;
     try {
-        tmp = file_bytes_copy.popFirstBytes(1).value();
+        tmp = fileBytes.popFirstBytes(1).value();
         ch2datablocklen = tmp.getBytes()[0];
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -428,7 +427,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
     // chainhash 2 data block
     for (NameLen nl : format2.getNameLenList()) {
         try {
-            tmp = file_bytes_copy.popFirstBytes(nl.len).value();
+            tmp = fileBytes.popFirstBytes(nl.len).value();
             chd2.addBytes(tmp);
         } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
@@ -480,7 +479,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
 
     // password validator hash
     try {
-        tmp = file_bytes_copy.popFirstBytes(err.returnValue.hash_size).value();
+        tmp = fileBytes.popFirstBytes(err.returnValue.hash_size).value();
         err.returnValue.setValidPasswordHashBytes(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
@@ -504,7 +503,7 @@ ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept {
 
     // encrypted salt
     try {
-        tmp = file_bytes_copy.popFirstBytes(err.returnValue.hash_size).value();
+        tmp = fileBytes.popFirstBytes(err.returnValue.hash_size).value();
         err.returnValue.setSalt(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional

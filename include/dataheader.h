@@ -83,7 +83,9 @@ class DataHeader {
     Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overrites this variable
     
     // creates a new DataHeader object with the given header bytes
-    friend ErrorStruct<DataHeader> setHeaderBytes(const Bytes headerBytes) noexcept;
+    // after this call the fileBytes are the data that is not part of the header
+    static ErrorStruct<DataHeader> setHeaderBytes(Bytes& fileBytes) noexcept;
+    
     // gets the length of the currently set header bytes, if its not currently set, we try to calculate the expected len
     // all set data, such as chainhash data etc. are used to calculate this expected len. If the data is not enough we return 0
     unsigned int getHeaderLength() const noexcept;
