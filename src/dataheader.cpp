@@ -174,9 +174,7 @@ DataHeaderParts DataHeader::getDataHeaderParts() const {
 ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     // sets the header bytes by taking the first bytes of the file
     // init error struct
-    ErrorStruct<DataHeader> err{
-        FAIL, ERR, "An error occured while reading the header", "setHeaderBytes", DataHeader(HModes(STANDARD_HASHMODE))
-    };
+    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occured while reading the header", "setHeaderBytes", DataHeader(HModes(STANDARD_HASHMODE))};
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
