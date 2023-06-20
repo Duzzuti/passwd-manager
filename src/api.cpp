@@ -6,14 +6,12 @@ implementation of api.h
 
 #include "filehandler.h"
 
-template <typename FData>
-std::filesystem::path API<FData>::getCurrentDirPath() noexcept {
+std::filesystem::path API::getCurrentDirPath() noexcept {
     // gets the current directory path
     return std::filesystem::current_path();
 }
 
-template <typename FData>
-ErrorStruct<std::filesystem::path> API<FData>::getEncDirPath() noexcept {
+ErrorStruct<std::filesystem::path> API::getEncDirPath() noexcept {
     // gets the path of the directory where the .enc files are stored at default
     FileHandler fh;
     std::filesystem::path enc_path = fh.getEncryptionFilePath();
@@ -35,8 +33,7 @@ ErrorStruct<std::filesystem::path> API<FData>::getEncDirPath() noexcept {
     return err;
 }
 
-template <typename FData>
-ErrorStruct<std::vector<std::string>> API<FData>::getAllEncFileNames(std::filesystem::path dir) noexcept {
+ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(std::filesystem::path dir) noexcept {
     // gets all the .enc file names in the given directory
     std::vector<std::string> file_names;
     ErrorStruct<std::vector<std::string>> err;
@@ -64,12 +61,11 @@ ErrorStruct<std::vector<std::string>> API<FData>::getAllEncFileNames(std::filesy
     return err;
 }
 
-template <typename FData>
-ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::filesystem::path dir) noexcept {
+ErrorStruct<std::vector<std::string>> API::getRelevantFileNames(std::filesystem::path dir) noexcept {
     // only gets the file names that have the same file mode as the given file data or are empty
     ErrorStruct<std::vector<std::string>> ret;
     // gets all file names
-    ErrorStruct<std::vector<std::string>> err = API<FData>::getAllEncFileNames(dir);
+    ErrorStruct<std::vector<std::string>> err = API::getAllEncFileNames(dir);
     if (err.success != SUCCESS) {
         return err;
     }
@@ -101,7 +97,7 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
             continue;
         }
         // first byte was gotten successfully
-        if (FModes(file_mode.getBytes()[0]) == FData.getFileMode()) {
+        if (FModes(file_mode.getBytes()[0]) == this->file_data_struct.file_mode) {
             // file mode is the same as the given file data
             ret.returnValue.push_back(err.returnValue[i]);
         }
@@ -109,8 +105,7 @@ ErrorStruct<std::vector<std::string>> API<FData>::getRelevantFileNames(std::file
     return ret;
 }
 
-template <typename FData>
-ErrorStruct<bool> API<FData>::createEncFile(std::filesystem::path file_path) noexcept {
+ErrorStruct<bool> API::createEncFile(std::filesystem::path file_path) noexcept {
     // creates a new .enc file at the given path and validates it
     ErrorStruct<bool> err;
     err.success = FAIL;
@@ -147,8 +142,7 @@ ErrorStruct<bool> API<FData>::createEncFile(std::filesystem::path file_path) noe
     return err;
 }
 
-template <typename FData>
-ErrorStruct<bool> API<FData>::deleteEncFile(std::filesystem::path file_path) const noexcept {
+ErrorStruct<bool> API::deleteEncFile(std::filesystem::path file_path) const noexcept {
     // deletes the given file if it matches with the file data mode or if the file is empty
     ErrorStruct<bool> err;
     err.success = FAIL;
@@ -165,7 +159,7 @@ ErrorStruct<bool> API<FData>::deleteEncFile(std::filesystem::path file_path) con
         return err;
     }
     if (!std::filesystem::exists(file_path)) {
-        // the given path already exists
+        // the given path does not exist
         err.errorCode = ERR_FILE_NOT_FOUND;
         err.errorInfo = file_path.c_str();
         return err;
@@ -181,7 +175,7 @@ ErrorStruct<bool> API<FData>::deleteEncFile(std::filesystem::path file_path) con
         Bytes file_mode;
         file_mode = fh.getFirstBytes(1);
         // the file is not empty
-        if (FModes(file_mode.getBytes()[0]) != FData.getFileMode()) {
+        if (FModes(file_mode.getBytes()[0]) != this->file_data_struct.file_mode) {
             // the file mode does not match with the file data mode
             err.errorCode = ERR_FILEMODE_INVALID;
             err.errorInfo = file_path.c_str();
@@ -209,39 +203,26 @@ ErrorStruct<bool> API<FData>::deleteEncFile(std::filesystem::path file_path) con
     return err;
 }
 
-template <typename FData>
-ErrorStruct<DataHeader> API<FData>::getDataHeader(const Bytes file_content) noexcept {
+ErrorStruct<DataHeader> API::getDataHeader(const Bytes file_content) noexcept {
     // gets the data header from the file content
     Bytes file_content_copy = file_content;
-    ErrorStruct<DataHeader> err;
-    err.success = FAIL;
-    err.returnValue = DataHeader(CHAINHASH_NORMAL);
-    ErrorStruct<Bytes> err_header = err.returnValue.setHeaderBytes(file_content_copy);
-    err.success = err_header.success;
-    err.errorCode = err_header.errorCode;
-    err.errorInfo = err_header.errorInfo;
-    err.what = err_header.what;
-    return err;
+    return DataHeader::setHeaderBytes(file_content_copy);
 }
 
-template <typename FData>
-ErrorStruct<Bytes> API<FData>::getData(const Bytes file_content) noexcept {
+ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     // gets the data from the file content (removes the header)
     Bytes file_content_copy = file_content;
     ErrorStruct<Bytes> err;
     // calculate the header bytes
-    ErrorStruct<Bytes> err_header = DataHeader(CHAINHASH_NORMAL).setHeaderBytes(file_content_copy);
+    ErrorStruct<DataHeader> err_header = DataHeader::setHeaderBytes(file_content_copy);
+    // copy the struct except for the DataHeader object
     err.errorCode = err_header.errorCode;
     err.errorInfo = err_header.errorInfo;
     err.what = err_header.what;
+    err.success = err_header.success;
     if (err_header.success) {
-        Bytes data = file_content_copy;
-        // remove the header from the data
-        data.popFirstBytes(err_header.returnValue.getLen());
-        err.returnValue = data;
-        err.success = SUCCESS;
-    } else {
-        err.success = FAIL;
+        // sets the bytes that are remaining after the header as the data
+        err.returnValue = file_content_copy;
     }
     return err;
 }
