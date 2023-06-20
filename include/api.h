@@ -21,21 +21,18 @@ enum Workflow {
 };
 
 // struct that is returned by the API if you decode a file
-template <typename FData, typename = std::enable_if_t<std::is_base_of_v<FileData, FData>>>
 struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
     // only contains value if no error occured
-    std::optional<FData> file_data;  // file data object that contains the decrypted content
-    std::optional<DataHeader> dh;    // data header of the file
+    std::optional<FileDataStruct> file_data;  // file data struct that contains the decrypted content
+    std::optional<DataHeader> dh;             // data header of the file
 };
 
 enum WorkflowState {
     // WORK
 };
 
-template <typename FData>
 class API {
-    static_assert(std::is_base_of_v<FileData, FData>, "FData must be derived from FileData");
     /*
     API class between the front-end and the back-end
     encapsulates the backend implementations
@@ -43,8 +40,10 @@ class API {
    private:
     Workflow current_workflow;    // the current workflow of the API (see documentation for more info)
     WorkflowState current_state;  // the current state of the API (makes sure that the API is used correctly)
-    Bytes correct_password_hash;  // the correct password hash for the dataheader
-    DataHeader dh;                // the data header for the correct password
+    // the file mode that should be used for the file is stored in the FileDataStruct
+    FileDataStruct file_data_struct;  // the user can construct a file data object from this struct
+    Bytes correct_password_hash;      // the correct password hash for the dataheader
+    DataHeader dh;                    // the data header for the correct password
     // stores the file content that was encrypted by the algorithm
     // only this file content is valid to write to a file
     Bytes encrypted_data;
@@ -54,25 +53,27 @@ class API {
 
    public:
     // constructs the API in a given worflow mode and initializes the private variables
-    API(Workflow workflow) noexcept;
+    // also takes the file mode that should be worked with
+    API(Workflow workflow, const FModes file_mode) noexcept;
 
     //*************** WORKFLOW 1 *****************
-    // decoder: gets the file data and data header from the file
-    WorkflowDecStruct<FData> runWorflow1dec(const std::filesystem::path file_path, const std::string password) noexcept;
-    // you can work with the file data object gotten from the WorkflowDecStruct
+    // decoder: gets the data header and the file data struct from the file
+    ErrorStruct<WorkflowDecStruct> runWorflow1dec(const std::filesystem::path file_path, const std::string password) noexcept;
+    // you can work with the file data object gotten from the file data struct gotten from the WorkflowDecStruct
     // call createDataHeader in between to change the encryption settings
-    // encoder: writes the file data and data header to the file
+    // encoder: writes the file data (gotten from the object.getFileData()) and data header to the file
     // this can fail due to a non valid file. You have to call setFile() manually before calling this function again
-    ErrorStruct<bool> runWorflow1enc(const std::filesystem::path file_path, const FData file_data) noexcept;
+    ErrorStruct<bool> runWorflow1enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
 
     //*************** WORKFLOW 2 *****************
     // create a new file with createEncFile()
     // create a new dataheader first with createDataHeader()
-    // call getNewFileData() to get an empty file data object
-    // you can work with the file data object gotten from the getNewFileData() function
-    // encoder: writes the file data and data header to the file
+    // call getNewFileData() to get an empty file struct
+    // you can create the corresponding file data object from the struct
+    // you can work with the file data object
+    // encoder: writes the file data (gotten from the object.getFileData()) and data header to the file
     // this fails if file_path is not the same as in createEncFile(). You have to call setFile() manually before calling this function again
-    ErrorStruct<bool> runWorflow2enc(const std::filesystem::path file_path, const FData file_data) noexcept;
+    ErrorStruct<bool> runWorflow2enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
 
     //*************** WORKFLOW 3 *****************
     // get the file location of the file to delete
@@ -87,7 +88,7 @@ class API {
     // gets the names of all .enc files in the given directory
     static ErrorStruct<std::vector<std::string>> getAllEncFileNames(std::filesystem::path dir) noexcept;
 
-    // gets the names of all .enc files in the given directory which are storing the wished file data or are empty
+    // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
     ErrorStruct<std::vector<std::string>> getRelevantFileNames(std::filesystem::path dir) noexcept;
 
     // creates a new .enc file at the given path (path contains the name of the file)
@@ -123,13 +124,13 @@ class API {
     // returns the decrypted content (without the data header)
     // uses the password and data header that were passed to verifyPassword
     ErrorStruct<Bytes> getDecryptedData(const Bytes enc_data) const noexcept;
-    ErrorStruct<Bytes> getDecryptedData(const FData file_data) const noexcept;
+    ErrorStruct<Bytes> getDecryptedData(const FileDataStruct file_data) const noexcept;
 
-    // gets the file data object (requires successful verifyPassword or createDataHeader run)
-    // returns the templated file data object with the decrypted content
-    ErrorStruct<FData> getFileData(const Bytes dec_data) const noexcept;
+    // gets the file data struct (requires successful verifyPassword or createDataHeader run)
+    // returns the FileDataStruct with the decrypted content
+    ErrorStruct<FileDataStruct> getFileData(const Bytes dec_data) const noexcept;
     // gets a new file data object with no content
-    ErrorStruct<FData> getNewFileData() const noexcept;
+    ErrorStruct<FileDataStruct> getNewFileData() const noexcept;
 
     // encrypts the data (requires successful verifyPassword or createDataHeader run) returns the encrypted data
     // uses the password and data header that were passed to verifyPassword
