@@ -48,8 +48,7 @@ template <typename T>
 std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
     // verbose_err_msg triggers the return of a more detailed error message
     //  returns an error message based on the error code and the error info
-    if err
-        .success == SUCCESS return "getErrorMessage was called on a succeeded ErrorStruct";
+    if (err.success == SUCCESS) return "getErrorMessage was called on a succeeded ErrorStruct";
     std::string err_msg = "";
     if (verbose_err_msg) err_msg = "\nException message: " + err.what;
 
