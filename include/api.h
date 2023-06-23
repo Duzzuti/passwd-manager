@@ -15,7 +15,7 @@ for full documenation see the documentation of the API class in the documentatio
 
 // tells the API which workflow to use
 enum Workflow {
-    WORK_WITH_OLD_FILE = 1,  // WORKFLOW 1: WORK WITH EXISTING FILE
+    WORK_WITH_OLD_FILE,      // WORKFLOW 1: WORK WITH EXISTING FILE
     WORK_WITH_NEW_FILE,      // WORKFLOW 2: WORK WITH NEW FILE
     DELETE_FILE              // WORKFLOW 3: DELETE FILE
 };
@@ -29,7 +29,8 @@ struct WorkflowDecStruct {
 };
 
 enum WorkflowState {
-    // WORK
+    INIT = 1,  // the API is initialized
+    FILE_GOTTEN,  // the file was gotten
 };
 
 class API {
@@ -43,7 +44,8 @@ class API {
     // the file mode that should be used for the file is stored in the FileDataStruct
     FileDataStruct file_data_struct;  // the user can construct a file data object from this struct
     Bytes correct_password_hash;      // the correct password hash for the dataheader
-    DataHeader dh;                    // the data header for the correct password
+    // setting standard data header
+    DataHeader dh = DataHeader(HModes(STANDARD_HASHMODE));  // the data header for the correct password
     // stores the file content that was encrypted by the algorithm
     // only this file content is valid to write to a file
     Bytes encrypted_data;
@@ -54,7 +56,7 @@ class API {
    public:
     // constructs the API in a given worflow mode and initializes the private variables
     // also takes the file mode that should be worked with
-    API(Workflow workflow, const FModes file_mode) noexcept;
+    API(Workflow workflow, const FModes file_mode);
 
     //*************** WORKFLOW 1 *****************
     // decoder: gets the data header and the file data struct from the file

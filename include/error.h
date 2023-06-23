@@ -30,7 +30,10 @@ enum ErrorCode {
     ERR_FILE_NOT_FOUND,
     ERR_FILE_NOT_DELETED,
     ERR_FILE_NOT_CREATED,
-    ERR_NOT_ENOUGH_DATA
+    ERR_NOT_ENOUGH_DATA,
+    ERR_WRONG_WORKFLOW,
+    ERR_API_NOT_INITIALIZED,
+    ERR_API_STATE_INVALID
 };
 
 // used in a function that could fail, it returns a success type, a value and an error message
@@ -133,6 +136,15 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_FILEMODE_INVALID:
             return "File mode is invalid: " + err.errorInfo + err_msg;
+        
+        case ERR_WRONG_WORKFLOW:
+            return "Wrong workflow: " + err.errorInfo + err_msg;
+        
+        case ERR_API_NOT_INITIALIZED:
+            return "API is not initialized. Method failed: " + err.errorInfo + err_msg;
+
+        case ERR_API_STATE_INVALID:
+            return "API is in the wrong state. Method failed: " + err.errorInfo + err_msg;
 
         case ERR:
             if (err.errorInfo.empty()) return "An error occurred" + err_msg;
