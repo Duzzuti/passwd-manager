@@ -7,6 +7,79 @@ implementation of api.h
 #include "file_modes.h"
 #include "filehandler.h"
 
+ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, const bool should_exist) const noexcept{
+    // checks if the given file path is valid (file_path has to be not empty and have the right extension)
+    // if should_exist is true, the file has to exist otherwise it has to not exist
+    ErrorStruct<bool> err;
+    err.returnValue = false;
+    err.success = FAIL;
+    if (file_path.empty()) {
+        // the given path is empty
+        err.errorCode = ERR_EMPTY_FILEPATH;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    if (file_path.extension() != FileHandler::extension) {
+        // the given path does not have the right extension
+        err.errorCode = ERR_EXTENSION_INVALID;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    if(should_exist){
+        if (!std::filesystem::exists(file_path)) {
+            // the given path does not exist
+            err.errorCode = ERR_FILE_NOT_FOUND;
+            err.errorInfo = file_path.c_str();
+            return err;
+        }
+    }else{
+        if (std::filesystem::exists(file_path)) {
+            // the given path already exists
+            err.errorCode = ERR_FILE_EXISTS;
+            err.errorInfo = file_path.c_str();
+            return err;
+        }
+    }
+    // all checks passed
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
+ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept{
+    // checks if the given file data mode matches or the file is empty
+    ErrorStruct<bool> err;
+    FileHandler fh;
+    if (fh.setEncryptionFilePath(file_path) != SUCCESS) {
+        // the given file path is invalid
+        err.errorCode = ERR_FILE_NOT_FOUND;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    try {
+        Bytes file_mode;
+        file_mode = fh.getFirstBytes(1);
+        // the file is not empty
+        if (FModes(file_mode.getBytes()[0]) != this->file_data_struct.file_mode) {
+            // the file mode does not match with the file data mode
+            err.errorCode = ERR_FILEMODE_INVALID;
+            err.errorInfo = file_path.c_str();
+            return err;
+        }
+    } catch (std::length_error& e) {
+        // the file is empty
+    } catch (std::exception& e) {
+        // some other error occured
+        err.errorCode = ERR;
+        err.errorInfo = file_path.c_str();
+        err.what = e.what();
+        return err;
+    }
+
+    // file is empty or file mode matches with file data mode
+    err.success = SUCCESS;
+    err.returnValue = true;
+    return err;
+}
+
 API::API(Workflow workflow, const FModes file_mode) {
     // constructs the API in a given worflow mode and initializes the private variables
     if (workflow != WORK_WITH_OLD_FILE && workflow != WORK_WITH_NEW_FILE && workflow != DELETE_FILE) {
@@ -47,7 +120,7 @@ ErrorStruct<std::filesystem::path> API::getEncDirPath() noexcept {
     return err;
 }
 
-ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(std::filesystem::path dir) noexcept {
+ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(const std::filesystem::path dir) noexcept {
     // gets all the .enc file names in the given directory
     std::vector<std::string> file_names;
     ErrorStruct<std::vector<std::string>> err;
@@ -75,7 +148,7 @@ ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(std::filesystem::p
     return err;
 }
 
-ErrorStruct<std::vector<std::string>> API::getRelevantFileNames(std::filesystem::path dir) noexcept {
+ErrorStruct<std::vector<std::string>> API::getRelevantFileNames(const std::filesystem::path dir) noexcept {
     // only gets the file names that have the same file mode as the given file data or are empty
     ErrorStruct<std::vector<std::string>> ret;
     if (this->current_state < INIT) {
@@ -97,36 +170,18 @@ ErrorStruct<std::vector<std::string>> API::getRelevantFileNames(std::filesystem:
         // build the complete file path
         std::filesystem::path fp = dir / err.returnValue[i];
         std::ifstream file(fp);
-        FileHandler fh;
-        if (!fh.setEncryptionFilePath(fp)) {
-            // file path is invalid
-            err.success = FAIL;
-            err.errorCode = ERR_FILE_NOT_FOUND;
-            err.errorInfo = fp.c_str();
-            return err;
-        }
-        // gets the file mode (first byte of the file)
-        Bytes file_mode;
-        try {
-            file_mode = fh.getFirstBytes(1);
-        } catch (std::length_error& e) {
-            // the file is empty
-            ret.returnValue.push_back(err.returnValue[i]);
-            continue;
-        } catch (std::exception& e) {
-            // some other error occured
-            continue;
-        }
-        // first byte was gotten successfully
-        if (FModes(file_mode.getBytes()[0]) == this->file_data_struct.file_mode) {
+        // checks if the file data mode matches with the file mode of the file is empty
+        ErrorStruct<bool> err2 = this->checkFileData(fp);
+        if(err2.success == SUCCESS){
             // file mode is the same as the given file data
+            // we include the file to the relevant files
             ret.returnValue.push_back(err.returnValue[i]);
         }
     }
     return ret;
 }
 
-ErrorStruct<bool> API::createEncFile(std::filesystem::path file_path) noexcept {
+ErrorStruct<bool> API::createEncFile(const std::filesystem::path file_path) noexcept {
     // creates a new .enc file at the given path and validates it
     ErrorStruct<bool> err;
     err.success = FAIL;
@@ -142,23 +197,11 @@ ErrorStruct<bool> API::createEncFile(std::filesystem::path file_path) noexcept {
         err.errorInfo = "createEncFile is only available in the WORK_WITH_NEW_FILE workflow";
         return err;
     }
-    if (file_path.empty()) {
-        // the given path is empty
-        err.errorCode = ERR_EMPTY_FILEPATH;
-        err.errorInfo = file_path.c_str();
-        return err;
-    }
-    if (file_path.extension() != FileHandler::extension) {
-        // the given path does not have the right extension
-        err.errorCode = ERR_EXTENSION_INVALID;
-        err.errorInfo = file_path.c_str();
-        return err;
-    }
-    if (std::filesystem::exists(file_path)) {
-        // the given path already exists
-        err.errorCode = ERR_FILE_EXISTS;
-        err.errorInfo = file_path.c_str();
-        return err;
+    // check if the file path is valid and the file does not exist
+    ErrorStruct<bool> err2 = this->checkFilePath(file_path);
+    if(err2.success != SUCCESS) {
+        // the file path is invalid
+        return err2;
     }
     // create the file
     std::ofstream file(file_path);
@@ -175,7 +218,7 @@ ErrorStruct<bool> API::createEncFile(std::filesystem::path file_path) noexcept {
     return err;
 }
 
-ErrorStruct<bool> API::deleteEncFile(std::filesystem::path file_path) const noexcept {
+ErrorStruct<bool> API::deleteEncFile(const std::filesystem::path file_path) const noexcept {
     // deletes the given file if it matches with the file data mode or if the file is empty
     ErrorStruct<bool> err;
     err.success = FAIL;
@@ -191,51 +234,18 @@ ErrorStruct<bool> API::deleteEncFile(std::filesystem::path file_path) const noex
         err.errorInfo = "deleteEncFile is only available in the INIT state";
         return err;
     }
-    if (file_path.empty()) {
-        // the given path is empty
-        err.errorCode = ERR_EMPTY_FILEPATH;
-        err.errorInfo = file_path.c_str();
-        return err;
+    // check if the file path is valid and the file exists
+    ErrorStruct<bool> err2 = this->checkFilePath(file_path, true);
+    if(err2.success != SUCCESS){
+        // the file path is invalid
+        return err2;
     }
-    if (file_path.extension() != FileHandler::extension) {
-        // the given path does not have the right extension
-        err.errorCode = ERR_EXTENSION_INVALID;
-        err.errorInfo = file_path.c_str();
-        return err;
+    // check if the file data mode matches with the mode used in the API (or the file is empty)
+    ErrorStruct<bool> err3 = this->checkFileData(file_path);
+    if(err3.success != SUCCESS){
+        // the file data mode is invalid
+        return err3;
     }
-    if (!std::filesystem::exists(file_path)) {
-        // the given path does not exist
-        err.errorCode = ERR_FILE_NOT_FOUND;
-        err.errorInfo = file_path.c_str();
-        return err;
-    }
-    FileHandler fh;
-    if (fh.setEncryptionFilePath(file_path) != SUCCESS) {
-        // the given file path is invalid
-        err.errorCode = ERR_FILE_NOT_FOUND;
-        err.errorInfo = file_path.c_str();
-        return err;
-    }
-    try {
-        Bytes file_mode;
-        file_mode = fh.getFirstBytes(1);
-        // the file is not empty
-        if (FModes(file_mode.getBytes()[0]) != this->file_data_struct.file_mode) {
-            // the file mode does not match with the file data mode
-            err.errorCode = ERR_FILEMODE_INVALID;
-            err.errorInfo = file_path.c_str();
-            return err;
-        }
-    } catch (std::length_error& e) {
-        // the file is empty
-    } catch (std::exception& e) {
-        // some other error occured
-        err.errorCode = ERR;
-        err.errorInfo = file_path.c_str();
-        err.what = e.what();
-        return err;
-    }
-
     // file is empty or file mode matches
     if (!std::filesystem::remove(file_path)) {
         // the file could not be deleted
@@ -270,4 +280,24 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
         err.returnValue = file_content_copy;
     }
     return err;
+}
+
+ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) noexcept{
+    // gets the content of the given file in Bytes
+    ErrorStruct<Bytes> err;
+    err.success = FAIL;
+    std::filesystem::path file_path_copy = file_path;
+    if(file_path_copy.has_extension()){
+        // the given path does not have an extension
+        // we have to add it
+        file_path_copy = std::filesystem::path(file_path_copy.c_str() + FileHandler::extension);
+        if(!file_path_copy.has_extension()){
+            // something went wrong
+            err.errorCode = ERR_BUG;
+            err.errorInfo = "In function getFileContent: file_path_copy has no extension after adding one";
+            return err;
+        }
+    }
+    // file has now an extension
+    // WORK
 }

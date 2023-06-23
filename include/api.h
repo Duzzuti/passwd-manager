@@ -53,6 +53,12 @@ class API {
     // or an different file if the user wants to write to a different file (setFile())
     std::filesystem::path valid_file;
 
+    // utility functions
+    // checks if an file path is valid
+    ErrorStruct<bool> checkFilePath(const std::filesystem::path file_path, const bool should_exist=false) const noexcept;
+    // checks if the file data mode is valid or the file is empty
+    ErrorStruct<bool> checkFileData(const std::filesystem::path file_path) const noexcept;
+
    public:
     // constructs the API in a given worflow mode and initializes the private variables
     // also takes the file mode that should be worked with
@@ -88,19 +94,19 @@ class API {
     static ErrorStruct<std::filesystem::path> getEncDirPath() noexcept;
 
     // gets the names of all .enc files in the given directory
-    static ErrorStruct<std::vector<std::string>> getAllEncFileNames(std::filesystem::path dir) noexcept;
+    static ErrorStruct<std::vector<std::string>> getAllEncFileNames(const std::filesystem::path dir) noexcept;
 
     // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
-    ErrorStruct<std::vector<std::string>> getRelevantFileNames(std::filesystem::path dir) noexcept;
+    ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept;
 
     // creates a new .enc file at the given path (path contains the name of the file)
-    ErrorStruct<bool> createEncFile(std::filesystem::path file_path) noexcept;
+    ErrorStruct<bool> createEncFile(const std::filesystem::path file_path) noexcept;
 
     // deletes the given .enc file
-    ErrorStruct<bool> deleteEncFile(std::filesystem::path file_path) const noexcept;
+    ErrorStruct<bool> deleteEncFile(const std::filesystem::path file_path) const noexcept;
 
     // gets the content of a given file path (e.g. enc_dir_path/file_name or enc_dir_path/file_name.enc)
-    // fails if the file contains data that is not encrypted by the algorithm or does not belong to the templated file data type
+    // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
     ErrorStruct<Bytes> getFileContent(const std::filesystem::path file_path) noexcept;
 
     // extract the data header from the file content

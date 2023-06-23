@@ -8,6 +8,7 @@ enum ErrorCode {
     NO_ERR,
     NO_ERROR_WAS_SET,
     ERR,
+    ERR_BUG,
     ERR_FILEMODE_INVALID,
     ERR_HASHMODE_INVALID,
     ERR_CHAINHASH_MODE_INVALID,
@@ -61,6 +62,9 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case NO_ERR:
             return "No error occurred" + err_msg;
+        
+        case ERR_BUG:
+            return "An error occurred due to a bug in the program. Some checks failed: " + err.errorInfo + err_msg;
 
         case ERR_CHAINHASH_MODE_INVALID:
             return "Chainhash mode is invalid" + err_msg;
