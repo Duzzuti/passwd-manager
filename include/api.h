@@ -15,9 +15,9 @@ for full documenation see the documentation of the API class in the documentatio
 
 // tells the API which workflow to use
 enum Workflow {
-    WORK_WITH_OLD_FILE,      // WORKFLOW 1: WORK WITH EXISTING FILE
-    WORK_WITH_NEW_FILE,      // WORKFLOW 2: WORK WITH NEW FILE
-    DELETE_FILE              // WORKFLOW 3: DELETE FILE
+    WORK_WITH_OLD_FILE,  // WORKFLOW 1: WORK WITH EXISTING FILE
+    WORK_WITH_NEW_FILE,  // WORKFLOW 2: WORK WITH NEW FILE
+    DELETE_FILE          // WORKFLOW 3: DELETE FILE
 };
 
 // struct that is returned by the API if you decode a file
@@ -29,7 +29,7 @@ struct WorkflowDecStruct {
 };
 
 enum WorkflowState {
-    INIT = 1,  // the API is initialized
+    INIT = 1,     // the API is initialized
     FILE_GOTTEN,  // the file was gotten
 };
 

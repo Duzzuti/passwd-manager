@@ -4,15 +4,15 @@ implementation of api.h
 
 #include "api.h"
 
-#include "filehandler.h"
 #include "file_modes.h"
+#include "filehandler.h"
 
-API::API(Workflow workflow, const FModes file_mode){
+API::API(Workflow workflow, const FModes file_mode) {
     // constructs the API in a given worflow mode and initializes the private variables
-    if(workflow != WORK_WITH_OLD_FILE && workflow != WORK_WITH_NEW_FILE && workflow != DELETE_FILE){
+    if (workflow != WORK_WITH_OLD_FILE && workflow != WORK_WITH_NEW_FILE && workflow != DELETE_FILE) {
         throw std::invalid_argument("Invalid workflow mode");
     }
-    if(!FileModes::isModeValid(file_mode)){
+    if (!FileModes::isModeValid(file_mode)) {
         throw std::invalid_argument("Invalid file mode");
     }
     this->current_workflow = workflow;
@@ -78,7 +78,7 @@ ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(std::filesystem::p
 ErrorStruct<std::vector<std::string>> API::getRelevantFileNames(std::filesystem::path dir) noexcept {
     // only gets the file names that have the same file mode as the given file data or are empty
     ErrorStruct<std::vector<std::string>> ret;
-    if(this->current_state < INIT){
+    if (this->current_state < INIT) {
         // the api is not initialized
         ret.success = FAIL;
         ret.errorCode = ERR_API_NOT_INITIALIZED;
@@ -130,13 +130,13 @@ ErrorStruct<bool> API::createEncFile(std::filesystem::path file_path) noexcept {
     // creates a new .enc file at the given path and validates it
     ErrorStruct<bool> err;
     err.success = FAIL;
-    if(this->current_state != INIT){
+    if (this->current_state != INIT) {
         // the api is in the wrong state
         err.errorCode = ERR_API_STATE_INVALID;
         err.errorInfo = "createEncFile is only available in the INIT state";
         return err;
     }
-    if(this->current_workflow != WORK_WITH_NEW_FILE){
+    if (this->current_workflow != WORK_WITH_NEW_FILE) {
         // wrong workflow to access this create file function
         err.errorCode = ERR_WRONG_WORKFLOW;
         err.errorInfo = "createEncFile is only available in the WORK_WITH_NEW_FILE workflow";
@@ -179,13 +179,13 @@ ErrorStruct<bool> API::deleteEncFile(std::filesystem::path file_path) const noex
     // deletes the given file if it matches with the file data mode or if the file is empty
     ErrorStruct<bool> err;
     err.success = FAIL;
-    if(this->current_workflow != DELETE_FILE){
+    if (this->current_workflow != DELETE_FILE) {
         // wrong workflow to access this delete file function
         err.errorCode = ERR_WRONG_WORKFLOW;
         err.errorInfo = "deleteEncFile is only available in the DELETE_FILE workflow";
         return err;
     }
-    if(this->current_state != INIT){
+    if (this->current_state != INIT) {
         // the api is in the wrong state
         err.errorCode = ERR_API_STATE_INVALID;
         err.errorInfo = "deleteEncFile is only available in the INIT state";
