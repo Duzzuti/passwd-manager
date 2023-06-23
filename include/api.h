@@ -55,7 +55,7 @@ class API {
 
     // utility functions
     // checks if an file path is valid
-    ErrorStruct<bool> checkFilePath(const std::filesystem::path file_path, const bool should_exist=false) const noexcept;
+    ErrorStruct<bool> checkFilePath(const std::filesystem::path file_path, const bool should_exist = false) const noexcept;
     // checks if the file data mode is valid or the file is empty
     ErrorStruct<bool> checkFileData(const std::filesystem::path file_path) const noexcept;
 

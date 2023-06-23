@@ -7,7 +7,7 @@ implementation of api.h
 #include "file_modes.h"
 #include "filehandler.h"
 
-ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, const bool should_exist) const noexcept{
+ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, const bool should_exist) const noexcept {
     // checks if the given file path is valid (file_path has to be not empty and have the right extension)
     // if should_exist is true, the file has to exist otherwise it has to not exist
     ErrorStruct<bool> err;
@@ -25,14 +25,14 @@ ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, cons
         err.errorInfo = file_path.c_str();
         return err;
     }
-    if(should_exist){
+    if (should_exist) {
         if (!std::filesystem::exists(file_path)) {
             // the given path does not exist
             err.errorCode = ERR_FILE_NOT_FOUND;
             err.errorInfo = file_path.c_str();
             return err;
         }
-    }else{
+    } else {
         if (std::filesystem::exists(file_path)) {
             // the given path already exists
             err.errorCode = ERR_FILE_EXISTS;
@@ -44,7 +44,7 @@ ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, cons
     return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
 }
 
-ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept{
+ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept {
     // checks if the given file data mode matches or the file is empty
     ErrorStruct<bool> err;
     FileHandler fh;
@@ -172,7 +172,7 @@ ErrorStruct<std::vector<std::string>> API::getRelevantFileNames(const std::files
         std::ifstream file(fp);
         // checks if the file data mode matches with the file mode of the file is empty
         ErrorStruct<bool> err2 = this->checkFileData(fp);
-        if(err2.success == SUCCESS){
+        if (err2.success == SUCCESS) {
             // file mode is the same as the given file data
             // we include the file to the relevant files
             ret.returnValue.push_back(err.returnValue[i]);
@@ -199,7 +199,7 @@ ErrorStruct<bool> API::createEncFile(const std::filesystem::path file_path) noex
     }
     // check if the file path is valid and the file does not exist
     ErrorStruct<bool> err2 = this->checkFilePath(file_path);
-    if(err2.success != SUCCESS) {
+    if (err2.success != SUCCESS) {
         // the file path is invalid
         return err2;
     }
@@ -236,13 +236,13 @@ ErrorStruct<bool> API::deleteEncFile(const std::filesystem::path file_path) cons
     }
     // check if the file path is valid and the file exists
     ErrorStruct<bool> err2 = this->checkFilePath(file_path, true);
-    if(err2.success != SUCCESS){
+    if (err2.success != SUCCESS) {
         // the file path is invalid
         return err2;
     }
     // check if the file data mode matches with the mode used in the API (or the file is empty)
     ErrorStruct<bool> err3 = this->checkFileData(file_path);
-    if(err3.success != SUCCESS){
+    if (err3.success != SUCCESS) {
         // the file data mode is invalid
         return err3;
     }
@@ -282,16 +282,16 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     return err;
 }
 
-ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) noexcept{
+ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) noexcept {
     // gets the content of the given file in Bytes
     ErrorStruct<Bytes> err;
     err.success = FAIL;
     std::filesystem::path file_path_copy = file_path;
-    if(file_path_copy.has_extension()){
+    if (file_path_copy.has_extension()) {
         // the given path does not have an extension
         // we have to add it
         file_path_copy = std::filesystem::path(file_path_copy.c_str() + FileHandler::extension);
-        if(!file_path_copy.has_extension()){
+        if (!file_path_copy.has_extension()) {
             // something went wrong
             err.errorCode = ERR_BUG;
             err.errorInfo = "In function getFileContent: file_path_copy has no extension after adding one";
