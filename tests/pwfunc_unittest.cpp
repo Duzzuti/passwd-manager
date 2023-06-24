@@ -56,7 +56,7 @@ TEST(PWFUNCClass, passwordvalid) {
             EXPECT_EQ(false, tmp.returnValue);
         } else {
             EXPECT_EQ(SUCCESS, tmp.success);
-            EXPECT_EQ("No error occurred", getErrorMessage(tmp, false));
+            EXPECT_EQ("getErrorMessage was called on a succeeded ErrorStruct", getErrorMessage(tmp, false));
             EXPECT_EQ(true, tmp.returnValue);
         }
     }
@@ -68,7 +68,7 @@ TEST(PWFUNCClass, passwordvalid) {
             EXPECT_EQ(false, tmp.returnValue);
         } else {
             EXPECT_EQ(SUCCESS, tmp.success);
-            EXPECT_EQ("No error occurred", getErrorMessage(tmp, false));
+            EXPECT_EQ("getErrorMessage was called on a succeeded ErrorStruct", getErrorMessage(tmp, false));
             EXPECT_EQ(true, tmp.returnValue);
         }
     }
@@ -80,7 +80,7 @@ TEST(PWFUNCClass, passwordvalid) {
             EXPECT_EQ(false, tmp.returnValue);
         } else {
             EXPECT_EQ(SUCCESS, tmp.success);
-            EXPECT_EQ("No error occurred", getErrorMessage(tmp, false));
+            EXPECT_EQ("getErrorMessage was called on a succeeded ErrorStruct", getErrorMessage(tmp, false));
             EXPECT_EQ(true, tmp.returnValue);
         }
     }
