@@ -62,7 +62,7 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case NO_ERR:
             return "No error occurred" + err_msg;
-        
+
         case ERR_BUG:
             return "An error occurred due to a bug in the program. Some checks failed: " + err.errorInfo + err_msg;
 
