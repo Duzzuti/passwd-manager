@@ -44,7 +44,7 @@ ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, cons
     return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
 }
 
-ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept{
+ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept {
     // checks if the given file data is valid or the file is empty
     // there has to be a valid data header in this file
     ErrorStruct<bool> err;
@@ -80,7 +80,6 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     err.returnValue = true;
     return err;
 }
-
 
 API::API(Workflow workflow, const FModes file_mode) {
     // constructs the API in a given worflow mode and initializes the private variables
@@ -288,13 +287,13 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) no
     // gets the content of the given file in Bytes
     ErrorStruct<Bytes> err;
     err.success = FAIL;
-    if(this->current_workflow != WORK_WITH_OLD_FILE){
+    if (this->current_workflow != WORK_WITH_OLD_FILE) {
         // wrong workflow to access this get file content function
         err.errorCode = ERR_WRONG_WORKFLOW;
         err.errorInfo = "getFileContent is only available in the WORK_WITH_OLD_FILE workflow";
         return err;
     }
-    if(this->current_state != INIT){
+    if (this->current_state != INIT) {
         // the api is in the wrong state
         err.errorCode = ERR_API_STATE_INVALID;
         err.errorInfo = "getFileContent is only available in the INIT state";
@@ -314,22 +313,22 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) no
     }
     // file has now an extension
     ErrorStruct<bool> err2 = this->checkFilePath(file_path_copy, true);
-    if(err2.success != SUCCESS){
+    if (err2.success != SUCCESS) {
         // the file path is invalid
         return ErrorStruct<Bytes>{err2.success, err2.errorCode, err2.errorInfo, err2.what};
     }
     // the file path is valid
     ErrorStruct<bool> err3 = this->checkFileData(file_path_copy);
-    if(err3.success != SUCCESS){
+    if (err3.success != SUCCESS) {
         // the file data mode is invalid
         return ErrorStruct<Bytes>{err3.success, err3.errorCode, err3.errorInfo, err3.what};
     }
     // the content is valid
     FileHandler fh;
     fh.setEncryptionFilePath(file_path_copy);
-    try{
+    try {
         err.returnValue = fh.getAllBytes();
-    } catch (const std::exception& e){
+    } catch (const std::exception& e) {
         // something went wrong while reading the file
         err.errorCode = ERR;
         err.errorInfo = "Something went wrong while reading the file (trying to get all bytes)[getFileContent]";
@@ -344,7 +343,3 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) no
     err.success = SUCCESS;
     return err;
 }
-
-
-
-

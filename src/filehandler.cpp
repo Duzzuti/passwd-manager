@@ -273,7 +273,7 @@ Bytes FileHandler::getFirstBytes(const int num) const {
     return ret;
 }
 
-Bytes FileHandler::getAllBytes() const { 
+Bytes FileHandler::getAllBytes() const {
     // reads all Bytes from the file
     if (this->encryption_filepath.empty()) {
         // no encryption file path set
