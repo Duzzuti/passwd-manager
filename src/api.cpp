@@ -45,7 +45,8 @@ ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, cons
 }
 
 ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept{
-    // checks if the given file data mode matches or the file is empty
+    // checks if the given file data is valid or the file is empty
+    // there has to be a valid data header in this file
     ErrorStruct<bool> err;
     FileHandler fh;
     if (fh.setEncryptionFilePath(file_path) != SUCCESS) {
@@ -74,11 +75,20 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
         return err;
     }
 
+    // check if the whole header is valid
+    Bytes file_bytes = fh.getAllBytes();
+    ErrorStruct<DataHeader> err2 = DataHeader::setHeaderBytes(file_bytes);
+    if(err2.success != SUCCESS){
+        // the file has not a valid header
+        return ErrorStruct<bool>{err2.success, err2.errorCode, err2.errorInfo, err2.what, false};
+    }
+
     // file is empty or file mode matches with file data mode
     err.success = SUCCESS;
     err.returnValue = true;
     return err;
 }
+
 
 API::API(Workflow workflow, const FModes file_mode) {
     // constructs the API in a given worflow mode and initializes the private variables
@@ -286,6 +296,18 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) no
     // gets the content of the given file in Bytes
     ErrorStruct<Bytes> err;
     err.success = FAIL;
+    if(this->current_workflow != WORK_WITH_OLD_FILE){
+        // wrong workflow to access this get file content function
+        err.errorCode = ERR_WRONG_WORKFLOW;
+        err.errorInfo = "getFileContent is only available in the WORK_WITH_OLD_FILE workflow";
+        return err;
+    }
+    if(this->current_state != INIT){
+        // the api is in the wrong state
+        err.errorCode = ERR_API_STATE_INVALID;
+        err.errorInfo = "getFileContent is only available in the INIT state";
+        return err;
+    }
     std::filesystem::path file_path_copy = file_path;
     if(file_path_copy.has_extension()){
         // the given path does not have an extension
@@ -299,5 +321,38 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) no
         }
     }
     // file has now an extension
-    // WORK
+    ErrorStruct<bool> err2 = this->checkFilePath(file_path_copy, true);
+    if(err2.success != SUCCESS){
+        // the file path is invalid
+        return ErrorStruct<Bytes>{err2.success, err2.errorCode, err2.errorInfo, err2.what};
+    }
+    // the file path is valid
+    ErrorStruct<bool> err3 = this->checkFileData(file_path_copy);
+    if(err3.success != SUCCESS){
+        // the file data mode is invalid
+        return ErrorStruct<Bytes>{err3.success, err3.errorCode, err3.errorInfo, err3.what};
+    }
+    // the content is valid
+    FileHandler fh;
+    fh.setEncryptionFilePath(file_path_copy);
+    try{
+        err.returnValue = fh.getAllBytes();
+    } catch (const std::exception& e){
+        // something went wrong while reading the file
+        err.errorCode = ERR;
+        err.errorInfo = "Something went wrong while reading the file (trying to get all bytes)[getFileContent]";
+        err.what = e.what();
+        return err;
+    }
+
+    // this file is set as the working file now
+    this->valid_file = file_path_copy;
+    this->current_state = FILE_GOTTEN;
+
+    err.success = SUCCESS;
+    return err;
 }
+
+
+
+

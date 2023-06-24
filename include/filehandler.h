@@ -46,4 +46,5 @@ class FileHandler {
     bool setEncryptionFilePath(const std::string path) noexcept;
     std::filesystem::path getEncryptionFilePath() const noexcept;  // gets the path to the encryption file
     Bytes getFirstBytes(const int num) const;                      // reads the first num Bytes from the encryption file
+    Bytes getAllBytes() const;                                     // reads all Bytes from the encryption file  
 };
