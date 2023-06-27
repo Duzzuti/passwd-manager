@@ -21,27 +21,29 @@ class PwFunc {
     // checks the password for illegal characters and length
     static ErrorStruct<bool> isPasswordValid(const std::string password) noexcept;
 
-    PwFunc(const Hash* hash) noexcept;                                                           // sets the hash function
-    ErrorStruct<Bytes> chainhash(const std::string password, const u_int64_t iterations = 1, const u_int64_t timeout=0) const noexcept;  // performs a chainhash
+    PwFunc(const Hash* hash) noexcept;                                                                                                     // sets the hash function
+    ErrorStruct<Bytes> chainhash(const std::string password, const u_int64_t iterations = 1, const u_int64_t timeout = 0) const noexcept;  // performs a chainhash
     // adds a constant salt each iteration
-    ErrorStruct<Bytes> chainhashWithConstantSalt(const std::string password, const u_int64_t iterations = 1, const std::string salt = "", const u_int64_t timeout=0) const noexcept;
+    ErrorStruct<Bytes> chainhashWithConstantSalt(const std::string password, const u_int64_t iterations = 1, const std::string salt = "", const u_int64_t timeout = 0) const noexcept;
     // adds a salt (number that counts up each iteration)
-    ErrorStruct<Bytes> chainhashWithCountSalt(const std::string password, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t timeout=0) const noexcept;
+    ErrorStruct<Bytes> chainhashWithCountSalt(const std::string password, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t timeout = 0) const noexcept;
     // adds a constant and count salt each iteration
-    ErrorStruct<Bytes> chainhashWithCountAndConstantSalt(const std::string password, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const std::string salt = "", const u_int64_t timeout=0) const noexcept;
+    ErrorStruct<Bytes> chainhashWithCountAndConstantSalt(const std::string password, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const std::string salt = "",
+                                                         const u_int64_t timeout = 0) const noexcept;
     // adds a quadratic count salt each iteration
     ErrorStruct<Bytes> chainhashWithQuadraticCountSalt(const std::string password, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t a = 1, const u_int64_t b = 1,
-                                          const u_int64_t c = 1, const u_int64_t timeout=0) const noexcept;
+                                                       const u_int64_t c = 1, const u_int64_t timeout = 0) const noexcept;
 
     // overload with Bytes data
-    ErrorStruct<Bytes> chainhash(const Bytes data, const u_int64_t iterations = 1, const u_int64_t timeout=0) const noexcept;  // performs a chainhash
+    ErrorStruct<Bytes> chainhash(const Bytes data, const u_int64_t iterations = 1, const u_int64_t timeout = 0) const noexcept;  // performs a chainhash
     // adds a constant salt each iteration
-    ErrorStruct<Bytes> chainhashWithConstantSalt(const Bytes data, const u_int64_t iterations = 1, const std::string salt = "", const u_int64_t timeout=0) const noexcept;
+    ErrorStruct<Bytes> chainhashWithConstantSalt(const Bytes data, const u_int64_t iterations = 1, const std::string salt = "", const u_int64_t timeout = 0) const noexcept;
     // adds a salt (number that counts up each iteration)
-    ErrorStruct<Bytes> chainhashWithCountSalt(const Bytes data, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t timeout=0) const noexcept;
+    ErrorStruct<Bytes> chainhashWithCountSalt(const Bytes data, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t timeout = 0) const noexcept;
     // adds a constant and count salt each iteration
-    ErrorStruct<Bytes> chainhashWithCountAndConstantSalt(const Bytes data, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const std::string salt = "", const u_int64_t timeout=0) const noexcept;
+    ErrorStruct<Bytes> chainhashWithCountAndConstantSalt(const Bytes data, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const std::string salt = "",
+                                                         const u_int64_t timeout = 0) const noexcept;
     // adds a quadratic count salt each iteration
-    ErrorStruct<Bytes> chainhashWithQuadraticCountSalt(const Bytes data, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t a = 1, const u_int64_t b = 1,
-                                          const u_int64_t c = 1, const u_int64_t timeout=0) const noexcept;
+    ErrorStruct<Bytes> chainhashWithQuadraticCountSalt(const Bytes data, const u_int64_t iterations = 1, u_int64_t salt_start = 1, const u_int64_t a = 1, const u_int64_t b = 1, const u_int64_t c = 1,
+                                                       const u_int64_t timeout = 0) const noexcept;
 };

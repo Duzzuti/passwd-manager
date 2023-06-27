@@ -1,8 +1,8 @@
 #include "pwfunc.h"
 
 #include "settings.h"
-#include "utility.h"
 #include "timer.h"
+#include "utility.h"
 
 ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
     // checks the password for illegal format, sets an error if it is not valid
@@ -44,8 +44,8 @@ ErrorStruct<Bytes> PwFunc::chainhash(const std::string password, const u_int64_t
     for (u_int64_t i = 1; i < iterations; i++) {
         // for iterations -1 the hash is hashed again
         ret = this->hash->hash(ret);
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -61,8 +61,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithConstantSalt(const std::string password,
         // for iterations -1 the salt is added to the current hash and the result is hashed again
         ret.addBytes(stringToBytes(salt));
         ret = this->hash->hash(ret);
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -79,8 +79,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountSalt(const std::string password, co
         salt_start++;
         ret.addBytes(stringToBytes(std::to_string(salt_start)));
         ret = this->hash->hash(ret);
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -88,7 +88,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountSalt(const std::string password, co
     return ErrorStruct<Bytes>{SUCCESS, NO_ERR, "", "", ret};
 }
 
-ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const std::string password, const u_int64_t iterations, u_int64_t salt_start, const std::string salt, const u_int64_t timeout) const noexcept {
+ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const std::string password, const u_int64_t iterations, u_int64_t salt_start, const std::string salt,
+                                                             const u_int64_t timeout) const noexcept {
     Timer timer;
     timer.start();
     Bytes ret = this->hash->hash(password + salt + std::to_string(salt_start));  // the password is hashed with the salt and the count salt
@@ -98,8 +99,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const std::string p
         salt_start++;
         ret.addBytes(stringToBytes(salt + std::to_string(salt_start)));
         ret = this->hash->hash(ret);
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -107,7 +108,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const std::string p
     return ErrorStruct<Bytes>{SUCCESS, NO_ERR, "", "", ret};
 }
 
-ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const std::string password, const u_int64_t iterations, u_int64_t salt_start, const u_int64_t a, const u_int64_t b, const u_int64_t c, const u_int64_t timeout) const noexcept {
+ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const std::string password, const u_int64_t iterations, u_int64_t salt_start, const u_int64_t a, const u_int64_t b, const u_int64_t c,
+                                                           const u_int64_t timeout) const noexcept {
     Timer timer;
     timer.start();
     Bytes ret = this->hash->hash(password + std::to_string(a * salt_start * salt_start + b * salt_start + c));  // hashes the password with the a*start_salt^2 + b*start_salt + c added
@@ -116,8 +118,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const std::string pas
         salt_start++;
         ret.addBytes(stringToBytes(std::to_string(a * salt_start * salt_start + b * salt_start + c)));
         ret = this->hash->hash(ret);
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -132,8 +134,8 @@ ErrorStruct<Bytes> PwFunc::chainhash(const Bytes data, const u_int64_t iteration
     for (u_int64_t i = 0; i < iterations; i++) {
         // for iterations the hash is hashed again
         ret = this->hash->hash(ret);
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -149,8 +151,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithConstantSalt(const Bytes data, const u_i
         // for iterations the salt is added to the current hash and the result is hashed again
         ret.addBytes(stringToBytes(salt));
         ret = this->hash->hash(ret);
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -167,8 +169,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountSalt(const Bytes data, const u_int6
         ret.addBytes(stringToBytes(std::to_string(salt_start)));
         ret = this->hash->hash(ret);
         salt_start++;
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -186,8 +188,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const Bytes data, c
         ret.addBytes(stringToBytes(salt + std::to_string(salt_start)));
         ret = this->hash->hash(ret);
         salt_start++;
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -195,7 +197,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const Bytes data, c
     return ErrorStruct<Bytes>{SUCCESS, NO_ERR, "", "", ret};
 }
 
-ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, const u_int64_t iterations, u_int64_t salt_start, const u_int64_t a, const u_int64_t b, const u_int64_t c, const u_int64_t timeout) const noexcept {
+ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, const u_int64_t iterations, u_int64_t salt_start, const u_int64_t a, const u_int64_t b, const u_int64_t c,
+                                                           const u_int64_t timeout) const noexcept {
     Timer timer;
     timer.start();
     Bytes ret = data;
@@ -204,8 +207,8 @@ ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, con
         ret.addBytes(stringToBytes(std::to_string(a * salt_start * salt_start + b * salt_start + c)));
         ret = this->hash->hash(ret);
         salt_start++;
-        if(timeout != 0 && i % TIMEOUT_ITERATIONS == 0){
-            if(timeout <= timer.peekTime()){
+        if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }

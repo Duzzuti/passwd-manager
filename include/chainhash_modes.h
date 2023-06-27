@@ -33,6 +33,6 @@ class ChainHashModes {
     static ChainHashData askForData(const CHModes chainhash_mode);  // gets data from the user that is needed for this chainhash mode
     // two methods for actually performing the chainhash, one for Bytes input and one for string input
     // expensive methods, you can set an timeout (in ms). 0 means no timeout.
-    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const Bytes data, const u_int64_t timeout=0);
-    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const std::string data, const u_int64_t timeout=0);
+    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const Bytes data, const u_int64_t timeout = 0);
+    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const std::string data, const u_int64_t timeout = 0);
 };
