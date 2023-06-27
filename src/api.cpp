@@ -308,26 +308,26 @@ ErrorStruct<Bytes> API::verifyPassword(const std::string password, const DataHea
     }
     Hash* hash;
 
-    try{
+    try {
         // gets the header parts to work with (could throw)
         DataHeaderParts dhp = dh.getDataHeaderParts();
         // gets the hash function (could throw)
         hash = HashModes::getHash(dhp.hash_mode);
         // perform the first chain hash (password -> passwordhash)
         ErrorStruct<Bytes> err1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
-        if(err1.success != SUCCESS) {
+        if (err1.success != SUCCESS) {
             // the first chain hash failed (due to timeout or other error)
             delete hash;
             return err1;
         }
         // perform the second chain hash (passwordhash -> passwordhashhash = validation hash)
         ErrorStruct<Bytes> err2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, err1.returnValue, timeout);
-        if(err2.success != SUCCESS) {
+        if (err2.success != SUCCESS) {
             // the second chain hash failed (due to timeout or other error)
             delete hash;
             return err2;
         }
-        if(err2.returnValue == dhp.valid_passwordhash) {
+        if (err2.returnValue == dhp.valid_passwordhash) {
             // the password is valid (because the validation hashes match)
             ErrorStruct<Bytes> err;
             err.success = SUCCESS;
@@ -348,15 +348,14 @@ ErrorStruct<Bytes> API::verifyPassword(const std::string password, const DataHea
         delete hash;
         return err;
 
-    }catch(const std::exception& e) {
+    } catch (const std::exception& e) {
         // some error occured
         ErrorStruct<Bytes> err;
         err.errorCode = ERR;
         err.errorInfo = "Some error occured while verifying the password";
         err.what = e.what();
         err.success = FAIL;
-        if(hash != nullptr)
-            delete hash;
+        if (hash != nullptr) delete hash;
         return err;
     }
 }
