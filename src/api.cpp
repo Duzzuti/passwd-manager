@@ -283,6 +283,84 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     return err;
 }
 
+ErrorStruct<Bytes> API::verifyPassword(const std::string password, const DataHeader dh, const u_int64_t timeout) noexcept {
+    // timeout=0 means no timeout
+    // checks if a password (given from the user to decrypt) is valid for this file and returns its hash.
+    // This call is expensive
+    // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
+    // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
+
+    if (this->current_workflow != WORK_WITH_OLD_FILE) {
+        // wrong workflow to access this get file content function
+        ErrorStruct<Bytes> err;
+        err.success = FAIL;
+        err.errorCode = ERR_WRONG_WORKFLOW;
+        err.errorInfo = "verifyPassword is only available in the WORK_WITH_OLD_FILE workflow";
+        return err;
+    }
+    if (this->current_state != FILE_GOTTEN) {
+        // the api is in the wrong state
+        ErrorStruct<Bytes> err;
+        err.success = FAIL;
+        err.errorCode = ERR_API_STATE_INVALID;
+        err.errorInfo = "verifyPassword is only available in the FILE_GOTTEN state";
+        return err;
+    }
+    Hash* hash;
+
+    try{
+        // gets the header parts to work with (could throw)
+        DataHeaderParts dhp = dh.getDataHeaderParts();
+        // gets the hash function (could throw)
+        hash = HashModes::getHash(dhp.hash_mode);
+        // perform the first chain hash (password -> passwordhash)
+        ErrorStruct<Bytes> err1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
+        if(err1.success != SUCCESS) {
+            // the first chain hash failed (due to timeout or other error)
+            delete hash;
+            return err1;
+        }
+        // perform the second chain hash (passwordhash -> passwordhashhash = validation hash)
+        ErrorStruct<Bytes> err2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, err1.returnValue, timeout);
+        if(err2.success != SUCCESS) {
+            // the second chain hash failed (due to timeout or other error)
+            delete hash;
+            return err2;
+        }
+        if(err2.returnValue == dhp.valid_passwordhash) {
+            // the password is valid (because the validation hashes match)
+            ErrorStruct<Bytes> err;
+            err.success = SUCCESS;
+            err.returnValue = err1.returnValue;
+
+            // updating the state
+            this->current_state = PASSWORD_VERIFIED;
+            // setting the correct password hash and dataheader to the application
+            this->correct_password_hash = err1.returnValue;
+            this->dh = dh;
+            delete hash;
+            return err;
+        }
+        // the password is invalid
+        ErrorStruct<Bytes> err;
+        err.success = FAIL;
+        err.errorCode = ERR_PASSWORD_INVALID;
+        delete hash;
+        return err;
+
+    }catch(const std::exception& e) {
+        // some error occured
+        ErrorStruct<Bytes> err;
+        err.errorCode = ERR;
+        err.errorInfo = "Some error occured while verifying the password";
+        err.what = e.what();
+        err.success = FAIL;
+        if(hash != nullptr)
+            delete hash;
+        return err;
+    }
+}
+
 ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) noexcept {
     // gets the content of the given file in Bytes
     ErrorStruct<Bytes> err;

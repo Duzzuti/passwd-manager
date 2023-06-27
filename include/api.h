@@ -29,8 +29,9 @@ struct WorkflowDecStruct {
 };
 
 enum WorkflowState {
-    INIT = 1,     // the API is initialized
-    FILE_GOTTEN,  // the file was gotten
+    INIT = 1,           // the API is initialized
+    FILE_GOTTEN,        // the file was gotten
+    PASSWORD_VERIFIED,  // the password was verified
 };
 
 class API {
