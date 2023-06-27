@@ -9,14 +9,14 @@
 struct DataHeaderParts {
    public:
     // holds the variables used for the dataheader
-    FModes file_mode;                                              // the file data mode that is choosen (content of the file)
-    HModes hash_mode;                                              // the hash mode that is choosen (hash function)
-    ChainHash chainhash1;                                          // chainhash data for the first chainhash (password -> passwordhash)
-    ChainHash chainhash2;                                          // chainhash data for the second chainhash (passwordhash -> validate password)
-    unsigned char chainhash1_datablock_len;                        // the length of the first datablock
-    unsigned char chainhash2_datablock_len;                        // the length of the second datablock
-    Bytes valid_passwordhash;                                      // saves the hash that should be the result of the second chainhash
-    Bytes enc_salt;                                                // saves the encoded salt
+    FModes file_mode;                        // the file data mode that is choosen (content of the file)
+    HModes hash_mode;                        // the hash mode that is choosen (hash function)
+    ChainHash chainhash1;                    // chainhash data for the first chainhash (password -> passwordhash)
+    ChainHash chainhash2;                    // chainhash data for the second chainhash (passwordhash -> validate password)
+    unsigned char chainhash1_datablock_len;  // the length of the first datablock
+    unsigned char chainhash2_datablock_len;  // the length of the second datablock
+    Bytes valid_passwordhash;                // saves the hash that should be the result of the second chainhash
+    Bytes enc_salt;                          // saves the encoded salt
 };
 
 struct DataHeaderSettingsIters {

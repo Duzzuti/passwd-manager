@@ -7,10 +7,10 @@
 #include "settings.h"
 
 // ChainHash struct holds all components that are needed to describe a chainhash
-struct ChainHash{
-    CHModes mode = CHModes(0);     // the mode
-    u_int64_t iters;                         // the iters
-    ChainHashData datablock{Format{CHModes(STANDARD_CHAINHASHMODE)}};                 // the data corresponding to the chainhash
+struct ChainHash {
+    CHModes mode = CHModes(0);                                         // the mode
+    u_int64_t iters;                                                   // the iters
+    ChainHashData datablock{Format{CHModes(STANDARD_CHAINHASHMODE)}};  // the data corresponding to the chainhash
 };
 
 class ChainHashModes {

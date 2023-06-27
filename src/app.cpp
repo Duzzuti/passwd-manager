@@ -258,18 +258,18 @@ Bytes App::askForHeader() const {
     std::cout << std::endl;
     std::cout << "In order to get an hash derived from the enterd password, we need to perform a chainhash" << std::endl;
     std::cout << "Please enter the preferences for this chainhash:" << std::endl << std::endl;
-    
+
     // create the ChainHash structs
     ChainHash chainhash1;
     ChainHash chainhash2;
-    
+
     chainhash1.mode = this->askForChainHashMode();
     std::cout << std::endl;  // chainhash1 mode
     chainhash1.iters = this->askForIters("How many iterations should be used to derive a hash from your password");
     std::cout << std::endl;
     // for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
-    chainhash1.datablock = ChainHashModes::askForData(chainhash1.mode);                              // gets the datablock for chainhash1
-    ErrorStruct err1 = ChainHashModes::isChainHashValid(chainhash1);  // checks whether the chainhash1 is valid
+    chainhash1.datablock = ChainHashModes::askForData(chainhash1.mode);  // gets the datablock for chainhash1
+    ErrorStruct err1 = ChainHashModes::isChainHashValid(chainhash1);     // checks whether the chainhash1 is valid
     if (!err1.success == SUCCESS) {
         // checks whether the datablock1 has a valid format
         throw std::length_error(getErrorMessage(err1));
@@ -284,8 +284,8 @@ Bytes App::askForHeader() const {
     chainhash2.iters = this->askForIters("How many iterations should be used to validate the password");
     std::cout << std::endl;
     // for every chainhash mode there are different things we need for the header. Thats why we ask this data in the ChainHashModes class
-    chainhash2.datablock = ChainHashModes::askForData(chainhash2.mode);                              // gets the datablock for chainhash2
-    ErrorStruct err2 = ChainHashModes::isChainHashValid(chainhash2);  // checks whether the chainhash2 is valid
+    chainhash2.datablock = ChainHashModes::askForData(chainhash2.mode);  // gets the datablock for chainhash2
+    ErrorStruct err2 = ChainHashModes::isChainHashValid(chainhash2);     // checks whether the chainhash2 is valid
     if (!err2.success == SUCCESS) {
         // checks whether the datablock2 has a valid format
         throw std::length_error(getErrorMessage(err2));
