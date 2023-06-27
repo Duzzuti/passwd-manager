@@ -318,9 +318,9 @@ Bytes App::askForHeader() const {
     // WORK time measurement //ISSUE
     std::cout << std::endl << "Generating password hash..." << std::endl;
     Hash* hash = HashModes::getHash(hash_mode);
-    Bytes pwhash = ChainHashModes::performChainHash(chainhash1, hash, pw);  // calculate passwordhash
+    Bytes pwhash = ChainHashModes::performChainHash(chainhash1, hash, pw).returnValue;  // calculate passwordhash
     std::cout << "Password hash generated. Generating password validator..." << std::endl;
-    Bytes pwval = ChainHashModes::performChainHash(chainhash2, hash, pwhash);  // calculate passwordhashhash
+    Bytes pwval = ChainHashModes::performChainHash(chainhash2, hash, pwhash).returnValue;  // calculate passwordhashhash
     std::cout << "Password validator generated." << std::endl;
     delete hash;
     std::cout << "PW HASH: " << toHex(pwhash) << std::endl;      // DEBUGONLY

@@ -9,6 +9,7 @@ enum ErrorCode {
     NO_ERROR_WAS_SET,
     ERR,
     ERR_BUG,
+    ERR_TIMEOUT,
     ERR_FILEMODE_INVALID,
     ERR_HASHMODE_INVALID,
     ERR_CHAINHASH_MODE_INVALID,
@@ -22,6 +23,7 @@ enum ErrorCode {
     ERR_DATABLOCK_NOT_COMPLETED,
     ERR_DATABLOCK_TOO_LONG,
     ERR_PASSWD_CHAR_INVALID,
+    ERR_PASSWORD_INVALID,
     ERR_LEN_INVALID,
     ERR_PASSWD_TOO_SHORT,
     ERR_EMPTY_FILEPATH,
@@ -65,6 +67,12 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_BUG:
             return "An error occurred due to a bug in the program. Some checks failed: " + err.errorInfo + err_msg;
+
+        case ERR_TIMEOUT:
+            return "A timeout occured: " + err_msg;
+
+        case ERR_PASSWORD_INVALID:
+            return "Password is invalid" + err_msg;
 
         case ERR_CHAINHASH_MODE_INVALID:
             return "Chainhash mode is invalid" + err_msg;

@@ -9,9 +9,9 @@ class BrutePwAttacker : public BaseAttacker {
         u_int64_t tries = 1;                             // number of tries
         Hash* hash = HashModes::getHash(dhp.hash_mode);  // get the hash function used
         // tries the empty string first, hashes to a password hash
-        Bytes ch1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, "");
+        Bytes ch1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, "").returnValue;
         // hashes that password hash to another hash (to check if the password is correct)
-        Bytes ch2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1);
+        Bytes ch2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1).returnValue;
         if (ch2 == dhp.valid_passwordhash) {
             // passwordhash is correct
             delete hash;  // free that hash ptr
@@ -41,9 +41,9 @@ class BrutePwAttacker : public BaseAttacker {
                 }
                 tries++;  // one more try needed
                 // hashes the combination to a passwordhash
-                Bytes ch1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, combination);
+                Bytes ch1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, combination).returnValue;
                 // hashes the passwordhash to a passwordhash validator hash
-                Bytes ch2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1);
+                Bytes ch2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1).returnValue;
                 if (ch2 == dhp.valid_passwordhash) {
                     // got the right password hash
                     delete hash;

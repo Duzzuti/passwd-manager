@@ -125,7 +125,7 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
         // verifies the given pwhash with the currently set validator
         Hash* hash = HashModes::getHash(this->dh.hash_mode);  // gets the right hash function
         // is the chainhash from the given hash equal to the validator
-        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(this->dh.chainhash2, hash, passwordhash));
+        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(this->dh.chainhash2, hash, passwordhash).returnValue);
         delete hash;
         if (!isOkay) {
             // given pwhash is not valid

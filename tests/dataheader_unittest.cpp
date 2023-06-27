@@ -285,8 +285,8 @@ TEST(DataHeaderClass, calcHeaderBytes) {
 
             // generating random password and passwordhash
             std::string password = charVecToString(RNG::get_random_bytes(16));  // random password with 16 characters
-            Bytes phash = ChainHashModes::performChainHash(chainhash1, hash, password);
-            Bytes pval = ChainHashModes::performChainHash(chainhash2, hash, phash);
+            Bytes phash = ChainHashModes::performChainHash(chainhash1, hash, password).returnValue;
+            Bytes pval = ChainHashModes::performChainHash(chainhash2, hash, phash).returnValue;
             delete hash;
 
             // wrong valid password hash validator and passwordhash
