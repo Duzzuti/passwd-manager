@@ -9,16 +9,12 @@
 struct DataHeaderParts {
    public:
     // holds the variables used for the dataheader
-    u_int64_t chainhash1_iters;                                    // iterations for the first chainhash
-    u_int64_t chainhash2_iters;                                    // iterations for the second chainhash
     FModes file_mode;                                              // the file data mode that is choosen (content of the file)
     HModes hash_mode;                                              // the hash mode that is choosen (hash function)
-    CHModes chainhash1_mode = CHModes(0);                          // chainhash mode for the first chainhash (password -> passwordhash)
-    CHModes chainhash2_mode = CHModes(0);                          // chainhash mode for the second chainhash (passwordhash -> validate password)
+    ChainHash chainhash1;                                          // chainhash data for the first chainhash (password -> passwordhash)
+    ChainHash chainhash2;                                          // chainhash data for the second chainhash (passwordhash -> validate password)
     unsigned char chainhash1_datablock_len;                        // the length of the first datablock
     unsigned char chainhash2_datablock_len;                        // the length of the second datablock
-    ChainHashData chainhash1_datablock{Format(CHAINHASH_NORMAL)};  // the first datablock
-    ChainHashData chainhash2_datablock{Format(CHAINHASH_NORMAL)};  // the second datablock
     Bytes valid_passwordhash;                                      // saves the hash that should be the result of the second chainhash
     Bytes enc_salt;                                                // saves the encoded salt
 };
@@ -74,8 +70,8 @@ class DataHeader {
     void setFileDataMode(const FModes file_mode);  // sets the file data mode (semantik of content)
     // setter for the chainhashs, takes a mode, number of iters, a datablock length (to verify datablock) and the datablock
     // which conains data for the chainhash
-    void setChainHash1(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
-    void setChainHash2(const CHModes mode, const u_int64_t iters, const unsigned char len, const ChainHashData datablock);
+    void setChainHash1(const ChainHash chainhash, const unsigned char len);
+    void setChainHash2(const ChainHash chainhash, const unsigned char len);
     void setValidPasswordHashBytes(const Bytes validBytes);  // sets the passwordhashhash to validate the password hash
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
