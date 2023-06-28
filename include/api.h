@@ -160,5 +160,5 @@ class API {
 
     // deletes saved data (password hash, data header, encrypted data)
     // after this call, the API object is in the same state as after the constructor call
-    void logout(Workflow new_workflow) noexcept;
+    void logout(Workflow new_workflow, const FModes file_mode) noexcept;
 };
