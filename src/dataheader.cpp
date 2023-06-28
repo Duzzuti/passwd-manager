@@ -526,27 +526,27 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     return err;
 }
 
-ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) noexcept{
+ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) noexcept {
     // creating a new header by setting the header parts
     ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
-    try{
+    try {
         // these methods throw exceptions if the data is invalid
-        DataHeader dh{dhp.hash_mode};       // setting the hash mode
-        dh.setFileDataMode(dhp.file_mode);  // setting the file data mode
-        dh.setChainHash1(dhp.chainhash1, dhp.chainhash1_datablock_len); // setting the chainhash 1
-        dh.setChainHash2(dhp.chainhash2, dhp.chainhash2_datablock_len); // setting the chainhash 2
-        dh.setValidPasswordHashBytes(dhp.valid_passwordhash);           // setting the password validator hash
-        dh.setEncSalt(dhp.enc_salt);                               // setting the encrypted salt
-        
+        DataHeader dh{dhp.hash_mode};                                    // setting the hash mode
+        dh.setFileDataMode(dhp.file_mode);                               // setting the file data mode
+        dh.setChainHash1(dhp.chainhash1, dhp.chainhash1_datablock_len);  // setting the chainhash 1
+        dh.setChainHash2(dhp.chainhash2, dhp.chainhash2_datablock_len);  // setting the chainhash 2
+        dh.setValidPasswordHashBytes(dhp.valid_passwordhash);            // setting the password validator hash
+        dh.setEncSalt(dhp.enc_salt);                                     // setting the encrypted salt
+
         // success
         err.returnValue = dh;
         err.success = SUCCESS;
         return err;
 
-    }catch(const std::exception& ex){
+    } catch (const std::exception& ex) {
         // some error occured
         err.errorInfo = "An error occured while setting the header parts";
         err.what = ex.what();
-        return err;	
+        return err;
     }
 }
