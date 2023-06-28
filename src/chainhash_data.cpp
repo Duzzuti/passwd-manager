@@ -97,7 +97,7 @@ void ChainHashData::addBytes(Bytes bytes) {
 
 void ChainHashData::generateRandomData() {
     // fills the datablock with random data
-    if(!this->data_parts.empty() && !this->name_lens.empty()) {
+    if (!this->data_parts.empty() && !this->name_lens.empty()) {
         // some parts have been set, therefore this function is not working
         throw new std::logic_error("Cannot generate random data, because some data parts have been set.");
     }

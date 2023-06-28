@@ -96,7 +96,7 @@ TEST(DataHeaderClass, setChainHash) {
             std::vector<NameLen> vnl = format.getNameLenList();
             // add random datablock data
             chd.generateRandomData();
-            unsigned char len = chd.getLen();   // current used datablock length
+            unsigned char len = chd.getLen();  // current used datablock length
 
             EXPECT_TRUE(chd.isCompletedFormat(format));  // check if the chainhashdata is completed
 
