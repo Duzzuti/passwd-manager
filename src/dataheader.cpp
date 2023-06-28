@@ -94,7 +94,7 @@ void DataHeader::setValidPasswordHashBytes(const Bytes validBytes) {
     this->dh.valid_passwordhash = validBytes;
 }
 
-void DataHeader::setSalt(const Bytes salt) {
+void DataHeader::setEncSalt(const Bytes salt) {
     // sets the salt
     if (salt.getLen() != this->hash_size) {  // check if the hash size is right
         throw std::length_error("Length of the given salt does not match with the hash size");
@@ -502,7 +502,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     // encrypted salt
     try {
         tmp = fileBytes.popFirstBytes(err.returnValue.hash_size).value();
-        err.returnValue.setSalt(tmp);
+        err.returnValue.setEncSalt(tmp);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -524,4 +524,29 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     }
     err.success = SUCCESS;
     return err;
+}
+
+ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) noexcept{
+    // creating a new header by setting the header parts
+    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    try{
+        // these methods throw exceptions if the data is invalid
+        DataHeader dh{dhp.hash_mode};       // setting the hash mode
+        dh.setFileDataMode(dhp.file_mode);  // setting the file data mode
+        dh.setChainHash1(dhp.chainhash1, dhp.chainhash1_datablock_len); // setting the chainhash 1
+        dh.setChainHash2(dhp.chainhash2, dhp.chainhash2_datablock_len); // setting the chainhash 2
+        dh.setValidPasswordHashBytes(dhp.valid_passwordhash);           // setting the password validator hash
+        dh.setEncSalt(dhp.enc_salt);                               // setting the encrypted salt
+        
+        // success
+        err.returnValue = dh;
+        err.success = SUCCESS;
+        return err;
+
+    }catch(const std::exception& ex){
+        // some error occured
+        err.errorInfo = "An error occured while setting the header parts";
+        err.what = ex.what();
+        return err;	
+    }
 }

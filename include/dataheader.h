@@ -60,7 +60,7 @@ class DataHeader {
    private:
     // checks if all data is set correctly
     bool isComplete() const noexcept;
-    void setSalt(const Bytes salt);  // sets the salt
+    void setEncSalt(const Bytes salt);  // sets the salt
 
    public:
     // sets up the data header with a hash mode which is necessary to
@@ -81,6 +81,8 @@ class DataHeader {
     // creates a new DataHeader object with the given header bytes
     // after this call the fileBytes are the data that is not part of the header
     static ErrorStruct<DataHeader> setHeaderBytes(Bytes& fileBytes) noexcept;
+    // creates a new DataHeader object with the given data header parts
+    static ErrorStruct<DataHeader> setHeaderParts(const DataHeaderParts dhp) noexcept;
 
     // gets the length of the currently set header bytes, if its not currently set, we try to calculate the expected len
     // all set data, such as chainhash data etc. are used to calculate this expected len. If the data is not enough we return 0
