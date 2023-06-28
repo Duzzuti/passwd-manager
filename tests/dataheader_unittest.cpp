@@ -94,20 +94,10 @@ TEST(DataHeaderClass, setChainHash) {
             }
             ChainHashData chd{format};
             std::vector<NameLen> vnl = format.getNameLenList();
-            unsigned char len = 0;  // current used datablock length
             // add random datablock data
-            for (NameLen nl : vnl) {
-                if (nl.len != 0) {
-                    // got a data part with set length
-                    chd.addBytes(Bytes(nl.len));
-                    len += nl.len;
-                } else {
-                    // got a data parCHModest with * length (use the remaining bytes)
-                    chd.addBytes(Bytes(255 - len));
-                    len = 255;
-                    break;
-                }
-            }
+            chd.generateRandomData();
+            unsigned char len = chd.getLen();   // current used datablock length
+
             EXPECT_TRUE(chd.isCompletedFormat(format));  // check if the chainhashdata is completed
 
             // setting up the ChainHash struct
@@ -233,30 +223,11 @@ TEST(DataHeaderClass, calcHeaderBytes) {
             ChainHashData chd2{format2};
 
             // setting the chainhash data parts into the datablock
-            unsigned int len1 = 0;
-            for (NameLen nl : format1.getNameLenList()) {
-                if (nl.len != 0) {
-                    chd1.addBytes(Bytes(nl.len));
-                    len1 += nl.len;
-                } else {
-                    //*B found, variable length (we just add the max length)
-                    chd1.addBytes(Bytes(255 - len1));
-                    len1 = 255;
-                    break;
-                }
-            }
-            unsigned int len2 = 0;
-            for (NameLen nl : format2.getNameLenList()) {
-                if (nl.len != 0) {
-                    chd2.addBytes(Bytes(nl.len));
-                    len2 += nl.len;
-                } else {
-                    //*B found, variable length (we just add the max length)
-                    chd2.addBytes(Bytes(255 - len2));
-                    len2 = 255;
-                    break;
-                }
-            }
+            chd1.generateRandomData();
+            unsigned int len1 = chd1.getLen();
+            chd2.generateRandomData();
+            unsigned int len2 = chd2.getLen();
+
             EXPECT_TRUE(chd1.isCompletedFormat(format1));  // checking if the chainhashdata is completed
             EXPECT_TRUE(chd2.isCompletedFormat(format2));  // checking if the chainhashdata is completed
             // setting up the ChainHash struct

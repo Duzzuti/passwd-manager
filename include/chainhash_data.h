@@ -38,6 +38,9 @@ class ChainHashData {
     // throws if the given bytes have a invalid length for the next part or if the datablock is already complete
     void addBytes(Bytes bytes);
 
+    // fills the datablock with random data
+    void generateRandomData();
+
     // if we compare two ChainHashData objects we compare their data_parts and header bytes
     // both have to be complete, otherwise there are not equal
     friend bool operator==(const ChainHashData& chd1, const ChainHashData& chd2);
