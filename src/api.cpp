@@ -427,35 +427,35 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
-    
+
     ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     // setting call contracts
-    if(this->current_workflow != WORK_WITH_NEW_FILE || this->current_workflow != WORK_WITH_OLD_FILE){
+    if (this->current_workflow != WORK_WITH_NEW_FILE || this->current_workflow != WORK_WITH_OLD_FILE) {
         // wrong workflow to access this get file content function
         err.errorCode = ERR_WRONG_WORKFLOW;
         err.errorInfo = "createDataHeader is only available in the WORK_WITH_NEW_FILE or WORK_WITH_OLD_FILE workflows";
         return err;
     }
-    if(this->current_workflow == WORK_WITH_NEW_FILE && this->current_state == FILE_GOTTEN){
+    if (this->current_workflow == WORK_WITH_NEW_FILE && this->current_state == FILE_GOTTEN) {
         // the password does not need to be verified in the WORK_WITH_NEW_FILE workflow
         // because the user enters a new password for the file
         this->current_state = PASSWORD_VERIFIED;
     }
-    if(this->current_state != PASSWORD_VERIFIED){
+    if (this->current_state != PASSWORD_VERIFIED) {
         // the api is in the wrong state
         err.errorCode = ERR_API_STATE_INVALID;
         err.errorInfo = "createDataHeader is only available in the PASSWORD_VERIFIED state";
         return err;
     }
-    if(ds.file_mode != this->file_data_struct.file_mode){
+    if (ds.file_mode != this->file_data_struct.file_mode) {
         // the file mode is not the same as the one that was used to get the file
         err.errorCode = ERR_ARGUEMENT_INVALID;
         err.errorInfo = "The file mode matches not with the API file mode";
         return err;
     }
-    
+
     DataHeaderParts dhp;
-    try{
+    try {
         // trying to get the chainhashes
         ChainHashData chd1{Format{ds.chainhash1_mode}};
         ChainHashData chd2{Format{ds.chainhash2_mode}};
@@ -467,8 +467,8 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
         dhp.chainhash2 = ChainHash{ds.chainhash2_mode, ds.chainhash2_iters, chd2};
         dhp.chainhash1_datablock_len = chd1.getLen();
         dhp.chainhash2_datablock_len = chd2.getLen();
-    
-    }catch(const std::exception& e){
+
+    } catch (const std::exception& e) {
         // something went wrong while creating the chainhashes
         err.errorInfo = "Something went wrong while creating the chainhashes";
         err.what = e.what();
@@ -485,7 +485,7 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     timer.start();
     // first chainhash (password -> passwordhash)
     ErrorStruct<Bytes> ch1_err = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
-    if(ch1_err.success != SUCCESS){
+    if (ch1_err.success != SUCCESS) {
         // something went wrong while performing the first chainhash
         delete hash;
         err.success = ch1_err.success;
@@ -497,15 +497,15 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     // handling the timeout
     u_int64_t elapsedTime = timer.peekTime();
     u_int64_t timeout_copy = timeout;
-    if(timeout != 0){
+    if (timeout != 0) {
         // if the user set a timeout, we have to check how much time is left
-        if(timeout <= elapsedTime){
+        if (timeout <= elapsedTime) {
             // should not happen, but if the function closes and the timeout runs out shortly after, we have to return an timeout
             delete hash;
             err.success = TIMEOUT;
             err.errorCode = ERR_TIMEOUT;
             return err;
-        }else{
+        } else {
             // if there is still time left, we have to subtract the elapsed time from the timeout
             timeout_copy -= elapsedTime;
         }
@@ -513,7 +513,7 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     // second chainhash (passwordhash -> passwordhashhash = validation hash)
     ErrorStruct<Bytes> ch2_err = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1_err.returnValue, timeout_copy);
     delete hash;
-    if(ch2_err.success != SUCCESS){
+    if (ch2_err.success != SUCCESS) {
         // something went wrong while performing the second chainhash
         err.success = ch2_err.success;
         err.errorCode = ch2_err.errorCode;
@@ -527,7 +527,7 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
 
     // dataheader parts is now ready to create the dataheader object
     err = DataHeader::setHeaderParts(dhp);
-    if(err.success != SUCCESS) {
+    if (err.success != SUCCESS) {
         // something went wrong while setting the header parts
         return err;
     }
