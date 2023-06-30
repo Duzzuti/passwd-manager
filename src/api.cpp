@@ -82,6 +82,32 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     return err;
 }
 
+ErrorStruct<DataHeader> API::createDHStateCheck(const FModes new_file_mode) noexcept {
+    // checks if the api is in the right state to create a data header
+
+    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    // setting call contracts
+    if (this->current_workflow != WORK_WITH_NEW_FILE || this->current_workflow != WORK_WITH_OLD_FILE) {
+        // wrong workflow to access this get file content function
+        err.errorCode = ERR_WRONG_WORKFLOW;
+        err.errorInfo = "createDataHeader is only available in the WORK_WITH_NEW_FILE or WORK_WITH_OLD_FILE workflows";
+        return err;
+    }
+    if (this->current_state != PASSWORD_VERIFIED) {
+        // the api is in the wrong state
+        err.errorCode = ERR_API_STATE_INVALID;
+        err.errorInfo = "createDataHeader is only available in the PASSWORD_VERIFIED state";
+        return err;
+    }
+    if (new_file_mode != this->file_data_struct.file_mode) {
+        // the file mode is not the same as the one that was used to get the file
+        err.errorCode = ERR_ARGUEMENT_INVALID;
+        err.errorInfo = "The file mode matches not with the API file mode";
+        return err;
+    }
+    return ErrorStruct<DataHeader>{SUCCESS, NO_ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+}
+
 API::API(Workflow workflow, const FModes file_mode) {
     // constructs the API in a given worflow mode and initializes the private variables
     if (workflow != WORK_WITH_OLD_FILE && workflow != WORK_WITH_NEW_FILE && workflow != DELETE_FILE) {
@@ -322,6 +348,11 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) no
     // this file is set as the working file now
     this->valid_file = file_path_copy;
     this->current_state = FILE_GOTTEN;
+    if(this->current_workflow == WORK_WITH_NEW_FILE) {
+        // the password does not need to be verified in the WORK_WITH_NEW_FILE workflow
+        // because the user enters a new password for the file
+        this->current_state = PASSWORD_VERIFIED;
+    }
 
     err.success = SUCCESS;
     return err;
@@ -428,31 +459,14 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
 
-    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
-    // setting call contracts
-    if (this->current_workflow != WORK_WITH_NEW_FILE || this->current_workflow != WORK_WITH_OLD_FILE) {
-        // wrong workflow to access this get file content function
-        err.errorCode = ERR_WRONG_WORKFLOW;
-        err.errorInfo = "createDataHeader is only available in the WORK_WITH_NEW_FILE or WORK_WITH_OLD_FILE workflows";
+    // checks if the api is in the correct state
+    ErrorStruct<DataHeader> err = this->createDHStateCheck(ds.file_mode);
+    if(err.success != SUCCESS){
         return err;
     }
-    if (this->current_workflow == WORK_WITH_NEW_FILE && this->current_state == FILE_GOTTEN) {
-        // the password does not need to be verified in the WORK_WITH_NEW_FILE workflow
-        // because the user enters a new password for the file
-        this->current_state = PASSWORD_VERIFIED;
-    }
-    if (this->current_state != PASSWORD_VERIFIED) {
-        // the api is in the wrong state
-        err.errorCode = ERR_API_STATE_INVALID;
-        err.errorInfo = "createDataHeader is only available in the PASSWORD_VERIFIED state";
-        return err;
-    }
-    if (ds.file_mode != this->file_data_struct.file_mode) {
-        // the file mode is not the same as the one that was used to get the file
-        err.errorCode = ERR_ARGUEMENT_INVALID;
-        err.errorInfo = "The file mode matches not with the API file mode";
-        return err;
-    }
+    // sets the error to fail in order to return it if something goes wrong
+    err.success = FAIL;
+    err.errorCode = ERR;
 
     DataHeaderParts dhp;
     try {
@@ -532,6 +546,90 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
         return err;
     }
     this->correct_password_hash = ch1_err.returnValue;
+    this->dh = err.returnValue;
+    return err;
+}
+
+ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
+    // creates a data header for a given password and settings by randomizing the salt and chainhash data
+    // This call is expensive because it has to chainhash the password twice to generate a validator.
+    // you can specify the time (in ms) that the chainhashes should take in the settings
+
+    // checks if the api is in the correct state
+    ErrorStruct<DataHeader> err = this->createDHStateCheck(ds.file_mode);
+    if(err.success != SUCCESS){
+        return err;
+    }
+    // sets the error to fail in order to return it if something goes wrong
+    err.success = FAIL;
+    err.errorCode = ERR;
+
+    DataHeaderParts dhp;
+    ChainHashData chd1{Format{CHModes(STANDARD_CHAINHASHMODE)}};
+    ChainHashData chd2{Format{CHModes(STANDARD_CHAINHASHMODE)}};
+    ChainHashTimed ch1;
+    ChainHashTimed ch2;
+    try {
+        // trying to get the chainhashes
+        chd1 = ChainHashData(Format{ds.chainhash1_mode});
+        chd2 = ChainHashData(Format{ds.chainhash2_mode});
+        // setting random data for the chainhashes datablocks (salts that are used by the chainhash)
+        chd1.generateRandomData();
+        chd2.generateRandomData();
+        // creating ChainHash structures
+        ch1 = ChainHashTimed{ds.chainhash1_mode, ds.chainhash1_time, chd1};
+        ch2 = ChainHashTimed{ds.chainhash2_mode, ds.chainhash2_time, chd2};
+        dhp.chainhash1_datablock_len = chd1.getLen();
+        dhp.chainhash2_datablock_len = chd2.getLen();
+
+    } catch (const std::exception& e) {
+        // something went wrong while creating the chainhashes
+        err.errorInfo = "Something went wrong while creating the chainhashes";
+        err.what = e.what();
+        return err;
+    }
+    // setting up the other parts
+    dhp.file_mode = ds.file_mode;
+    dhp.hash_mode = ds.hash_mode;
+    Hash* hash = HashModes::getHash(dhp.hash_mode);
+    dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
+
+    // first chainhash (password -> passwordhash)
+    ErrorStruct<ChainHashResult> ch1_err = ChainHashModes::performChainHash(ch1, hash, password);
+    if (ch1_err.success != SUCCESS) {
+        // something went wrong while performing the first chainhash
+        delete hash;
+        err.success = ch1_err.success;
+        err.errorCode = ch1_err.errorCode;
+        err.errorInfo = ch1_err.errorInfo;
+        err.what = ch1_err.what;
+        return err;
+    }
+    // collecting the ChainHash that was used (getting the iterations)
+    dhp.chainhash1 = ch1_err.returnValue.chainhash;
+
+    // second chainhash (passwordhash -> passwordhashhash = validation hash)
+    ErrorStruct<ChainHashResult> ch2_err = ChainHashModes::performChainHash(ch2, hash, ch1_err.returnValue.result);
+    delete hash;
+    if (ch2_err.success != SUCCESS) {
+        // something went wrong while performing the second chainhash
+        err.success = ch2_err.success;
+        err.errorCode = ch2_err.errorCode;
+        err.errorInfo = ch2_err.errorInfo;
+        err.what = ch2_err.what;
+        return err;
+    }
+
+    // collecting the ChainHash that was used (getting the iterations)
+    dhp.chainhash2 = ch2_err.returnValue.chainhash;
+
+    // dataheader parts is now ready to create the dataheader object
+    err = DataHeader::setHeaderParts(dhp);
+    if (err.success != SUCCESS) {
+        // something went wrong while setting the header parts
+        return err;
+    }
+    this->correct_password_hash = ch1_err.returnValue.result;
     this->dh = err.returnValue;
     return err;
 }

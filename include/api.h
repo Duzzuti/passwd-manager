@@ -61,6 +61,8 @@ class API {
     // that means there has to be a valid header with the file mode provided from the api
     ErrorStruct<bool> checkFileData(const std::filesystem::path file_path) const noexcept;
 
+    ErrorStruct<DataHeader> createDHStateCheck(const FModes new_file_mode) noexcept;
+
    public:
     // constructs the API in a given worflow mode and initializes the private variables
     // also takes the file mode that should be worked with
