@@ -54,5 +54,4 @@ class ChainHashModes {
     // these methods use a runtime instead of iterations and are returning a ChainHash
     static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data);
     static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data);
-
 };

@@ -215,12 +215,12 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, cons
     }
 }
 
-ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data) { 
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data) {
     // WORK
     return ErrorStruct<ChainHashResult>();
 }
 
-ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data) { 
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data) {
     // WORK
     return ErrorStruct<ChainHashResult>();
 }
