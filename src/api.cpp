@@ -348,7 +348,7 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) no
     // this file is set as the working file now
     this->valid_file = file_path_copy;
     this->current_state = FILE_GOTTEN;
-    if(this->current_workflow == WORK_WITH_NEW_FILE) {
+    if (this->current_workflow == WORK_WITH_NEW_FILE) {
         // the password does not need to be verified in the WORK_WITH_NEW_FILE workflow
         // because the user enters a new password for the file
         this->current_state = PASSWORD_VERIFIED;
@@ -461,7 +461,7 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
 
     // checks if the api is in the correct state
     ErrorStruct<DataHeader> err = this->createDHStateCheck(ds.file_mode);
-    if(err.success != SUCCESS){
+    if (err.success != SUCCESS) {
         return err;
     }
     // sets the error to fail in order to return it if something goes wrong
@@ -557,7 +557,7 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
 
     // checks if the api is in the correct state
     ErrorStruct<DataHeader> err = this->createDHStateCheck(ds.file_mode);
-    if(err.success != SUCCESS){
+    if (err.success != SUCCESS) {
         return err;
     }
     // sets the error to fail in order to return it if something goes wrong
