@@ -50,7 +50,7 @@ void DataHeader::setChainHash1(const ChainHash chainhash, const unsigned char le
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
     ErrorStruct err = ChainHashModes::isChainHashValid(chainhash);  // validates the chainhash
-    if (!err.success == SUCCESS) {
+    if (err.success != SUCCESS) {
         // validates the chainhash
         throw std::invalid_argument(getErrorMessage(err));
     }
@@ -67,7 +67,7 @@ void DataHeader::setChainHash2(const ChainHash chainhash, const unsigned char le
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
     ErrorStruct err = ChainHashModes::isChainHashValid(chainhash);  // validates the chainhash
-    if (!err.success == SUCCESS) {
+    if (err.success != SUCCESS) {
         // validates the chainhash
         throw std::invalid_argument(getErrorMessage(err));
     }

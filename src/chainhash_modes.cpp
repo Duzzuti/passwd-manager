@@ -146,7 +146,7 @@ ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode) {
 ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, const Hash* hash, const Bytes data, const u_int64_t timeout) {
     // performs a chainhash on bytes
     ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
-    if (!err.success == SUCCESS) {
+    if (err.success != SUCCESS) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
@@ -182,7 +182,7 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, cons
 ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, const Hash* hash, const std::string data, const u_int64_t timeout) {
     // performs a chainhash on a string
     ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
-    if (!err.success == SUCCESS) {
+    if (err.success != SUCCESS) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
