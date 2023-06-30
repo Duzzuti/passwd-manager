@@ -214,3 +214,13 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, cons
             throw std::invalid_argument("chainhash mode does not exist");
     }
 }
+
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data) { 
+    // WORK
+    return ErrorStruct<ChainHashResult>();
+}
+
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data) { 
+    // WORK
+    return ErrorStruct<ChainHashResult>();
+}
