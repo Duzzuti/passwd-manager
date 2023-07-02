@@ -58,9 +58,10 @@ struct ErrorStruct {
     // getters and setters
     T returnValue() {
         // you cannot access the return value if the function failed
-        if (success == FAIL) throw std::runtime_error(what);
+        if (success != SUCCESS) throw std::runtime_error(what);
         return returnvalue;
     };
+    bool isSuccess() { return success == SUCCESS; };
     void setReturnValue(T value) { returnvalue = value; };
 
    private:
@@ -72,7 +73,7 @@ template <typename T>
 std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
     // verbose_err_msg triggers the return of a more detailed error message
     //  returns an error message based on the error code and the error info
-    if (err.success == SUCCESS) return "getErrorMessage was called on a succeeded ErrorStruct";
+    if (err.isSuccess()) return "getErrorMessage was called on a succeeded ErrorStruct";
     std::string err_msg = "";
     if (verbose_err_msg) err_msg = "\nException message: " + err.what;
 
