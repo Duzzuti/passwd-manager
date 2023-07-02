@@ -32,11 +32,12 @@ class API {
         API* parent;
         // deletes saved data (password hash, data header, encrypted data)
         // after this call, the API object is in the same state as after the constructor call
+        public:
         void logout(const FModes file_mode) noexcept {
             parent->correct_password_hash = Bytes();
             parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
             parent->encrypted_data = Bytes();
-            parent->valid_file = std::filesystem::path();
+            parent->selected_file = std::filesystem::path();
             parent->file_data_struct = FileDataStruct{file_mode, Bytes()};
             parent->current_state = INIT{parent};
         }
@@ -54,9 +55,15 @@ class API {
         virtual ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the INIT state"};
         };
+        
+        // gets if the selected file is empty
+        virtual ErrorStruct<bool> isFileEmpty() const noexcept {
+            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "isFileEmpty is only available in the FILE_SELECTED state"};
+        };
+
         // deletes the given .enc file
-        virtual ErrorStruct<bool> deleteFile() const noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED state"}; };
-        // gets the content of a given file path (e.g. enc_dir_path/file_name or enc_dir_path/file_name.enc)
+        virtual ErrorStruct<bool> deleteFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED state"}; };
+        // gets the content of the selected file
         // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
         virtual ErrorStruct<Bytes> getFileContent() noexcept { return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getFileContent is only available in the FILE_SELECTED state"}; };
         // unselects a file (this is not longer the working file)
@@ -81,16 +88,25 @@ class API {
         // decrypts the data
         // returns the decrypted content (without the data header)
         // uses the password and data header that were passed to verifyPassword
-        virtual ErrorStruct<FileDataStruct> getDecryptedData(const Bytes enc_data) const noexcept {
+        virtual ErrorStruct<FileDataStruct> getDecryptedData() noexcept {
             return ErrorStruct<FileDataStruct>{FAIL, ERR_API_STATE_INVALID, "getDecryptedData is only available in the PASSWORD_VERIFIED state"};
         };
+        // gets the file data struct 
+        // it stores the file mode as well as the decrypted file content
+        virtual ErrorStruct<FileDataStruct> getFileData() noexcept{
+            return ErrorStruct<FileDataStruct>{FAIL, ERR_API_STATE_INVALID, "getFileData is only available in the DECRYPTED state"};
+        }
         // encrypts the data and returns the encrypted data
         // uses the password and data header that were passed to verifyPassword
         virtual ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept {
             return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getEncryptedData is only available in the DECRYPTED state"};
         };
+        // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
+        virtual ErrorStruct<bool> writeToFile() noexcept {
+            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "writeToFile is only available in the ENCRYPTED state"};
+        };
         // writes encrypted data to a file adds the dataheader, uses the encrypted data from getEncryptedData
-        virtual ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) const noexcept {
+        virtual ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "writeToFile is only available in the ENCRYPTED state"};
         };
 
@@ -110,7 +126,8 @@ class API {
     class FILE_SELECTED : public WorkflowState {
        public:
         FILE_SELECTED(API* x) : WorkflowState(x){};
-        ErrorStruct<bool> deleteFile() const noexcept override;
+        ErrorStruct<bool> isFileEmpty() const noexcept override;
+        ErrorStruct<bool> deleteFile() noexcept override;
         ErrorStruct<Bytes> getFileContent() noexcept override;
         ErrorStruct<bool> unselectFile() noexcept override;
         ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept override;
@@ -121,13 +138,14 @@ class API {
     class PASSWORD_VERIFIED : public WorkflowState {
        public:
         PASSWORD_VERIFIED(API* x) : WorkflowState(x){};
-        ErrorStruct<FileDataStruct> getDecryptedData(const Bytes enc_data) const noexcept override;
+        ErrorStruct<FileDataStruct> getDecryptedData() noexcept override;
     };
 
     class DECRYPTED : public WorkflowState {
        public:
         DECRYPTED(API* x) : WorkflowState(x){};
         ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept override;
+        ErrorStruct<FileDataStruct> getFileData() noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept override;
     };
@@ -135,7 +153,8 @@ class API {
     class ENCRYPTED : public WorkflowState {
        public:
         ENCRYPTED(API* x) : WorkflowState(x){};
-        ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) const noexcept override;
+        ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept override;
+        ErrorStruct<bool> writeToFile() noexcept override;
     };
 
     class FINISHED : public WorkflowState {
@@ -143,27 +162,34 @@ class API {
         FINISHED(API* x) : WorkflowState(x){};
     };
 
-    WorkflowState current_state;  // the current state of the API (makes sure that the API is used correctly)
+    // the current state of the API (makes sure that the API is used correctly)
+    WorkflowState current_state = INIT(this);
     // the file mode that should be used for the file is stored in the FileDataStruct
     FileDataStruct file_data_struct;  // the user can construct a file data object from this struct
     Bytes correct_password_hash;      // the correct password hash for the dataheader
     // setting standard data header
-    DataHeader dh = DataHeader(HModes(STANDARD_HASHMODE));  // the data header for the correct password
+    DataHeader dh = DataHeader{HModes(STANDARD_HASHMODE)};  // the data header for the correct password
     // stores the file content that was encrypted by the algorithm
     // only this file content is valid to write to a file
     Bytes encrypted_data;
     // stores the path to the file from that the data was read
     // or an different file if the user wants to write to a different file (setFile())
-    std::filesystem::path valid_file;
+    std::filesystem::path selected_file;
+    bool file_empty = false;  // selected file is empty?
 
     // utility functions
     // checks if an file path is valid
     ErrorStruct<bool> checkFilePath(const std::filesystem::path file_path, const bool should_exist = false) const noexcept;
-    // checks if the file data is valid or the file is empty
+    // checks if the file data header is valid or the file is empty
     // that means there has to be a valid header with the file mode provided from the api
+    // the return value is false if the file is empty
     ErrorStruct<bool> checkFileData(const std::filesystem::path file_path) const noexcept;
 
-    ErrorStruct<DataHeader> createDHStateCheck(const FModes new_file_mode) noexcept;
+    // adds the extension to the file path if it is not already there
+    ErrorStruct<std::filesystem::path> addExtension(const std::filesystem::path file_path) const noexcept;
+
+    // gets the file content from the file
+    ErrorStruct<Bytes> getFileContent(const std::filesystem::path file_path) const noexcept;
 
    public:
     // constructs the api with the file mode that should be worked with
@@ -199,23 +225,40 @@ class API {
     static ErrorStruct<std::vector<std::string>> getAllEncFileNames(const std::filesystem::path dir) noexcept;
 
     // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
-    ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept;
+    ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept{
+        return this->current_state.getRelevantFileNames(dir);
+    }
 
     // creates a new .enc file at the given path (path contains the name of the file)
-    ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept;
+    ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept{
+        return this->current_state.createFile(file_path);
+    }
 
     // selects the file that should be worked with
     // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
-    ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept;
+    ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept{
+        return this->current_state.selectFile(file_path);
+    }
+
+    // checks if the selected file is empty
+    ErrorStruct<bool> isFileEmpty() const noexcept{
+        return this->current_state.isFileEmpty();
+    }
 
     // unselects the current file (it is no longer worked with this file)
-    ErrorStruct<bool> unselectFile() noexcept;
+    ErrorStruct<bool> unselectFile() noexcept{
+        return this->current_state.unselectFile();
+    }
 
     // deletes the selected .enc file
-    ErrorStruct<bool> deleteFile() const noexcept;
+    ErrorStruct<bool> deleteFile() noexcept{
+        return this->current_state.deleteFile();
+    }
 
     // gets the content of the selected file
-    ErrorStruct<Bytes> getFileContent() noexcept;
+    ErrorStruct<Bytes> getFileContent() noexcept{
+        return this->current_state.getFileContent();
+    }
 
     // extract the data header from the file content
     static ErrorStruct<DataHeader> getDataHeader(const Bytes file_content) noexcept;
@@ -228,28 +271,54 @@ class API {
     // This call is expensive
     // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
-    ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept;
+    ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept{
+        return this->current_state.verifyPassword(password, timeout);
+    }
 
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations or the time (the chainhash runs until the time is reached to get the iterations)
-    ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept;
-    ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept;
+    ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept{
+        return this->current_state.createDataHeader(password, ds, timeout);
+    }
+    ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept{
+        return this->current_state.createDataHeader(password, ds);
+    }
 
     // decrypts the data (requires successful verifyPassword run)
     // returns the decrypted content (without the data header)
     // uses the password and data header from verifyPassword
-    ErrorStruct<FileDataStruct> getDecryptedData(const Bytes enc_data) const noexcept;
+    ErrorStruct<FileDataStruct> getDecryptedData() noexcept{
+        return this->current_state.getDecryptedData();
+    }
+
+    // gets the file data struct 
+    // it stores the file mode as well as the decrypted file content
+    ErrorStruct<FileDataStruct> getFileData() noexcept{
+        return this->current_state.getFileData();
+    }
+
 
     // encrypts the data (requires successful getDecryptedData or createDataHeader run) returns the encrypted data
     // uses the password and data header from verifyPassword or createDataHeader
-    ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept;
+    ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept{
+        return this->current_state.getEncryptedData(file_data);
+    }
 
     // writes encrypted data to a file adds the dataheader (requires successful getEncryptedData run)
-    ErrorStruct<bool> writeToFile(const std::filesystem::path file_path, const Bytes enc_data) const noexcept;
+    ErrorStruct<bool> writeToFile() noexcept{
+        // writes to selected file
+        return this->current_state.writeToFile();
+    }
+    ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept{
+        // writes to file at file_path (has to be empty)
+        return this->current_state.writeToFile(file_path);
+    }
 
     // deletes saved data (password hash, data header, encrypted data)
     // after this call, the API object is in the same state as after the constructor call
-    void logout(const FModes file_mode) noexcept;
+    void logout(const FModes file_mode) noexcept{
+        this->current_state.logout(file_mode);
+    }
 };

@@ -12,7 +12,6 @@ ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, cons
     // checks if the given file path is valid (file_path has to be not empty and have the right extension)
     // if should_exist is true, the file has to exist otherwise it has to not exist
     ErrorStruct<bool> err;
-    err.returnValue = false;
     err.success = FAIL;
     if (file_path.empty()) {
         // the given path is empty
@@ -48,77 +47,93 @@ ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, cons
 ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept {
     // checks if the given file data is valid or the file is empty
     // there has to be a valid data header in this file
-    ErrorStruct<bool> err;
-    FileHandler fh;
-    if (fh.setEncryptionFilePath(file_path) != SUCCESS) {
-        // the given file path is invalid
-        err.errorCode = ERR_FILE_NOT_FOUND;
-        err.errorInfo = file_path.c_str();
-        return err;
+    ErrorStruct<Bytes> err1 = this->getFileContent(file_path);
+    if(!err1.isSuccess()) {
+        // the file could not be read
+        return ErrorStruct<bool>{err1.success, err1.errorCode, err1.errorInfo, err1.what, false};
     }
-    try {
-        Bytes file_mode;
-        file_mode = fh.getFirstBytes(1);
-        // the file is not empty
-        if (FModes(file_mode.getBytes()[0]) != this->file_data_struct.file_mode) {
-            // the file mode does not match with the file data mode
-            err.errorCode = ERR_FILEMODE_INVALID;
-            err.errorInfo = file_path.c_str();
+    if(err1.returnValue().isEmpty()) {
+        // the file is empty
+        return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", false};
+    }
+    ErrorStruct<DataHeader> err2 = this->getDataHeader(err1.returnValue());
+    if(!err2.isSuccess()) {
+        // the data header could not be read
+        return ErrorStruct<bool>{err2.success, err2.errorCode, err2.errorInfo, err2.what, false};
+    }
+    if(err2.returnValue().getDataHeaderParts().file_mode != this->file_data_struct.file_mode) {
+        // the file mode does not match with the file data mode
+        return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, file_path.c_str(), "", false};
+    }
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
+ErrorStruct<std::filesystem::path> API::addExtension(const std::filesystem::path file_path) const noexcept {
+    // adds the extension to the given file path if it does not have one
+    ErrorStruct<std::filesystem::path> err;
+    err.success = FAIL;
+    std::filesystem::path file_path_copy = file_path;
+    if (!file_path_copy.has_extension()) {
+        // the given path does not have an extension
+        // we have to add it
+        file_path_copy = std::filesystem::path(file_path_copy.c_str() + FileHandler::extension);
+        if (!file_path_copy.has_extension()) {
+            // something went wrong
+            err.errorCode = ERR_BUG;
+            err.errorInfo = "In function addExtension: file_path_copy has no extension after adding one";
             return err;
         }
-    } catch (std::length_error& e) {
-        // the file is empty
-    } catch (std::exception& e) {
-        // some other error occured
+    }
+    return ErrorStruct<std::filesystem::path>{SUCCESS, NO_ERR, "", "", file_path_copy};
+}
+
+ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) const noexcept {
+    // gets the content of the given file in Bytes
+    ErrorStruct<Bytes> err;
+    err.success = FAIL;
+
+    // add the extension if it does not have one
+    ErrorStruct<std::filesystem::path> err_ext = this->addExtension(file_path);
+    if(!err_ext.isSuccess()) {
+        // something went wrong while adding the extension
+        return ErrorStruct<Bytes>{err_ext.success, err_ext.errorCode, err_ext.errorInfo, err_ext.what};
+    }
+    std::filesystem::path file_path_copy = err_ext.returnValue();
+
+    // file has now an extension
+    ErrorStruct<bool> err3 = this->checkFileData(file_path_copy);
+    if (!err3.isSuccess()) {
+        // the file data mode is invalid
+        return ErrorStruct<Bytes>{err3.success, err3.errorCode, err3.errorInfo, err3.what};
+    }
+    // the content is valid
+    FileHandler fh;
+    fh.setEncryptionFilePath(file_path_copy);
+    try {
+        err.setReturnValue(fh.getAllBytes());
+    } catch (const std::exception& e) {
+        // something went wrong while reading the file
         err.errorCode = ERR;
-        err.errorInfo = file_path.c_str();
+        err.errorInfo = "Something went wrong while reading the file (trying to get all bytes)[getFileContent]";
         err.what = e.what();
         return err;
     }
-
-    // file is empty or file mode matches with file data mode
     err.success = SUCCESS;
-    err.returnValue = true;
     return err;
 }
 
-ErrorStruct<DataHeader> API::createDHStateCheck(const FModes new_file_mode) noexcept {
-    // checks if the api is in the right state to create a data header
 
-    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
-    // setting call contracts
-    if (this->current_workflow != WORK_WITH_NEW_FILE || this->current_workflow != WORK_WITH_OLD_FILE) {
-        // wrong workflow to access this get file content function
-        err.errorCode = ERR_WRONG_WORKFLOW;
-        err.errorInfo = "createDataHeader is only available in the WORK_WITH_NEW_FILE or WORK_WITH_OLD_FILE workflows";
-        return err;
-    }
-    if (this->current_state != PASSWORD_VERIFIED) {
-        // the api is in the wrong state
-        err.errorCode = ERR_API_STATE_INVALID;
-        err.errorInfo = "createDataHeader is only available in the PASSWORD_VERIFIED state";
-        return err;
-    }
-    if (new_file_mode != this->file_data_struct.file_mode) {
-        // the file mode is not the same as the one that was used to get the file
-        err.errorCode = ERR_ARGUEMENT_INVALID;
-        err.errorInfo = "The file mode matches not with the API file mode";
-        return err;
-    }
-    return ErrorStruct<DataHeader>{SUCCESS, NO_ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
-}
-
-API::API(Workflow workflow, const FModes file_mode) {
+API::API(const FModes file_mode) {
     // constructs the API in a given worflow mode and initializes the private variables
-    if (workflow != WORK_WITH_OLD_FILE && workflow != WORK_WITH_NEW_FILE && workflow != DELETE_FILE) {
-        throw std::invalid_argument("Invalid workflow mode");
-    }
     if (!FileModes::isModeValid(file_mode)) {
         throw std::invalid_argument("Invalid file mode");
     }
-    this->current_workflow = workflow;
     this->file_data_struct = FileDataStruct{file_mode, Bytes()};
-    this->current_state = INIT;
+    this->correct_password_hash = Bytes();
+    this->dh = DataHeader{HModes(STANDARD_HASHMODE)};
+    this->encrypted_data = Bytes();
+    this->selected_file = std::filesystem::path();
+    this->current_state = INIT(this);
 }
 
 std::filesystem::path API::getCurrentDirPath() noexcept {
@@ -131,7 +146,7 @@ ErrorStruct<std::filesystem::path> API::getEncDirPath() noexcept {
     FileHandler fh;
     std::filesystem::path enc_path = fh.getEncryptionFilePath();
     ErrorStruct<std::filesystem::path> err;
-    err.returnValue = enc_path;
+    err.setReturnValue(enc_path);
     err.success = FAIL;
     if (enc_path.empty()) {
         // if the path is empty, the filehandler could not find the encryption dir
@@ -172,117 +187,7 @@ ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(const std::filesys
         }
     }
     err.success = SUCCESS;
-    err.returnValue = file_names;
-    return err;
-}
-
-ErrorStruct<std::vector<std::string>> API::getRelevantFileNames(const std::filesystem::path dir) noexcept {
-    // only gets the file names that have the same file mode as the given file data or are empty
-    ErrorStruct<std::vector<std::string>> ret;
-    if (this->current_state < INIT) {
-        // the api is not initialized
-        ret.success = FAIL;
-        ret.errorCode = ERR_API_NOT_INITIALIZED;
-        ret.errorInfo = "getRelevantFileNames";
-        return ret;
-    }
-    // gets all file names
-    ErrorStruct<std::vector<std::string>> err = API::getAllEncFileNames(dir);
-    if (err.success != SUCCESS) {
-        return err;
-    }
-    ret.success = SUCCESS;
-    ret.returnValue = std::vector<std::string>();
-    for (int i = 0; i < err.returnValue.size(); i++) {
-        // checks for every file if it has the same file mode as the given file data
-        // build the complete file path
-        std::filesystem::path fp = dir / err.returnValue[i];
-        std::ifstream file(fp);
-        // checks if the file data mode matches with the file mode of the file is empty
-        ErrorStruct<bool> err2 = this->checkFileData(fp);
-        if (err2.success == SUCCESS) {
-            // file mode is the same as the given file data
-            // we include the file to the relevant files
-            ret.returnValue.push_back(err.returnValue[i]);
-        }
-    }
-    return ret;
-}
-
-ErrorStruct<bool> API::createEncFile(const std::filesystem::path file_path) noexcept {
-    // creates a new .enc file at the given path and validates it
-    ErrorStruct<bool> err;
-    err.success = FAIL;
-    if (this->current_state != INIT) {
-        // the api is in the wrong state
-        err.errorCode = ERR_API_STATE_INVALID;
-        err.errorInfo = "createEncFile is only available in the INIT state";
-        return err;
-    }
-    if (this->current_workflow != WORK_WITH_NEW_FILE) {
-        // wrong workflow to access this create file function
-        err.errorCode = ERR_WRONG_WORKFLOW;
-        err.errorInfo = "createEncFile is only available in the WORK_WITH_NEW_FILE workflow";
-        return err;
-    }
-    // check if the file path is valid and the file does not exist
-    ErrorStruct<bool> err2 = this->checkFilePath(file_path);
-    if (err2.success != SUCCESS) {
-        // the file path is invalid
-        return err2;
-    }
-    // create the file
-    std::ofstream file(file_path);
-    if (!file.is_open()) {
-        // the file could not be created
-        err.errorCode = ERR_FILE_NOT_CREATED;
-        err.errorInfo = file_path.c_str();
-        return err;
-    }
-    err.success = SUCCESS;
-    err.returnValue = true;
-    // validates this file path
-    this->valid_file = file_path;
-    return err;
-}
-
-ErrorStruct<bool> API::deleteEncFile(const std::filesystem::path file_path) const noexcept {
-    // deletes the given file if it matches with the file data mode or if the file is empty
-    ErrorStruct<bool> err;
-    err.success = FAIL;
-    if (this->current_workflow != DELETE_FILE) {
-        // wrong workflow to access this delete file function
-        err.errorCode = ERR_WRONG_WORKFLOW;
-        err.errorInfo = "deleteEncFile is only available in the DELETE_FILE workflow";
-        return err;
-    }
-    if (this->current_state != INIT) {
-        // the api is in the wrong state
-        err.errorCode = ERR_API_STATE_INVALID;
-        err.errorInfo = "deleteEncFile is only available in the INIT state";
-        return err;
-    }
-    // check if the file path is valid and the file exists
-    ErrorStruct<bool> err2 = this->checkFilePath(file_path, true);
-    if (err2.success != SUCCESS) {
-        // the file path is invalid
-        return err2;
-    }
-    // check if the file data mode matches with the mode used in the API (or the file is empty)
-    ErrorStruct<bool> err3 = this->checkFileData(file_path);
-    if (err3.success != SUCCESS) {
-        // the file data mode is invalid
-        return err3;
-    }
-    // file is empty or file mode matches
-    if (!std::filesystem::remove(file_path)) {
-        // the file could not be deleted
-        err.errorCode = ERR_FILE_NOT_DELETED;
-        err.errorInfo = file_path.c_str();
-        return err;
-    }
-    err.success = SUCCESS;
-    err.returnValue = true;
+    err.setReturnValue(file_names);
     return err;
 }
 
@@ -290,72 +195,6 @@ ErrorStruct<DataHeader> API::getDataHeader(const Bytes file_content) noexcept {
     // gets the data header from the file content
     Bytes file_content_copy = file_content;
     return DataHeader::setHeaderBytes(file_content_copy);
-}
-
-ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) noexcept {
-    // gets the content of the given file in Bytes
-    ErrorStruct<Bytes> err;
-    err.success = FAIL;
-    if (this->current_workflow != WORK_WITH_OLD_FILE) {
-        // wrong workflow to access this get file content function
-        err.errorCode = ERR_WRONG_WORKFLOW;
-        err.errorInfo = "getFileContent is only available in the WORK_WITH_OLD_FILE workflow";
-        return err;
-    }
-    if (this->current_state != INIT) {
-        // the api is in the wrong state
-        err.errorCode = ERR_API_STATE_INVALID;
-        err.errorInfo = "getFileContent is only available in the INIT state";
-        return err;
-    }
-    std::filesystem::path file_path_copy = file_path;
-    if (file_path_copy.has_extension()) {
-        // the given path does not have an extension
-        // we have to add it
-        file_path_copy = std::filesystem::path(file_path_copy.c_str() + FileHandler::extension);
-        if (!file_path_copy.has_extension()) {
-            // something went wrong
-            err.errorCode = ERR_BUG;
-            err.errorInfo = "In function getFileContent: file_path_copy has no extension after adding one";
-            return err;
-        }
-    }
-    // file has now an extension
-    ErrorStruct<bool> err2 = this->checkFilePath(file_path_copy, true);
-    if (err2.success != SUCCESS) {
-        // the file path is invalid
-        return ErrorStruct<Bytes>{err2.success, err2.errorCode, err2.errorInfo, err2.what};
-    }
-    // the file path is valid
-    ErrorStruct<bool> err3 = this->checkFileData(file_path_copy);
-    if (err3.success != SUCCESS) {
-        // the file data mode is invalid
-        return ErrorStruct<Bytes>{err3.success, err3.errorCode, err3.errorInfo, err3.what};
-    }
-    // the content is valid
-    FileHandler fh;
-    fh.setEncryptionFilePath(file_path_copy);
-    try {
-        err.returnValue = fh.getAllBytes();
-    } catch (const std::exception& e) {
-        // something went wrong while reading the file
-        err.errorCode = ERR;
-        err.errorInfo = "Something went wrong while reading the file (trying to get all bytes)[getFileContent]";
-        err.what = e.what();
-        return err;
-    }
-
-    // this file is set as the working file now
-    this->valid_file = file_path_copy;
-    this->current_state = FILE_GOTTEN;
-    if (this->current_workflow == WORK_WITH_NEW_FILE) {
-        // the password does not need to be verified in the WORK_WITH_NEW_FILE workflow
-        // because the user enters a new password for the file
-        this->current_state = PASSWORD_VERIFIED;
-    }
-
-    err.success = SUCCESS;
-    return err;
 }
 
 ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
@@ -371,66 +210,167 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     err.success = err_header.success;
     if (err_header.success) {
         // sets the bytes that are remaining after the header as the data
-        err.returnValue = file_content_copy;
+        err.setReturnValue(file_content_copy);
     }
     return err;
 }
 
-ErrorStruct<Bytes> API::verifyPassword(const std::string password, const DataHeader dh, const u_int64_t timeout) noexcept {
+
+ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std::filesystem::path dir) noexcept{
+    // only gets the file names that have the same file mode as the given file data or are empty
+    // gets all file names
+    ErrorStruct<std::vector<std::string>> err = API::getAllEncFileNames(dir);
+    if (!err.isSuccess()) {
+        return err;
+    }
+    ErrorStruct<std::vector<std::string>> ret{SUCCESS, NO_ERR, "", "", std::vector<std::string>()};
+    for (int i = 0; i < err.returnValue().size(); i++) {
+        // checks for every file if it has the same file mode as the given file data
+        // build the complete file path
+        std::filesystem::path fp = dir / err.returnValue()[i];
+        std::ifstream file(fp);
+        // checks if the file data mode matches with the file mode of the file is empty
+        ErrorStruct<bool> err2 = this->parent->checkFileData(fp);
+        if (err2.isSuccess()) {
+            // file mode is the same as the given file data
+            // we include the file to the relevant files
+            std::vector<std::string> tmp = ret.returnValue();
+            tmp.push_back(err.returnValue()[i]);
+            ret.setReturnValue(tmp);
+        }
+    }
+    return ret;
+}
+
+ErrorStruct<bool> API::INIT::createFile(const std::filesystem::path file_path) noexcept {
+    // creates a new .enc file at the given path and validates it
+    ErrorStruct<bool> err;
+    err.success = FAIL;
+    // check if the file path is valid and the file does not exist
+    ErrorStruct<bool> err2 = this->parent->checkFilePath(file_path);
+    if (!err2.isSuccess()) {
+        // the file path is invalid
+        return err2;
+    }
+    // create the file
+    std::ofstream file(file_path);
+    if (!file.is_open()) {
+        // the file could not be created
+        err.errorCode = ERR_FILE_NOT_CREATED;
+        err.errorInfo = file_path.c_str();
+        return err;
+    }
+    err.success = SUCCESS;
+    err.setReturnValue(true);
+    return err;
+}
+
+ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) noexcept {
+    // selects the given file as the working file
+    ErrorStruct<bool> err = this->parent->checkFileData(file_path);
+    if(!err.isSuccess()) {
+        // file data header is invalid
+        return err;
+    }
+    // sets the file data
+    if(err.returnValue()) {
+        // the file is not empty
+        ErrorStruct<Bytes> err_file = this->getFileContent();
+        if(!err_file.isSuccess()) {
+            // the file could not be read
+            return ErrorStruct<bool>{FAIL, err_file.errorCode, err_file.errorInfo};
+        }
+        this->parent->encrypted_data = err_file.returnValue();
+        ErrorStruct<DataHeader> err_dh = this->parent->getDataHeader(this->parent->encrypted_data);
+        if(!err_dh.isSuccess()) {
+            // the file data header is invalid
+            return ErrorStruct<bool>{FAIL, err_dh.errorCode, err_dh.errorInfo};
+        }
+        this->parent->dh = err_dh.returnValue();
+    }
+    
+    // set the selected file
+    this->parent->selected_file = file_path;
+    this->parent->file_empty = !err.returnValue();
+    this->parent->current_state = FILE_SELECTED(this->parent);
+    return err;
+}
+
+
+ErrorStruct<bool> API::FILE_SELECTED::isFileEmpty() const noexcept {
+    // gets if the working file is empty
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", this->parent->file_empty};; 
+}
+
+ErrorStruct<bool> API::FILE_SELECTED::deleteFile() noexcept {
+    // deletes the working file
+    if (!std::filesystem::remove(this->parent->selected_file)) {
+        // the file could not be deleted
+        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_DELETED, this->parent->selected_file.c_str()};
+    }
+    // reset the selected file
+    this->parent->selected_file = "";
+    this->parent->encrypted_data = Bytes();
+    this->parent->current_state = INIT(this->parent);
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
+ErrorStruct<Bytes> API::FILE_SELECTED::getFileContent() noexcept {
+    // gets the content of the working file
+    return this->parent->getFileContent(this->parent->selected_file);
+}
+
+ErrorStruct<bool> API::FILE_SELECTED::unselectFile() noexcept {
+    // unselects the working file
+    this->parent->selected_file = "";
+    this->parent->encrypted_data = Bytes();
+    this->parent->current_state = INIT(this->parent);
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
+ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password, const u_int64_t timeout) noexcept {
     // timeout=0 means no timeout
-    // checks if a password (given from the user to decrypt) is valid for this file and returns its hash.
+    // checks if a password (given from the user to decrypt) is valid for the selected file and returns its hash.
     // This call is expensive
     // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
 
-    if (this->current_workflow != WORK_WITH_OLD_FILE) {
-        // wrong workflow to access this get file content function
-        ErrorStruct<Bytes> err;
-        err.success = FAIL;
-        err.errorCode = ERR_WRONG_WORKFLOW;
-        err.errorInfo = "verifyPassword is only available in the WORK_WITH_OLD_FILE workflow";
-        return err;
+    if(this->parent->file_empty){
+        // file is empty, veriyPassword is not possible
+        return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "file is empty in verifyPassword"};
     }
-    if (this->current_state != FILE_GOTTEN) {
-        // the api is in the wrong state
-        ErrorStruct<Bytes> err;
-        err.success = FAIL;
-        err.errorCode = ERR_API_STATE_INVALID;
-        err.errorInfo = "verifyPassword is only available in the FILE_GOTTEN state";
-        return err;
-    }
+
     Hash* hash;
 
     try {
         // gets the header parts to work with (could throw)
-        DataHeaderParts dhp = dh.getDataHeaderParts();
+        DataHeaderParts dhp = this->parent->dh.getDataHeaderParts();
         // gets the hash function (could throw)
         hash = HashModes::getHash(dhp.hash_mode);
         // perform the first chain hash (password -> passwordhash)
         ErrorStruct<Bytes> err1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
-        if (err1.success != SUCCESS) {
+        if (!err1.isSuccess()) {
             // the first chain hash failed (due to timeout or other error)
             delete hash;
             return err1;
         }
         // perform the second chain hash (passwordhash -> passwordhashhash = validation hash)
-        ErrorStruct<Bytes> err2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, err1.returnValue, timeout);
-        if (err2.success != SUCCESS) {
+        ErrorStruct<Bytes> err2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, err1.returnValue(), timeout);
+        if (!err2.isSuccess()) {
             // the second chain hash failed (due to timeout or other error)
             delete hash;
             return err2;
         }
-        if (err2.returnValue == dhp.valid_passwordhash) {
+        if (err2.returnValue() == dhp.valid_passwordhash) {
             // the password is valid (because the validation hashes match)
             ErrorStruct<Bytes> err;
             err.success = SUCCESS;
-            err.returnValue = err1.returnValue;
+            err.setReturnValue(err1.returnValue());
 
             // updating the state
-            this->current_state = PASSWORD_VERIFIED;
+            this->parent->current_state = PASSWORD_VERIFIED(this->parent);
             // setting the correct password hash and dataheader to the application
-            this->correct_password_hash = err1.returnValue;
-            this->dh = dh;
+            this->parent->correct_password_hash = err1.returnValue();
             delete hash;
             return err;
         }
@@ -453,21 +393,18 @@ ErrorStruct<Bytes> API::verifyPassword(const std::string password, const DataHea
     }
 }
 
-ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) noexcept {
+ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) noexcept {
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
 
-    // checks if the api is in the correct state
-    ErrorStruct<DataHeader> err = this->createDHStateCheck(ds.file_mode);
-    if (err.success != SUCCESS) {
-        return err;
-    }
-    // sets the error to fail in order to return it if something goes wrong
-    err.success = FAIL;
-    err.errorCode = ERR;
+    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
 
+    if(!this->parent->file_empty){
+        // file is not empty, createDataHeader is not possible
+        return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    }
     DataHeaderParts dhp;
     try {
         // trying to get the chainhashes
@@ -499,7 +436,7 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     timer.start();
     // first chainhash (password -> passwordhash)
     ErrorStruct<Bytes> ch1_err = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
-    if (ch1_err.success != SUCCESS) {
+    if (!ch1_err.isSuccess()) {
         // something went wrong while performing the first chainhash
         delete hash;
         err.success = ch1_err.success;
@@ -525,9 +462,9 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
         }
     }
     // second chainhash (passwordhash -> passwordhashhash = validation hash)
-    ErrorStruct<Bytes> ch2_err = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1_err.returnValue, timeout_copy);
+    ErrorStruct<Bytes> ch2_err = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1_err.returnValue(), timeout_copy);
     delete hash;
-    if (ch2_err.success != SUCCESS) {
+    if (!ch2_err.isSuccess()) {
         // something went wrong while performing the second chainhash
         err.success = ch2_err.success;
         err.errorCode = ch2_err.errorCode;
@@ -537,32 +474,33 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     }
 
     // setting the validation hash
-    dhp.valid_passwordhash = ch2_err.returnValue;
+    dhp.valid_passwordhash = ch2_err.returnValue();
 
     // dataheader parts is now ready to create the dataheader object
     err = DataHeader::setHeaderParts(dhp);
-    if (err.success != SUCCESS) {
+    if (!err.isSuccess()) {
         // something went wrong while setting the header parts
         return err;
     }
-    this->correct_password_hash = ch1_err.returnValue;
-    this->dh = err.returnValue;
+    this->parent->correct_password_hash = ch1_err.returnValue();
+    this->parent->dh = err.returnValue();
+    this->parent->current_state = DECRYPTED(this->parent);
+    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
     return err;
 }
 
-ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
+ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
 
-    // checks if the api is in the correct state
-    ErrorStruct<DataHeader> err = this->createDHStateCheck(ds.file_mode);
-    if (err.success != SUCCESS) {
-        return err;
-    }
     // sets the error to fail in order to return it if something goes wrong
-    err.success = FAIL;
-    err.errorCode = ERR;
+    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+
+    if(!this->parent->file_empty){
+        // file is not empty, createDataHeader is not possible
+        return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    }
 
     DataHeaderParts dhp;
     ChainHashData chd1{Format{CHModes(STANDARD_CHAINHASHMODE)}};
@@ -596,7 +534,7 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
 
     // first chainhash (password -> passwordhash)
     ErrorStruct<ChainHashResult> ch1_err = ChainHashModes::performChainHash(ch1, hash, password);
-    if (ch1_err.success != SUCCESS) {
+    if (!ch1_err.isSuccess()) {
         // something went wrong while performing the first chainhash
         delete hash;
         err.success = ch1_err.success;
@@ -606,12 +544,12 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
         return err;
     }
     // collecting the ChainHash that was used (getting the iterations)
-    dhp.chainhash1 = ch1_err.returnValue.chainhash;
+    dhp.chainhash1 = ch1_err.returnValue().chainhash;
 
     // second chainhash (passwordhash -> passwordhashhash = validation hash)
-    ErrorStruct<ChainHashResult> ch2_err = ChainHashModes::performChainHash(ch2, hash, ch1_err.returnValue.result);
+    ErrorStruct<ChainHashResult> ch2_err = ChainHashModes::performChainHash(ch2, hash, ch1_err.returnValue().result);
     delete hash;
-    if (ch2_err.success != SUCCESS) {
+    if (!ch2_err.isSuccess()) {
         // something went wrong while performing the second chainhash
         err.success = ch2_err.success;
         err.errorCode = ch2_err.errorCode;
@@ -621,15 +559,38 @@ ErrorStruct<DataHeader> API::createDataHeader(const std::string password, const 
     }
 
     // collecting the ChainHash that was used (getting the iterations)
-    dhp.chainhash2 = ch2_err.returnValue.chainhash;
+    dhp.chainhash2 = ch2_err.returnValue().chainhash;
 
     // dataheader parts is now ready to create the dataheader object
     err = DataHeader::setHeaderParts(dhp);
-    if (err.success != SUCCESS) {
+    if (!err.isSuccess()) {
         // something went wrong while setting the header parts
         return err;
     }
-    this->correct_password_hash = ch1_err.returnValue.result;
-    this->dh = err.returnValue;
+    
+    this->parent->correct_password_hash = ch1_err.returnValue().result;
+    this->parent->dh = err.returnValue();
+    this->parent->current_state = DECRYPTED(this->parent);
+    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
     return err;
+}
+
+
+ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept {
+    // decrypts the data (requires successful verifyPassword or createDataHeader run)
+    // returns the decrypted content (without the data header)
+    // uses the password and data header that were passed to verifyPassword (or createDataHeader for new files)
+
+    // WORK
+    Bytes decrypted;
+
+    this->parent->current_state = DECRYPTED(this->parent);
+    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, decrypted};
+
+    return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct};
+}
+
+
+ErrorStruct<FileDataStruct> API::DECRYPTED::getFileData() noexcept {
+    return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct}; 
 }
