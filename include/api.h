@@ -27,12 +27,12 @@ class API {
     encapsulates the backend implementations
     */
    private:
-    class WorkflowState{
-        protected:
+    class WorkflowState {
+       protected:
         API* parent;
         // deletes saved data (password hash, data header, encrypted data)
         // after this call, the API object is in the same state as after the constructor call
-        void logout(const FModes file_mode) noexcept{
+        void logout(const FModes file_mode) noexcept {
             parent->correct_password_hash = Bytes();
             parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
             parent->encrypted_data = Bytes();
@@ -43,80 +43,73 @@ class API {
 
         // holds all non static functionality of the api
         // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
-        virtual ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept{
+        virtual ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept {
             return ErrorStruct<std::vector<std::string>>{FAIL, ERR_API_STATE_INVALID, "getRelevantFileNames is only available in the INIT state"};
         };
         // creates a new .enc file at the given path (path contains the name of the file)
-        virtual ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept{
+        virtual ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "createEncFile is only available in the INIT state"};
         };
         // selects a file (this is now the working file)
-        virtual ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept{
+        virtual ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the INIT state"};
         };
         // deletes the given .enc file
-        virtual ErrorStruct<bool> deleteFile() const noexcept{
-            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED state"};
-        };
+        virtual ErrorStruct<bool> deleteFile() const noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED state"}; };
         // gets the content of a given file path (e.g. enc_dir_path/file_name or enc_dir_path/file_name.enc)
         // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
-        virtual ErrorStruct<Bytes> getFileContent() noexcept{
-            return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getFileContent is only available in the FILE_SELECTED state"};
-        };
+        virtual ErrorStruct<Bytes> getFileContent() noexcept { return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getFileContent is only available in the FILE_SELECTED state"}; };
         // unselects a file (this is not longer the working file)
-        virtual ErrorStruct<bool> unselectFile() noexcept{
-            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the FILE_SELECTED state"};
-        };
+        virtual ErrorStruct<bool> unselectFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the FILE_SELECTED state"}; };
         // checks if a password (given from the user to decrypt) is valid for this file and returns its hash.
         // This call is expensive
         // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
         // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
-        virtual ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept{
+        virtual ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept {
             return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "verifyPassword is only available in the FILE_SELECTED state"};
         };
         // creates a data header for a given password and settings by randomizing the salt and chainhash data
         // This call is expensive because it has to chainhash the password twice to generate a validator.
         // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
         // you can specify the iterations or the time (the chainhash runs until the time is reached to get the iterations)
-        virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept{
+        virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept {
             return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the FILE_SELECTED or DECRYPT state", "", DataHeader(HModes(STANDARD_HASHMODE))};
         };
-        virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept{
+        virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
             return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the FILE_SELECTED or DECRYPTED state", "", DataHeader(HModes(STANDARD_HASHMODE))};
         };
         // decrypts the data
         // returns the decrypted content (without the data header)
         // uses the password and data header that were passed to verifyPassword
-        virtual ErrorStruct<FileDataStruct> getDecryptedData(const Bytes enc_data) const noexcept{
+        virtual ErrorStruct<FileDataStruct> getDecryptedData(const Bytes enc_data) const noexcept {
             return ErrorStruct<FileDataStruct>{FAIL, ERR_API_STATE_INVALID, "getDecryptedData is only available in the PASSWORD_VERIFIED state"};
         };
         // encrypts the data and returns the encrypted data
         // uses the password and data header that were passed to verifyPassword
-        virtual ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept{
+        virtual ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept {
             return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getEncryptedData is only available in the DECRYPTED state"};
         };
         // writes encrypted data to a file adds the dataheader, uses the encrypted data from getEncryptedData
-        virtual ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) const noexcept{
+        virtual ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) const noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "writeToFile is only available in the ENCRYPTED state"};
         };
 
-        public:
-        WorkflowState(API* x): parent(x) {};
-        virtual ~WorkflowState(){delete parent;};
-        
+       public:
+        WorkflowState(API* x) : parent(x){};
+        virtual ~WorkflowState() { delete parent; };
     };
-    
-    class INIT: public WorkflowState{
-        public:
-        INIT(API* x): WorkflowState(x) {};
+
+    class INIT : public WorkflowState {
+       public:
+        INIT(API* x) : WorkflowState(x){};
         ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept override;
         ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept override;
         ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept override;
     };
 
-    class FILE_SELECTED: public WorkflowState{
-        public:
-        FILE_SELECTED(API* x): WorkflowState(x) {};
+    class FILE_SELECTED : public WorkflowState {
+       public:
+        FILE_SELECTED(API* x) : WorkflowState(x){};
         ErrorStruct<bool> deleteFile() const noexcept override;
         ErrorStruct<Bytes> getFileContent() noexcept override;
         ErrorStruct<bool> unselectFile() noexcept override;
@@ -125,29 +118,29 @@ class API {
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept override;
     };
 
-    class PASSWORD_VERIFIED: public WorkflowState{
-        public:
-        PASSWORD_VERIFIED(API* x): WorkflowState(x) {};
+    class PASSWORD_VERIFIED : public WorkflowState {
+       public:
+        PASSWORD_VERIFIED(API* x) : WorkflowState(x){};
         ErrorStruct<FileDataStruct> getDecryptedData(const Bytes enc_data) const noexcept override;
     };
 
-    class DECRYPTED: public WorkflowState{
-        public:
-        DECRYPTED(API* x): WorkflowState(x) {};
+    class DECRYPTED : public WorkflowState {
+       public:
+        DECRYPTED(API* x) : WorkflowState(x){};
         ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept override;
     };
-    
-    class ENCRYPTED: public WorkflowState{
-        public:
-        ENCRYPTED(API* x): WorkflowState(x) {};
+
+    class ENCRYPTED : public WorkflowState {
+       public:
+        ENCRYPTED(API* x) : WorkflowState(x){};
         ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) const noexcept override;
     };
-    
-    class FINISHED: public WorkflowState{
-        public:
-        FINISHED(API* x): WorkflowState(x) {};
+
+    class FINISHED : public WorkflowState {
+       public:
+        FINISHED(API* x) : WorkflowState(x){};
     };
 
     WorkflowState current_state;  // the current state of the API (makes sure that the API is used correctly)
