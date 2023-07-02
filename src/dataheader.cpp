@@ -125,7 +125,7 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
         // verifies the given pwhash with the currently set validator
         Hash* hash = HashModes::getHash(this->dh.hash_mode);  // gets the right hash function
         // is the chainhash from the given hash equal to the validator
-        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(this->dh.chainhash2, hash, passwordhash).returnValue);
+        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(this->dh.chainhash2, hash, passwordhash).returnValue());
         delete hash;
         if (!isOkay) {
             // given pwhash is not valid
@@ -203,7 +203,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         // loading and setting hash mode
         tmp = fileBytes.popFirstBytes(1).value();
         hmode = tmp.getBytes()[0];
-        err.returnValue = DataHeader(HModes(hmode));
+        err.setReturnValue(DataHeader(HModes(hmode)));
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -226,7 +226,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // setting the file data mode
     try {
-        err.returnValue.setFileDataMode(FModes(fmode));
+        DataHeader dh = err.returnValue();
+        dh.setFileDataMode(FModes(fmode));
+        err.setReturnValue(dh);
     } catch (const std::invalid_argument& ex) {
         // the file mode is invalid
         err.errorCode = ERR_FILEMODE_INVALID;
@@ -344,7 +346,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     }
     // chainhash 1
     try {
-        err.returnValue.setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1}, ch1datablocklen);
+        DataHeader dh = err.returnValue();
+        dh.setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1}, ch1datablocklen);
+        err.setReturnValue(dh);
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         err.errorCode = ERR_CHAINHASH1_INVALID;
@@ -461,7 +465,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     }
     // chainhash 2
     try {
-        err.returnValue.setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2}, ch2datablocklen);
+        DataHeader dh = err.returnValue();
+        dh.setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2}, ch2datablocklen);
+        err.setReturnValue(dh);
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         err.errorCode = ERR_CHAINHASH2_INVALID;
@@ -477,8 +483,10 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // password validator hash
     try {
-        tmp = fileBytes.popFirstBytes(err.returnValue.hash_size).value();
-        err.returnValue.setValidPasswordHashBytes(tmp);
+        DataHeader dh = err.returnValue();
+        tmp = fileBytes.popFirstBytes(dh.hash_size).value();
+        dh.setValidPasswordHashBytes(tmp);
+        err.setReturnValue(dh);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -501,8 +509,10 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // encrypted salt
     try {
-        tmp = fileBytes.popFirstBytes(err.returnValue.hash_size).value();
-        err.returnValue.setEncSalt(tmp);
+        DataHeader dh = err.returnValue();
+        tmp = fileBytes.popFirstBytes(dh.hash_size).value();
+        dh.setEncSalt(tmp);
+        err.setReturnValue(dh);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -539,7 +549,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) no
         dh.setEncSalt(dhp.enc_salt);                                     // setting the encrypted salt
 
         // success
-        err.returnValue = dh;
+        err.setReturnValue(dh);
         err.success = SUCCESS;
         return err;
 

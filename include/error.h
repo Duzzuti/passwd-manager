@@ -47,7 +47,25 @@ struct ErrorStruct {
     ErrorCode errorCode = NO_ERROR_WAS_SET;  // error code
     std::string errorInfo;                   // some specific data about the error can be stored here
     std::string what;                        // throw message
-    T returnValue;                           // return value
+    
+    // constructors
+    ErrorStruct() = default;
+    ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo, std::string what, T returnvalue)
+        : success(success), errorCode(errorCode), errorInfo(errorInfo), what(what), returnvalue(returnvalue){};
+    ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo) : success(success), errorCode(errorCode), errorInfo(errorInfo){};
+    ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo, std::string what)
+        : success(success), errorCode(errorCode), errorInfo(errorInfo), what(what){};
+
+    // getters and setters
+    T returnValue(){
+        // you cannot access the return value if the function failed
+        if (success == FAIL) 
+            throw std::runtime_error(what);
+        return returnvalue;
+    };
+    void setReturnValue(T value) { returnvalue = value; };
+    private:
+    T returnvalue;                           // return value
 };
 
 // returns an error message based on the error code and the error info
