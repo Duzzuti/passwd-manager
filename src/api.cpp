@@ -518,9 +518,9 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
             err.setReturnValue(err1.returnValue());
 
             // updating the state
-            this->parent->current_state = PASSWORD_VERIFIED(this->parent);
             // setting the correct password hash and dataheader to the application
             this->parent->correct_password_hash = err1.returnValue();
+            this->parent->current_state = PASSWORD_VERIFIED(this->parent);
             delete hash;
             return err;
         }
@@ -563,8 +563,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();
-    this->parent->current_state = DECRYPTED(this->parent);
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
+    this->parent->current_state = DECRYPTED(this->parent);
     return dhhs.errorStruct;
 }
 
@@ -588,8 +588,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();
-    this->parent->current_state = DECRYPTED(this->parent);
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
+    this->parent->current_state = DECRYPTED(this->parent);
     return dhhs.errorStruct;
 }
 
@@ -601,10 +601,10 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
     // WORK
     Bytes decrypted;
 
-    this->parent->current_state = DECRYPTED(this->parent);
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, decrypted};
-
-    return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct};
+    ErrorStruct<FileDataStruct> err_res{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct};
+    this->parent->current_state = DECRYPTED(this->parent);
+    return err_res;
 }
 
 ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_data) noexcept {

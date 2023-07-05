@@ -15,15 +15,14 @@ the implementation of the App class is done in this file
 
 bool App::isValidChar(const std::string mode) noexcept {
     // checks if the mode is a valid unsigned char
-    unsigned char mode_char;
     try {
-        mode_char = std::stoi(mode);  // transform the mode string to an number
+        // transform the mode string to an number
+        // checks if the entered mode is an unisgned char (number between 0 and 255)
+        if (!(0 <= std::stoi(mode) && std::stoi(mode) < 256)) {
+            return false;  // not an unsigned char
+        }
     } catch (std::exception) {
         return false;  // the given mode string is not convertible into an char
-    }
-    // checks if the entered mode is an unisgned char (if the user enteres 257, mode_char will be 2 and it looks valid)
-    if (!(0 <= std::stoi(mode) && std::stoi(mode) < 256)) {
-        return false;  // not an unsigned char
     }
     return true;
 }
