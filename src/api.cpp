@@ -126,6 +126,12 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     DataHeaderHelperStruct dhhs{err};
+    if(ds.file_mode != this->file_data_struct.file_mode) {
+        // the file mode does not match with the file data mode
+        dhhs.errorStruct.errorCode = ERR_FILEMODE_INVALID;
+        dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
+        return dhhs;
+    }
     DataHeaderParts dhp;
     try {
         // trying to get the chainhashes
@@ -208,6 +214,13 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     // sets up the return struct
     ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     DataHeaderHelperStruct dhhs{err};
+
+    if(ds.file_mode != this->file_data_struct.file_mode) {
+        // the file mode does not match with the file data mode
+        dhhs.errorStruct.errorCode = ERR_FILEMODE_INVALID;
+        dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
+        return dhhs;
+    }
 
     DataHeaderParts dhp;
     ChainHashData chd1{Format{CHModes(STANDARD_CHAINHASHMODE)}};
@@ -613,6 +626,21 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
 }
 
 ErrorStruct<FileDataStruct> API::DECRYPTED::getFileData() noexcept { return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct}; }
+
+ErrorStruct<DataHeader> API::DECRYPTED::changeSalt() noexcept {
+    // creates data header with the current settings and password, just changes the salt
+    // this call is not expensive because it does not have to chainhash the password
+
+    DataHeaderParts dhp = this->parent->dh.getDataHeaderParts();
+    // only changes salt
+    dhp.enc_salt = Bytes(dhp.enc_salt.getLen());
+    // dataheader parts is now ready to create the dataheader object
+    ErrorStruct<DataHeader> err = DataHeader::setHeaderParts(dhp);
+    if(err.isSuccess()){
+        this->parent->dh = err.returnValue();
+    }
+    return err;
+}
 
 ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) noexcept {
     // the new generated header will be used for the next encryption, that means the old password is not valid anymore

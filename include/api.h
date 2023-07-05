@@ -104,6 +104,12 @@ class API {
         virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
             return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the FILE_SELECTED or DECRYPTED state", "", DataHeader(HModes(STANDARD_HASHMODE))};
         };
+        // creates data header with the current settings and password, just changes the salt
+        // this call is not expensive because it does not have to chainhash the password
+        virtual ErrorStruct<DataHeader> changeSalt() noexcept {
+            return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state", "", DataHeader(HModes(STANDARD_HASHMODE))};
+        }; 
+
         // decrypts the data
         // returns the decrypted content (without the data header)
         // uses the password and data header that were passed to verifyPassword
@@ -161,6 +167,7 @@ class API {
         DECRYPTED(API* x) : WorkflowState(x){};
         ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept override;
         ErrorStruct<FileDataStruct> getFileData() noexcept override;
+        ErrorStruct<DataHeader> changeSalt() noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept override;
     };
@@ -288,6 +295,10 @@ class API {
         return this->current_state.createDataHeader(password, ds, timeout);
     }
     ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept { return this->current_state.createDataHeader(password, ds); }
+
+    // creates data header with the current settings and password, just changes the salt
+    // this call is not expensive because it does not have to chainhash the password
+    ErrorStruct<DataHeader> changeSalt() noexcept { return this->current_state.changeSalt(); }
 
     // decrypts the data (requires successful verifyPassword run)
     // returns the decrypted content (without the data header)
