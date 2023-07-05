@@ -21,6 +21,26 @@ struct WorkflowDecStruct {
     std::optional<DataHeader> dh;             // data header of the file
 };
 
+// helper struct that is returned internally the API if you create a data header
+struct DataHeaderHelperStruct{
+    ErrorStruct<DataHeader> errorStruct;  // contains the actual data header
+    DataHeaderHelperStruct(const ErrorStruct<DataHeader> errorStruct) : errorStruct(errorStruct){};
+    Bytes Password_hash(){
+        // returns the password hash if the chainhash was successful
+        if(this->errorStruct.isSuccess()){
+            return this->password_hash;
+        }else{
+            throw std::logic_error("cannot get password hash from error struct that is not a success");
+        }
+    };
+    void Password_hash(const Bytes password_hash){
+        // sets the password hash
+        this->password_hash = password_hash;
+    };
+    private:
+    Bytes password_hash;                  // contains the password hash
+};
+
 class API {
     /*
     API class between the front-end and the back-end
@@ -184,6 +204,12 @@ class API {
 
     // gets the file content from the file
     ErrorStruct<Bytes> getFileContent(const std::filesystem::path file_path) const noexcept;
+
+    // does the most work for creating a new dataheader from DataHeaderSettingsIters
+    DataHeaderHelperStruct createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) const noexcept;
+
+    // does the most work for creating a new dataheader from DataHeaderSettingsTime
+    DataHeaderHelperStruct createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept;
 
    public:
     // constructs the api with the file mode that should be worked with

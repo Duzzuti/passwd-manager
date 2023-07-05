@@ -122,6 +122,158 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) co
     return err;
 }
 
+DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
+    // creates a DataHeader with the given settings (helper function for createDataHeader)
+    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    DataHeaderHelperStruct dhhs{err};
+    DataHeaderParts dhp;
+    try {
+        // trying to get the chainhashes
+        ChainHashData chd1{Format{ds.chainhash1_mode}};
+        ChainHashData chd2{Format{ds.chainhash2_mode}};
+        // setting random data for the chainhashes datablocks (salts that are used by the chainhash)
+        chd1.generateRandomData();
+        chd2.generateRandomData();
+        // creating ChainHash structures
+        dhp.chainhash1 = ChainHash{ds.chainhash1_mode, ds.chainhash1_iters, chd1};
+        dhp.chainhash2 = ChainHash{ds.chainhash2_mode, ds.chainhash2_iters, chd2};
+        dhp.chainhash1_datablock_len = chd1.getLen();
+        dhp.chainhash2_datablock_len = chd2.getLen();
+
+    } catch (const std::exception& e) {
+        // something went wrong while creating the chainhashes
+        dhhs.errorStruct.errorInfo = "Something went wrong while creating the chainhashes";
+        dhhs.errorStruct.what = e.what();
+        return dhhs;
+    }
+    // setting up the other parts
+    dhp.file_mode = ds.file_mode;
+    dhp.hash_mode = ds.hash_mode;
+    Hash* hash = HashModes::getHash(dhp.hash_mode);
+    dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
+
+    // setting up an timer to calculate the remaining time for the second chainhash
+    Timer timer;
+    timer.start();
+    // first chainhash (password -> passwordhash)
+    ErrorStruct<Bytes> ch1_err = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
+    if (!ch1_err.isSuccess()) {
+        // something went wrong while performing the first chainhash
+        delete hash;
+        dhhs.errorStruct.success = ch1_err.success;
+        dhhs.errorStruct.errorCode = ch1_err.errorCode;
+        dhhs.errorStruct.errorInfo = ch1_err.errorInfo;
+        dhhs.errorStruct.what = ch1_err.what;
+        return dhhs;
+    }
+    // handling the timeout
+    u_int64_t elapsedTime = timer.peekTime();
+    u_int64_t timeout_copy = timeout;
+    if (timeout != 0) {
+        // if the user set a timeout, we have to check how much time is left
+        if (timeout <= elapsedTime) {
+            // should not happen, but if the function closes and the timeout runs out shortly after, we have to return an timeout
+            delete hash;
+            dhhs.errorStruct.success = TIMEOUT;
+            dhhs.errorStruct.errorCode = ERR_TIMEOUT;
+            return dhhs;
+        } else {
+            // if there is still time left, we have to subtract the elapsed time from the timeout
+            timeout_copy -= elapsedTime;
+        }
+    }
+    // second chainhash (passwordhash -> passwordhashhash = validation hash)
+    ErrorStruct<Bytes> ch2_err = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1_err.returnValue(), timeout_copy);
+    delete hash;
+    if (!ch2_err.isSuccess()) {
+        // something went wrong while performing the second chainhash
+        dhhs.errorStruct.success = ch2_err.success;
+        dhhs.errorStruct.errorCode = ch2_err.errorCode;
+        dhhs.errorStruct.errorInfo = ch2_err.errorInfo;
+        dhhs.errorStruct.what = ch2_err.what;
+        return dhhs;
+    }
+
+    // setting the validation hash
+    dhp.valid_passwordhash = ch2_err.returnValue();
+
+    // dataheader parts is now ready to create the dataheader object
+    dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
+    dhhs.Password_hash(ch1_err.returnValue());  // adding the password hash to the dhhs struct
+    return dhhs;
+}
+
+DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
+    // creates a DataHeader with the given settings (helper function for createDataHeader)
+    // sets up the return struct
+    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    DataHeaderHelperStruct dhhs{err};
+
+    DataHeaderParts dhp;
+    ChainHashData chd1{Format{CHModes(STANDARD_CHAINHASHMODE)}};
+    ChainHashData chd2{Format{CHModes(STANDARD_CHAINHASHMODE)}};
+    ChainHashTimed ch1;
+    ChainHashTimed ch2;
+    try {
+        // trying to get the chainhashes
+        chd1 = ChainHashData(Format{ds.chainhash1_mode});
+        chd2 = ChainHashData(Format{ds.chainhash2_mode});
+        // setting random data for the chainhashes datablocks (salts that are used by the chainhash)
+        chd1.generateRandomData();
+        chd2.generateRandomData();
+        // creating ChainHash structures
+        ch1 = ChainHashTimed{ds.chainhash1_mode, ds.chainhash1_time, chd1};
+        ch2 = ChainHashTimed{ds.chainhash2_mode, ds.chainhash2_time, chd2};
+        dhp.chainhash1_datablock_len = chd1.getLen();
+        dhp.chainhash2_datablock_len = chd2.getLen();
+
+    } catch (const std::exception& e) {
+        // something went wrong while creating the chainhashes
+        dhhs.errorStruct.errorInfo = "Something went wrong while creating the chainhashes";
+        dhhs.errorStruct.what = e.what();
+        return dhhs;
+    }
+    // setting up the other parts
+    dhp.file_mode = ds.file_mode;
+    dhp.hash_mode = ds.hash_mode;
+    Hash* hash = HashModes::getHash(dhp.hash_mode);
+    dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
+
+    // first chainhash (password -> passwordhash)
+    ErrorStruct<ChainHashResult> ch1_err = ChainHashModes::performChainHash(ch1, hash, password);
+    if (!ch1_err.isSuccess()) {
+        // something went wrong while performing the first chainhash
+        delete hash;
+        dhhs.errorStruct.success = ch1_err.success;
+        dhhs.errorStruct.errorCode = ch1_err.errorCode;
+        dhhs.errorStruct.errorInfo = ch1_err.errorInfo;
+        dhhs.errorStruct.what = ch1_err.what;
+        return dhhs;
+    }
+    // collecting the ChainHash that was used (getting the iterations)
+    dhp.chainhash1 = ch1_err.returnValue().chainhash;
+
+    // second chainhash (passwordhash -> passwordhashhash = validation hash)
+    ErrorStruct<ChainHashResult> ch2_err = ChainHashModes::performChainHash(ch2, hash, ch1_err.returnValue().result);
+    delete hash;
+    if (!ch2_err.isSuccess()) {
+        // something went wrong while performing the second chainhash
+        dhhs.errorStruct.success = ch2_err.success;
+        dhhs.errorStruct.errorCode = ch2_err.errorCode;
+        dhhs.errorStruct.errorInfo = ch2_err.errorInfo;
+        dhhs.errorStruct.what = ch2_err.what;
+        return dhhs;
+    }
+
+    // collecting the ChainHash that was used (getting the iterations)
+    dhp.chainhash2 = ch2_err.returnValue().chainhash;
+
+    // dataheader parts is now ready to create the dataheader object
+    dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
+    dhhs.Password_hash(ch1_err.returnValue().result);  // adding the password hash to the dhhs struct
+    return dhhs;
+}
+
 API::API(const FModes file_mode) {
     // constructs the API in a given worflow mode and initializes the private variables
     if (!FileModes::isModeValid(file_mode)) {
@@ -214,6 +366,7 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     return err;
 }
 
+
 ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std::filesystem::path dir) noexcept {
     // only gets the file names that have the same file mode as the given file data or are empty
     // gets all file names
@@ -293,6 +446,7 @@ ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) n
     this->parent->current_state = FILE_SELECTED(this->parent);
     return err;
 }
+
 
 ErrorStruct<bool> API::FILE_SELECTED::isFileEmpty() const noexcept {
     // gets if the working file is empty
@@ -397,94 +551,23 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
 
-    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
-
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
         return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     }
-    DataHeaderParts dhp;
-    try {
-        // trying to get the chainhashes
-        ChainHashData chd1{Format{ds.chainhash1_mode}};
-        ChainHashData chd2{Format{ds.chainhash2_mode}};
-        // setting random data for the chainhashes datablocks (salts that are used by the chainhash)
-        chd1.generateRandomData();
-        chd2.generateRandomData();
-        // creating ChainHash structures
-        dhp.chainhash1 = ChainHash{ds.chainhash1_mode, ds.chainhash1_iters, chd1};
-        dhp.chainhash2 = ChainHash{ds.chainhash2_mode, ds.chainhash2_iters, chd2};
-        dhp.chainhash1_datablock_len = chd1.getLen();
-        dhp.chainhash2_datablock_len = chd2.getLen();
-
-    } catch (const std::exception& e) {
-        // something went wrong while creating the chainhashes
-        err.errorInfo = "Something went wrong while creating the chainhashes";
-        err.what = e.what();
-        return err;
-    }
-    // setting up the other parts
-    dhp.file_mode = ds.file_mode;
-    dhp.hash_mode = ds.hash_mode;
-    Hash* hash = HashModes::getHash(dhp.hash_mode);
-    dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
-
-    // setting up an timer to calculate the remaining time for the second chainhash
-    Timer timer;
-    timer.start();
-    // first chainhash (password -> passwordhash)
-    ErrorStruct<Bytes> ch1_err = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
-    if (!ch1_err.isSuccess()) {
-        // something went wrong while performing the first chainhash
-        delete hash;
-        err.success = ch1_err.success;
-        err.errorCode = ch1_err.errorCode;
-        err.errorInfo = ch1_err.errorInfo;
-        err.what = ch1_err.what;
-        return err;
-    }
-    // handling the timeout
-    u_int64_t elapsedTime = timer.peekTime();
-    u_int64_t timeout_copy = timeout;
-    if (timeout != 0) {
-        // if the user set a timeout, we have to check how much time is left
-        if (timeout <= elapsedTime) {
-            // should not happen, but if the function closes and the timeout runs out shortly after, we have to return an timeout
-            delete hash;
-            err.success = TIMEOUT;
-            err.errorCode = ERR_TIMEOUT;
-            return err;
-        } else {
-            // if there is still time left, we have to subtract the elapsed time from the timeout
-            timeout_copy -= elapsedTime;
-        }
-    }
-    // second chainhash (passwordhash -> passwordhashhash = validation hash)
-    ErrorStruct<Bytes> ch2_err = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1_err.returnValue(), timeout_copy);
-    delete hash;
-    if (!ch2_err.isSuccess()) {
-        // something went wrong while performing the second chainhash
-        err.success = ch2_err.success;
-        err.errorCode = ch2_err.errorCode;
-        err.errorInfo = ch2_err.errorInfo;
-        err.what = ch2_err.what;
-        return err;
+    // calculates the data header (its a refactored function that is used more than once)
+    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
+    if(!dhhs.errorStruct.isSuccess()){
+        // the data header could not be created
+        return dhhs.errorStruct;
     }
 
-    // setting the validation hash
-    dhp.valid_passwordhash = ch2_err.returnValue();
-
-    // dataheader parts is now ready to create the dataheader object
-    err = DataHeader::setHeaderParts(dhp);
-    if (!err.isSuccess()) {
-        // something went wrong while setting the header parts
-        return err;
-    }
-    this->parent->correct_password_hash = ch1_err.returnValue();
-    this->parent->dh = err.returnValue();
+    // updating the state
+    this->parent->correct_password_hash = dhhs.Password_hash();
+    this->parent->dh = dhhs.errorStruct.returnValue();
     this->parent->current_state = DECRYPTED(this->parent);
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
-    return err;
+    return dhhs.errorStruct;
 }
 
 ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
@@ -492,86 +575,26 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
 
-    // sets the error to fail in order to return it if something goes wrong
-    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
-
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
         return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     }
 
-    DataHeaderParts dhp;
-    ChainHashData chd1{Format{CHModes(STANDARD_CHAINHASHMODE)}};
-    ChainHashData chd2{Format{CHModes(STANDARD_CHAINHASHMODE)}};
-    ChainHashTimed ch1;
-    ChainHashTimed ch2;
-    try {
-        // trying to get the chainhashes
-        chd1 = ChainHashData(Format{ds.chainhash1_mode});
-        chd2 = ChainHashData(Format{ds.chainhash2_mode});
-        // setting random data for the chainhashes datablocks (salts that are used by the chainhash)
-        chd1.generateRandomData();
-        chd2.generateRandomData();
-        // creating ChainHash structures
-        ch1 = ChainHashTimed{ds.chainhash1_mode, ds.chainhash1_time, chd1};
-        ch2 = ChainHashTimed{ds.chainhash2_mode, ds.chainhash2_time, chd2};
-        dhp.chainhash1_datablock_len = chd1.getLen();
-        dhp.chainhash2_datablock_len = chd2.getLen();
-
-    } catch (const std::exception& e) {
-        // something went wrong while creating the chainhashes
-        err.errorInfo = "Something went wrong while creating the chainhashes";
-        err.what = e.what();
-        return err;
-    }
-    // setting up the other parts
-    dhp.file_mode = ds.file_mode;
-    dhp.hash_mode = ds.hash_mode;
-    Hash* hash = HashModes::getHash(dhp.hash_mode);
-    dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
-
-    // first chainhash (password -> passwordhash)
-    ErrorStruct<ChainHashResult> ch1_err = ChainHashModes::performChainHash(ch1, hash, password);
-    if (!ch1_err.isSuccess()) {
-        // something went wrong while performing the first chainhash
-        delete hash;
-        err.success = ch1_err.success;
-        err.errorCode = ch1_err.errorCode;
-        err.errorInfo = ch1_err.errorInfo;
-        err.what = ch1_err.what;
-        return err;
-    }
-    // collecting the ChainHash that was used (getting the iterations)
-    dhp.chainhash1 = ch1_err.returnValue().chainhash;
-
-    // second chainhash (passwordhash -> passwordhashhash = validation hash)
-    ErrorStruct<ChainHashResult> ch2_err = ChainHashModes::performChainHash(ch2, hash, ch1_err.returnValue().result);
-    delete hash;
-    if (!ch2_err.isSuccess()) {
-        // something went wrong while performing the second chainhash
-        err.success = ch2_err.success;
-        err.errorCode = ch2_err.errorCode;
-        err.errorInfo = ch2_err.errorInfo;
-        err.what = ch2_err.what;
-        return err;
+    // calculates the data header (its a refactored function that is used more than once)
+    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
+    if(!dhhs.errorStruct.isSuccess()){
+        // the data header could not be created
+        return dhhs.errorStruct;
     }
 
-    // collecting the ChainHash that was used (getting the iterations)
-    dhp.chainhash2 = ch2_err.returnValue().chainhash;
-
-    // dataheader parts is now ready to create the dataheader object
-    err = DataHeader::setHeaderParts(dhp);
-    if (!err.isSuccess()) {
-        // something went wrong while setting the header parts
-        return err;
-    }
-
-    this->parent->correct_password_hash = ch1_err.returnValue().result;
-    this->parent->dh = err.returnValue();
+    // updating the state
+    this->parent->correct_password_hash = dhhs.Password_hash();
+    this->parent->dh = dhhs.errorStruct.returnValue();
     this->parent->current_state = DECRYPTED(this->parent);
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
-    return err;
+    return dhhs.errorStruct;
 }
+
 
 ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept {
     // decrypts the data (requires successful verifyPassword or createDataHeader run)
@@ -587,4 +610,49 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
     return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct};
 }
 
+
+ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_data) noexcept {
+    // WORK
+    return ErrorStruct<Bytes>();
+}
+
 ErrorStruct<FileDataStruct> API::DECRYPTED::getFileData() noexcept { return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct}; }
+
+ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) noexcept {
+    // the new generated header will be used for the next encryption, that means the old password is not valid anymore
+    // creates a data header for a given password and settings by randomizing the salt and chainhash data
+    // This call is expensive because it has to chainhash the password twice to generate a validator.
+    // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
+    // you can specify the iterations
+
+    // calculates the data header (its a refactored function that is used more than once)
+    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
+    if(!dhhs.errorStruct.isSuccess()){
+        // the data header could not be created
+        return dhhs.errorStruct;
+    }
+    
+    // updating the data header and the password hash
+    this->parent->correct_password_hash = dhhs.Password_hash();
+    this->parent->dh = dhhs.errorStruct.returnValue();
+    return dhhs.errorStruct;
+}
+
+ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
+    // the new generated header will be used for the next encryption, that means the old password is not valid anymore
+    // creates a data header for a given password and settings by randomizing the salt and chainhash data
+    // This call is expensive because it has to chainhash the password twice to generate a validator.
+    // you can specify the time (in ms) that the chainhashes should take in the settings
+
+    // calculates the data header (its a refactored function that is used more than once)
+    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
+    if(!dhhs.errorStruct.isSuccess()){
+        // the data header could not be created
+        return dhhs.errorStruct;
+    }
+    
+    // updating the data header and the password hash
+    this->parent->correct_password_hash = dhhs.Password_hash();
+    this->parent->dh = dhhs.errorStruct.returnValue();
+    return dhhs.errorStruct;
+}
