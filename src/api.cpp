@@ -366,7 +366,6 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     return err;
 }
 
-
 ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std::filesystem::path dir) noexcept {
     // only gets the file names that have the same file mode as the given file data or are empty
     // gets all file names
@@ -446,7 +445,6 @@ ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) n
     this->parent->current_state = FILE_SELECTED(this->parent);
     return err;
 }
-
 
 ErrorStruct<bool> API::FILE_SELECTED::isFileEmpty() const noexcept {
     // gets if the working file is empty
@@ -557,7 +555,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     }
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
-    if(!dhhs.errorStruct.isSuccess()){
+    if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         return dhhs.errorStruct;
     }
@@ -582,7 +580,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
 
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
-    if(!dhhs.errorStruct.isSuccess()){
+    if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         return dhhs.errorStruct;
     }
@@ -594,7 +592,6 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
     return dhhs.errorStruct;
 }
-
 
 ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept {
     // decrypts the data (requires successful verifyPassword or createDataHeader run)
@@ -609,7 +606,6 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
 
     return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct};
 }
-
 
 ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_data) noexcept {
     // WORK
@@ -627,11 +623,11 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
 
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
-    if(!dhhs.errorStruct.isSuccess()){
+    if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         return dhhs.errorStruct;
     }
-    
+
     // updating the data header and the password hash
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();
@@ -646,11 +642,11 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
 
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
-    if(!dhhs.errorStruct.isSuccess()){
+    if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         return dhhs.errorStruct;
     }
-    
+
     // updating the data header and the password hash
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();

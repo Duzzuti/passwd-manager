@@ -22,23 +22,24 @@ struct WorkflowDecStruct {
 };
 
 // helper struct that is returned internally the API if you create a data header
-struct DataHeaderHelperStruct{
+struct DataHeaderHelperStruct {
     ErrorStruct<DataHeader> errorStruct;  // contains the actual data header
     DataHeaderHelperStruct(const ErrorStruct<DataHeader> errorStruct) : errorStruct(errorStruct){};
-    Bytes Password_hash(){
+    Bytes Password_hash() {
         // returns the password hash if the chainhash was successful
-        if(this->errorStruct.isSuccess()){
+        if (this->errorStruct.isSuccess()) {
             return this->password_hash;
-        }else{
+        } else {
             throw std::logic_error("cannot get password hash from error struct that is not a success");
         }
     };
-    void Password_hash(const Bytes password_hash){
+    void Password_hash(const Bytes password_hash) {
         // sets the password hash
         this->password_hash = password_hash;
     };
-    private:
-    Bytes password_hash;                  // contains the password hash
+
+   private:
+    Bytes password_hash;  // contains the password hash
 };
 
 class API {
