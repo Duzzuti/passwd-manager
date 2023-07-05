@@ -108,7 +108,7 @@ class API {
         // this call is not expensive because it does not have to chainhash the password
         virtual ErrorStruct<DataHeader> changeSalt() noexcept {
             return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state", "", DataHeader(HModes(STANDARD_HASHMODE))};
-        }; 
+        };
 
         // decrypts the data
         // returns the decrypted content (without the data header)

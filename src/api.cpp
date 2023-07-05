@@ -126,7 +126,7 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     DataHeaderHelperStruct dhhs{err};
-    if(ds.file_mode != this->file_data_struct.file_mode) {
+    if (ds.file_mode != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
         dhhs.errorStruct.errorCode = ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
@@ -215,7 +215,7 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     DataHeaderHelperStruct dhhs{err};
 
-    if(ds.file_mode != this->file_data_struct.file_mode) {
+    if (ds.file_mode != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
         dhhs.errorStruct.errorCode = ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
@@ -636,7 +636,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::changeSalt() noexcept {
     dhp.enc_salt = Bytes(dhp.enc_salt.getLen());
     // dataheader parts is now ready to create the dataheader object
     ErrorStruct<DataHeader> err = DataHeader::setHeaderParts(dhp);
-    if(err.isSuccess()){
+    if (err.isSuccess()) {
         this->parent->dh = err.returnValue();
     }
     return err;
