@@ -705,10 +705,12 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     Bytes full_data;
     full_data.addBytes(this->parent->dh.getHeaderBytes());  // adds the data header
     full_data.addBytes(this->parent->encrypted_data);       // adds the encrypted data
-    char* data = reinterpret_cast<char*>(full_data.getBytesArray());
-    file.write(data, sizeof(data));
+    unsigned char* data = new unsigned char[full_data.getLen()];
+    full_data.getBytesArray(data);
+    file.write(reinterpret_cast<char*>(data), sizeof(reinterpret_cast<char*>(data)));
     file.close();
 
+    delete[] data;
     // workflow is finished
     this->parent->current_state = FINISHED(this->parent);
     return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};

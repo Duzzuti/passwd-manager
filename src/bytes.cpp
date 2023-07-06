@@ -24,11 +24,13 @@ void Bytes::setBytes(const std::vector<unsigned char> bytes) noexcept { this->by
 
 std::vector<unsigned char> Bytes::getBytes() const noexcept { return this->bytes; }
 
-unsigned char* Bytes::getBytesArray() const noexcept {
+void Bytes::getBytesArray(unsigned char* array) const {
     // gets the content of the vector as a array
-    unsigned char ret[this->bytes.size()];
-    std::copy(this->bytes.begin(), this->bytes.end(), ret);
-    return ret;
+    if(sizeof(array) < this->bytes.size()) {
+        // if the array is not big enough
+        throw std::range_error("The provided array is not big enough");
+    }
+    std::copy(this->bytes.begin(), this->bytes.end(), array);
 }
 
 size_t Bytes::getLen() const noexcept { return this->bytes.size(); }
