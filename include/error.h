@@ -59,7 +59,7 @@ struct ErrorStruct {
     // getters and setters
     T returnValue() {
         // you cannot access the return value if the function failed
-        if (success != SUCCESS) throw std::runtime_error(what);
+        if (success != SUCCESS) throw std::logic_error("Cannot access the return value, because the struct is not successful");
         return returnvalue;
     };
     bool isSuccess() { return success == SUCCESS; };

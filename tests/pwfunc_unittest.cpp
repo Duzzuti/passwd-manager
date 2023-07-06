@@ -37,15 +37,15 @@ TEST(PWFUNCClass, passwordvalid) {
     tmp = PwFunc::isPasswordValid("testtes");
     EXPECT_EQ(FAIL, tmp.success);
     EXPECT_EQ("Password is too short, it has to be at least 8 characters long", getErrorMessage(tmp, false));
-    EXPECT_EQ(false, tmp.returnValue());
+    EXPECT_THROW(tmp.returnValue(), std::logic_error);
     tmp = PwFunc::isPasswordValid("");
     EXPECT_EQ(FAIL, tmp.success);
     EXPECT_EQ("Password is too short, it has to be at least 8 characters long", getErrorMessage(tmp, false));
-    EXPECT_EQ(false, tmp.returnValue());
+    EXPECT_THROW(tmp.returnValue(), std::logic_error);
     tmp = PwFunc::isPasswordValid("1234567");
     EXPECT_EQ(FAIL, tmp.success);
     EXPECT_EQ("Password is too short, it has to be at least 8 characters long", getErrorMessage(tmp, false));
-    EXPECT_EQ(false, tmp.returnValue());
+    EXPECT_THROW(tmp.returnValue(), std::logic_error);
 
     // illegal characters
     for (unsigned char c = 0; c < 255; c++) {
@@ -53,7 +53,7 @@ TEST(PWFUNCClass, passwordvalid) {
         if (VALID_PASS_CHARSET.find(c) == std::string::npos) {
             EXPECT_EQ(FAIL, tmp.success);
             EXPECT_EQ("Password contains illegal character: '" + std::string(1, c) + "'", getErrorMessage(tmp, false));
-            EXPECT_EQ(false, tmp.returnValue());
+            EXPECT_THROW(tmp.returnValue(), std::logic_error);
         } else {
             EXPECT_EQ(SUCCESS, tmp.success);
             EXPECT_EQ("getErrorMessage was called on a succeeded ErrorStruct", getErrorMessage(tmp, false));
@@ -65,7 +65,7 @@ TEST(PWFUNCClass, passwordvalid) {
         if (VALID_PASS_CHARSET.find(c) == std::string::npos) {
             EXPECT_EQ(FAIL, tmp.success);
             EXPECT_EQ("Password contains illegal character: '" + std::string(1, c) + "'", getErrorMessage(tmp, false));
-            EXPECT_EQ(false, tmp.returnValue());
+            EXPECT_THROW(tmp.returnValue(), std::logic_error);
         } else {
             EXPECT_EQ(SUCCESS, tmp.success);
             EXPECT_EQ("getErrorMessage was called on a succeeded ErrorStruct", getErrorMessage(tmp, false));
@@ -77,7 +77,7 @@ TEST(PWFUNCClass, passwordvalid) {
         if (VALID_PASS_CHARSET.find(c) == std::string::npos) {
             EXPECT_EQ(FAIL, tmp.success);
             EXPECT_EQ("Password contains illegal character: '" + std::string(1, c) + "'", getErrorMessage(tmp, false));
-            EXPECT_EQ(false, tmp.returnValue());
+            EXPECT_THROW(tmp.returnValue(), std::logic_error);
         } else {
             EXPECT_EQ(SUCCESS, tmp.success);
             EXPECT_EQ("getErrorMessage was called on a succeeded ErrorStruct", getErrorMessage(tmp, false));
