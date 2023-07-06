@@ -34,6 +34,7 @@ enum ErrorCode {
     ERR_FILE_NOT_FOUND,
     ERR_FILE_NOT_DELETED,
     ERR_FILE_NOT_CREATED,
+    ERR_FILE_NOT_OPEN,
     ERR_NOT_ENOUGH_DATA,
     ERR_WRONG_WORKFLOW,
     ERR_API_NOT_INITIALIZED,
@@ -152,6 +153,10 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
         case ERR_FILE_EXISTS:
             if (err.errorInfo.empty()) return "File already exists" + err_msg;
             return err.errorInfo + " file already exists" + err_msg;
+
+        case ERR_FILE_NOT_OPEN:
+            if (err.errorInfo.empty()) return "File could not be opened" + err_msg;
+            return err.errorInfo + " file could not be opened" + err_msg;
 
         case ERR_FILE_NOT_FOUND:
             if (err.errorInfo.empty()) return "File could not be found" + err_msg;

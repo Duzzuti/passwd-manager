@@ -680,3 +680,41 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     this->parent->dh = dhhs.errorStruct.returnValue();
     return dhhs.errorStruct;
 }
+
+ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_path) noexcept {
+    // writes encrypted data to a file adds the dataheader, uses the encrypted data from getEncryptedData
+    
+    // checks if the selected file exists (it could be deleted in the meantime)
+    ErrorStruct<bool> err_file = this->parent->checkFilePath(file_path, true);
+    if (!err_file.isSuccess()) {
+        return err_file;
+    }
+    // checks if the file is accessible and empty or stores the same file data type
+    ErrorStruct<bool> err_file_data = this->parent->checkFileData(file_path);
+    if (!err_file_data.isSuccess()) {
+        return err_file_data;
+    }
+    // file is valid
+    // overrides old content
+    std::ofstream file(file_path, std::ios::binary);
+    if(!file.is_open()) {
+        // should not happen because the file was checked before
+        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_OPEN, file_path, "", false};
+    }
+    // write the data
+    Bytes full_data;
+    full_data.addBytes(this->parent->dh.getHeaderBytes());  // adds the data header
+    full_data.addBytes(this->parent->encrypted_data);       // adds the encrypted data
+    char* data = reinterpret_cast<char*>(full_data.getBytesArray());
+    file.write(data, sizeof(data));
+    file.close();
+    
+    // workflow is finished
+    this->parent->current_state = FINISHED(this->parent);
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
+ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept { 
+    // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
+    return this->parent->writeToFile(this->parent->selected_file);
+}
