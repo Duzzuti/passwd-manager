@@ -272,3 +272,22 @@ Bytes FileHandler::getFirstBytes(const int num) const {
     }
     return ret;
 }
+
+Bytes FileHandler::getAllBytes() const {
+    // reads all Bytes from the file
+    if (this->encryption_filepath.empty()) {
+        // no encryption file path set
+        throw std::runtime_error("Encrypted filepath is empty");
+    }
+    std::ifstream file(this->encryption_filepath.c_str());  // create the file stream
+    if (!file) {
+        // the set encryption file does not exist on the system
+        throw std::runtime_error("Encrypted file not found in filepath");
+    }
+    // get length of file:
+    file.seekg(0, file.end);    // jump to the end
+    int length = file.tellg();  // saves the position
+    file.close();
+    // gets the Bytes
+    return this->getFirstBytes(length);
+}

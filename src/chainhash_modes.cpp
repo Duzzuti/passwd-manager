@@ -87,26 +87,26 @@ bool ChainHashModes::isModeValid(const CHModes chainhash_mode) noexcept {
     return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
 }
 
-ErrorStruct<bool> ChainHashModes::isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock) noexcept {
+ErrorStruct<bool> ChainHashModes::isChainHashValid(const ChainHash chainh) noexcept {
     // checks if the chainhash is valid
     ErrorStruct<bool> es;
-    if (!ChainHashModes::isModeValid(chainhash_mode)) {
+    if (!ChainHashModes::isModeValid(chainh.mode)) {
         es.errorCode = ERR_CHAINHASH_MODE_INVALID;
         es.success = FAIL;
         return es;  // chainhash mode is not valid
     }
-    if (!(iters > 0 && iters <= MAX_ITERATIONS)) {
+    if (!(chainh.iters > 0 && chainh.iters <= MAX_ITERATIONS)) {
         es.errorCode = ERR_ITERATIONS_INVALID;
         es.success = FAIL;
         return es;  // iteration number is not valid
     }
-    if (!datablock.isCompletedFormat(Format(chainhash_mode))) {
+    if (!chainh.datablock.isCompletedFormat(Format(chainh.mode))) {
         // checks if the datablock is already completed
         es.errorCode = ERR_DATABLOCK_NOT_COMPLETED;
         es.success = FAIL;
         return es;
     }
-    if (datablock.getLen() > 255) {
+    if (chainh.datablock.getLen() > 255) {
         es.errorCode = ERR_DATABLOCK_TOO_LONG;
         es.success = FAIL;
         return es;  // datablock is too long
@@ -143,10 +143,10 @@ ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode) {
     return chd;
 }
 
-Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const Bytes data) {
+ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, const Hash* hash, const Bytes data, const u_int64_t timeout) {
     // performs a chainhash on bytes
-    ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock);  // check if the chainhash is valid
-    if (!err.success == SUCCESS) {
+    ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
+    if (!err.isSuccess()) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
@@ -155,34 +155,34 @@ Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int
     u_int64_t a{};
     u_int64_t b{};
     u_int64_t c{};
-    switch (chainhash_mode) {
-        case CHAINHASH_NORMAL:                                                                     // normal chainhash
-            return pwf.chainhash(data, iters);                                                     // just use the iterations
-        case CHAINHASH_CONSTANT_SALT:                                                              // constant salt
-            constant_salt = charVecToString(datablock.getPart("S").getBytes());                    // get the salt from the datablock
-            return pwf.chainhashWithConstantSalt(data, iters, constant_salt);                      // use the iterations and the constant salt
-        case CHAINHASH_COUNT_SALT:                                                                 // count salt
-            count_salt = toLong(datablock.getPart("SN"));                                          // get the start number of the salt
-            return pwf.chainhashWithCountSalt(data, iters, count_salt);                            // use the iterations and the count salt
-        case CHAINHASH_CONSTANT_COUNT_SALT:                                                        // constant + count salt
-            count_salt = toLong(datablock.getPart("SN"));                                          // get the start number of the salt
-            constant_salt = charVecToString(datablock.getPart("S").getBytes());                    // get the salt from the datablock
-            return pwf.chainhashWithCountAndConstantSalt(data, iters, count_salt, constant_salt);  // use the count and constant salt
-        case CHAINHASH_QUADRATIC:                                                                  // Quadratic count salt
-            count_salt = toLong(datablock.getPart("SN"));                                          // get the count salt (start number)
-            a = toLong(datablock.getPart("A"));                                                    // get the a number
-            b = toLong(datablock.getPart("B"));                                                    // get the b number
-            c = toLong(datablock.getPart("C"));                                                    // get the c number
-            return pwf.chainhashWithQuadraticCountSalt(data, iters, count_salt, a, b, c);          // use the count salt and a,b,c
-        default:                                                                                   // invalid chainhash mode
+    switch (chainh.mode) {
+        case CHAINHASH_NORMAL:                                                                                     // normal chainhash
+            return pwf.chainhash(data, chainh.iters, timeout);                                                     // just use the iterations
+        case CHAINHASH_CONSTANT_SALT:                                                                              // constant salt
+            constant_salt = charVecToString(chainh.datablock.getPart("S").getBytes());                             // get the salt from the datablock
+            return pwf.chainhashWithConstantSalt(data, chainh.iters, constant_salt, timeout);                      // use the iterations and the constant salt
+        case CHAINHASH_COUNT_SALT:                                                                                 // count salt
+            count_salt = toLong(chainh.datablock.getPart("SN"));                                                   // get the start number of the salt
+            return pwf.chainhashWithCountSalt(data, chainh.iters, count_salt, timeout);                            // use the iterations and the count salt
+        case CHAINHASH_CONSTANT_COUNT_SALT:                                                                        // constant + count salt
+            count_salt = toLong(chainh.datablock.getPart("SN"));                                                   // get the start number of the salt
+            constant_salt = charVecToString(chainh.datablock.getPart("S").getBytes());                             // get the salt from the datablock
+            return pwf.chainhashWithCountAndConstantSalt(data, chainh.iters, count_salt, constant_salt, timeout);  // use the count and constant salt
+        case CHAINHASH_QUADRATIC:                                                                                  // Quadratic count salt
+            count_salt = toLong(chainh.datablock.getPart("SN"));                                                   // get the count salt (start number)
+            a = toLong(chainh.datablock.getPart("A"));                                                             // get the a number
+            b = toLong(chainh.datablock.getPart("B"));                                                             // get the b number
+            c = toLong(chainh.datablock.getPart("C"));                                                             // get the c number
+            return pwf.chainhashWithQuadraticCountSalt(data, chainh.iters, count_salt, a, b, c, timeout);          // use the count salt and a,b,c
+        default:                                                                                                   // invalid chainhash mode
             throw std::invalid_argument("chainhash mode does not exist");
     }
 }
 
-Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const std::string data) {
+ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, const Hash* hash, const std::string data, const u_int64_t timeout) {
     // performs a chainhash on a string
-    ErrorStruct err = ChainHashModes::isChainHashValid(chainhash_mode, iters, datablock);  // check if the chainhash is valid
-    if (!err.success == SUCCESS) {
+    ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
+    if (!err.isSuccess()) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
@@ -191,26 +191,36 @@ Bytes ChainHashModes::performChainHash(const CHModes chainhash_mode, const u_int
     u_int64_t a{};
     u_int64_t b{};
     u_int64_t c{};
-    switch (chainhash_mode) {
-        case CHAINHASH_NORMAL:                                                                     // normal chainhash
-            return pwf.chainhash(data, iters);                                                     // just use the iterations
-        case CHAINHASH_CONSTANT_SALT:                                                              // constant salt
-            constant_salt = charVecToString(datablock.getPart("S").getBytes());                    // get the salt from the datablock
-            return pwf.chainhashWithConstantSalt(data, iters, constant_salt);                      // use the iterations and the constant salt
-        case CHAINHASH_COUNT_SALT:                                                                 // count salt
-            count_salt = toLong(datablock.getPart("SN"));                                          // get the start number of the salt
-            return pwf.chainhashWithCountSalt(data, iters, count_salt);                            // use the iterations and the count salt
-        case CHAINHASH_CONSTANT_COUNT_SALT:                                                        // constant + count salt
-            count_salt = toLong(datablock.getPart("SN"));                                          // get the start number of the salt
-            constant_salt = charVecToString(datablock.getPart("S").getBytes());                    // get the salt from the datablock
-            return pwf.chainhashWithCountAndConstantSalt(data, iters, count_salt, constant_salt);  // use the count and constant salt
-        case CHAINHASH_QUADRATIC:                                                                  // Quadratic count salt
-            count_salt = toLong(datablock.getPart("SN"));                                          // get the start number of the count salt
-            a = toLong(datablock.getPart("A"));                                                    // get the a number
-            b = toLong(datablock.getPart("B"));                                                    // get the b number
-            c = toLong(datablock.getPart("C"));                                                    // get the c number
-            return pwf.chainhashWithQuadraticCountSalt(data, iters, count_salt, a, b, c);          // use the count salt and a,b,c
-        default:                                                                                   // invalid chainhash mode
+    switch (chainh.mode) {
+        case CHAINHASH_NORMAL:                                                                                     // normal chainhash
+            return pwf.chainhash(data, chainh.iters, timeout);                                                     // just use the iterations
+        case CHAINHASH_CONSTANT_SALT:                                                                              // constant salt
+            constant_salt = charVecToString(chainh.datablock.getPart("S").getBytes());                             // get the salt from the datablock
+            return pwf.chainhashWithConstantSalt(data, chainh.iters, constant_salt, timeout);                      // use the iterations and the constant salt
+        case CHAINHASH_COUNT_SALT:                                                                                 // count salt
+            count_salt = toLong(chainh.datablock.getPart("SN"));                                                   // get the start number of the salt
+            return pwf.chainhashWithCountSalt(data, chainh.iters, count_salt, timeout);                            // use the iterations and the count salt
+        case CHAINHASH_CONSTANT_COUNT_SALT:                                                                        // constant + count salt
+            count_salt = toLong(chainh.datablock.getPart("SN"));                                                   // get the start number of the salt
+            constant_salt = charVecToString(chainh.datablock.getPart("S").getBytes());                             // get the salt from the datablock
+            return pwf.chainhashWithCountAndConstantSalt(data, chainh.iters, count_salt, constant_salt, timeout);  // use the count and constant salt
+        case CHAINHASH_QUADRATIC:                                                                                  // Quadratic count salt
+            count_salt = toLong(chainh.datablock.getPart("SN"));                                                   // get the start number of the count salt
+            a = toLong(chainh.datablock.getPart("A"));                                                             // get the a number
+            b = toLong(chainh.datablock.getPart("B"));                                                             // get the b number
+            c = toLong(chainh.datablock.getPart("C"));                                                             // get the c number
+            return pwf.chainhashWithQuadraticCountSalt(data, chainh.iters, count_salt, a, b, c, timeout);          // use the count salt and a,b,c
+        default:                                                                                                   // invalid chainhash mode
             throw std::invalid_argument("chainhash mode does not exist");
     }
+}
+
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data) {
+    // WORK
+    return ErrorStruct<ChainHashResult>();
+}
+
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data) {
+    // WORK
+    return ErrorStruct<ChainHashResult>();
 }

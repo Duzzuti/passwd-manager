@@ -95,6 +95,24 @@ void ChainHashData::addBytes(Bytes bytes) {
     }
 }
 
+void ChainHashData::generateRandomData() {
+    // fills the datablock with random data
+    if (!this->data_parts.empty() && !this->name_lens.empty()) {
+        // some parts have been set, therefore this function is not working
+        throw new std::logic_error("Cannot generate random data, because some data parts have been set.");
+    }
+    for (NameLen nl : this->name_lens) {
+        if (nl.len != 0) {
+            // got a data part with set length
+            this->addBytes(Bytes(nl.len));
+        } else {
+            // got a data parCHModest with * length (use the remaining bytes)
+            this->addBytes(Bytes(255 - this->getLen()));
+            break;
+        }
+    }
+}
+
 bool operator==(const ChainHashData& chd1, const ChainHashData& chd2) {
     if (chd1.isComplete() && chd2.isComplete()) {
         // both objects are complete, compare the data parts

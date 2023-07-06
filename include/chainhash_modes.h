@@ -4,6 +4,29 @@
 #include "chainhash_data.h"
 #include "error.h"
 #include "hash.h"
+#include "settings.h"
+
+// ChainHash struct holds all components that are needed to describe a chainhash
+struct ChainHash {
+    CHModes mode = CHModes(0);                                         // the mode
+    u_int64_t iters;                                                   // the iters
+    ChainHashData datablock{Format{CHModes(STANDARD_CHAINHASHMODE)}};  // the data corresponding to the chainhash
+};
+
+// ChainHashTimed struct holds all components that are needed to describe a chainhash
+// this chainhash does not contain iterations but a runtime to get the iterations
+struct ChainHashTimed {
+    CHModes mode = CHModes(0);                                         // the mode
+    u_int64_t run_time;                                                // the run time for this chainhash
+    ChainHashData datablock{Format{CHModes(STANDARD_CHAINHASHMODE)}};  // the data corresponding to the chainhash
+};
+
+// ChainHashResult struct holds the actual chainhash that was used and the result of the chainhash
+// this is returned if a timed chainhash was performed
+struct ChainHashResult {
+    ChainHash chainhash;  // the actual chainhash
+    Bytes result;         // the result of the chainhash
+};
 
 class ChainHashModes {
     /*
@@ -21,9 +44,14 @@ class ChainHashModes {
     static Bytes askForSaltNumber(const std::string msg, const unsigned char max_len = 8);
     static bool isModeValid(const CHModes chainhash_mode) noexcept;  // checks if the given chain hash mode is valid
     // checks if the given chainhash is valid (with the iterations and datablock which contains data that is used by the chainhash)
-    static ErrorStruct<bool> isChainHashValid(const CHModes chainhash_mode, const u_int64_t iters, const ChainHashData datablock) noexcept;
+    static ErrorStruct<bool> isChainHashValid(const ChainHash chainh) noexcept;
     static ChainHashData askForData(const CHModes chainhash_mode);  // gets data from the user that is needed for this chainhash mode
     // two methods for actually performing the chainhash, one for Bytes input and one for string input
-    static Bytes performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const Bytes data);
-    static Bytes performChainHash(const CHModes chainhash_mode, const u_int64_t iters, ChainHashData datablock, const Hash* hash, const std::string data);
+    // expensive methods, you can set an timeout (in ms). 0 means no timeout.
+    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const Bytes data, const u_int64_t timeout = 0);
+    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const std::string data, const u_int64_t timeout = 0);
+    // two other methods for actually performing the chainhash, one for Bytes input and one for string input
+    // these methods use a runtime instead of iterations and are returning a ChainHash
+    static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data);
+    static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data);
 };

@@ -8,6 +8,9 @@ enum ErrorCode {
     NO_ERR,
     NO_ERROR_WAS_SET,
     ERR,
+    ERR_BUG,
+    ERR_TIMEOUT,
+    ERR_ARGUEMENT_INVALID,
     ERR_FILEMODE_INVALID,
     ERR_HASHMODE_INVALID,
     ERR_CHAINHASH_MODE_INVALID,
@@ -21,6 +24,7 @@ enum ErrorCode {
     ERR_DATABLOCK_NOT_COMPLETED,
     ERR_DATABLOCK_TOO_LONG,
     ERR_PASSWD_CHAR_INVALID,
+    ERR_PASSWORD_INVALID,
     ERR_LEN_INVALID,
     ERR_PASSWD_TOO_SHORT,
     ERR_EMPTY_FILEPATH,
@@ -30,7 +34,11 @@ enum ErrorCode {
     ERR_FILE_NOT_FOUND,
     ERR_FILE_NOT_DELETED,
     ERR_FILE_NOT_CREATED,
-    ERR_NOT_ENOUGH_DATA
+    ERR_FILE_NOT_OPEN,
+    ERR_NOT_ENOUGH_DATA,
+    ERR_WRONG_WORKFLOW,
+    ERR_API_NOT_INITIALIZED,
+    ERR_API_STATE_INVALID
 };
 
 // used in a function that could fail, it returns a success type, a value and an error message
@@ -40,7 +48,25 @@ struct ErrorStruct {
     ErrorCode errorCode = NO_ERROR_WAS_SET;  // error code
     std::string errorInfo;                   // some specific data about the error can be stored here
     std::string what;                        // throw message
-    T returnValue;                           // return value
+
+    // constructors
+    ErrorStruct() = default;
+    ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo, std::string what, T returnvalue)
+        : success(success), errorCode(errorCode), errorInfo(errorInfo), what(what), returnvalue(returnvalue){};
+    ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo) : success(success), errorCode(errorCode), errorInfo(errorInfo){};
+    ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo, std::string what) : success(success), errorCode(errorCode), errorInfo(errorInfo), what(what){};
+
+    // getters and setters
+    T returnValue() {
+        // you cannot access the return value if the function failed
+        if (success != SUCCESS) throw std::logic_error("Cannot access the return value, because the struct is not successful");
+        return returnvalue;
+    };
+    bool isSuccess() { return success == SUCCESS; };
+    void setReturnValue(T value) { returnvalue = value; };
+
+   private:
+    T returnvalue;  // return value
 };
 
 // returns an error message based on the error code and the error info
@@ -48,7 +74,7 @@ template <typename T>
 std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
     // verbose_err_msg triggers the return of a more detailed error message
     //  returns an error message based on the error code and the error info
-    if (err.success == SUCCESS) return "getErrorMessage was called on a succeeded ErrorStruct";
+    if (err.isSuccess()) return "getErrorMessage was called on a succeeded ErrorStruct";
     std::string err_msg = "";
     if (verbose_err_msg) err_msg = "\nException message: " + err.what;
 
@@ -58,6 +84,18 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case NO_ERR:
             return "No error occurred" + err_msg;
+
+        case ERR_BUG:
+            return "An error occurred due to a bug in the program. Some checks failed: " + err.errorInfo + err_msg;
+
+        case ERR_TIMEOUT:
+            return "A timeout occured: " + err_msg;
+
+        case ERR_ARGUEMENT_INVALID:
+            return "An argument is invalid: " + err.errorInfo + err_msg;
+
+        case ERR_PASSWORD_INVALID:
+            return "Password is invalid" + err_msg;
 
         case ERR_CHAINHASH_MODE_INVALID:
             return "Chainhash mode is invalid" + err_msg;
@@ -116,6 +154,10 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
             if (err.errorInfo.empty()) return "File already exists" + err_msg;
             return err.errorInfo + " file already exists" + err_msg;
 
+        case ERR_FILE_NOT_OPEN:
+            if (err.errorInfo.empty()) return "File could not be opened" + err_msg;
+            return err.errorInfo + " file could not be opened" + err_msg;
+
         case ERR_FILE_NOT_FOUND:
             if (err.errorInfo.empty()) return "File could not be found" + err_msg;
             return err.errorInfo + " file could not be found" + err_msg;
@@ -133,6 +175,15 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_FILEMODE_INVALID:
             return "File mode is invalid: " + err.errorInfo + err_msg;
+
+        case ERR_WRONG_WORKFLOW:
+            return "Wrong workflow: " + err.errorInfo + err_msg;
+
+        case ERR_API_NOT_INITIALIZED:
+            return "API is not initialized. Method failed: " + err.errorInfo + err_msg;
+
+        case ERR_API_STATE_INVALID:
+            return "API is in the wrong state. Method failed: " + err.errorInfo + err_msg;
 
         case ERR:
             if (err.errorInfo.empty()) return "An error occurred" + err_msg;

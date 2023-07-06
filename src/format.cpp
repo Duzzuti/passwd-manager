@@ -96,7 +96,7 @@ std::vector<NameLen> Format::getNameLenList() const {
                     // could not convert string to int
                     throw std::invalid_argument("format is not valid. Size could not be converted to int");
                 }
-                if (!(0 < size_int < 256)) {
+                if (size_int <= 0 || size_int >= 256) {
                     // provided size is not valid
                     throw std::invalid_argument("format is not valid. Size has to be between 0 and 256 exclusive.");
                 }
