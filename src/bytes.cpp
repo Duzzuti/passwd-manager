@@ -24,6 +24,13 @@ void Bytes::setBytes(const std::vector<unsigned char> bytes) noexcept { this->by
 
 std::vector<unsigned char> Bytes::getBytes() const noexcept { return this->bytes; }
 
+unsigned char* Bytes::getBytesArray() const noexcept {
+    // gets the content of the vector as a array
+    unsigned char ret[this->bytes.size()];
+    std::copy(this->bytes.begin(), this->bytes.end(), ret);
+    return ret;
+}
+
 size_t Bytes::getLen() const noexcept { return this->bytes.size(); }
 
 void Bytes::addByte(const unsigned char byte) noexcept { this->bytes.push_back(byte); }
