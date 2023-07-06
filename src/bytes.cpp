@@ -26,7 +26,7 @@ std::vector<unsigned char> Bytes::getBytes() const noexcept { return this->bytes
 
 void Bytes::getBytesArray(unsigned char* array) const {
     // gets the content of the vector as a array
-    if(sizeof(array) < this->bytes.size()) {
+    if (sizeof(array) < this->bytes.size()) {
         // if the array is not big enough
         throw std::range_error("The provided array is not big enough");
     }
