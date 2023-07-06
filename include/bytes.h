@@ -17,7 +17,7 @@ class Bytes {
     void print() const noexcept;                                                       // prints the hex string of this byte vector
     void setBytes(const std::vector<unsigned char> bytes) noexcept;                    // set the bytes to a given value
     std::vector<unsigned char> getBytes() const noexcept;                              // getter for the byte vector
-    unsigned char* getBytesArray() const noexcept;                                    // getter for the byte vector as a array
+    unsigned char* getBytesArray() const noexcept;                                     // getter for the byte vector as a array
     size_t getLen() const noexcept;                                                    // getter for the length in bytes
     void addByte(const unsigned char byte) noexcept;                                   // adds one byte at the end of the byte vector
     void addBytes(const Bytes b1) noexcept;                                            // adds a other byte object at the end of the byte vector
