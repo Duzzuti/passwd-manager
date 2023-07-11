@@ -62,6 +62,15 @@ class API {
             parent->file_data_struct = FileDataStruct{file_mode, Bytes()};
             parent->current_state = INIT{parent};
         }
+        // this logout preserves the file mode
+        void logout() noexcept {
+            parent->correct_password_hash = Bytes();
+            parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
+            parent->encrypted_data = Bytes();
+            parent->selected_file = std::filesystem::path();
+            parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
+            parent->current_state = INIT{parent};
+        }
 
         // holds all non static functionality of the api
         // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
@@ -219,6 +228,9 @@ class API {
     // does the most work for creating a new dataheader from DataHeaderSettingsTime
     DataHeaderHelperStruct createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept;
 
+    // writes the file content to the file without checking if the file is valid
+    ErrorStruct<bool> writeFile(const std::filesystem::path file_path) const noexcept;
+
    public:
     // constructs the api with the file mode that should be worked with
     API(const FModes file_mode);
@@ -326,4 +338,6 @@ class API {
     // deletes saved data (password hash, data header, encrypted data)
     // after this call, the API object is in the same state as after the constructor call
     void logout(const FModes file_mode) noexcept { this->current_state.logout(file_mode); }
+    // this call preserves the file mode
+    void logout() noexcept { this->current_state.logout(); }
 };
