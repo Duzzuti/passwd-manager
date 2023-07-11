@@ -310,7 +310,7 @@ ErrorStruct<bool> API::writeFile(const std::filesystem::path file_path) const no
 }
 
 API::API(const FModes file_mode) {
-    // constructs the API in a given worflow mode and initializes the private variables
+    // constructs the API in a given workflow mode and initializes the private variables
     if (!FileModes::isModeValid(file_mode)) {
         throw std::invalid_argument("Invalid file mode");
     }
@@ -521,7 +521,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
 
     if (this->parent->file_empty) {
-        // file is empty, veriyPassword is not possible
+        // file is empty, verifyPassword is not possible
         return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "file is empty in verifyPassword"};
     }
 
@@ -567,10 +567,10 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
         return err;
 
     } catch (const std::exception& e) {
-        // some error occured
+        // some error occurred
         ErrorStruct<Bytes> err;
         err.errorCode = ERR;
-        err.errorInfo = "Some error occured while verifying the password";
+        err.errorInfo = "Some error occurred while verifying the password";
         err.what = e.what();
         err.success = FAIL;
         if (hash != nullptr) delete hash;

@@ -10,7 +10,7 @@ enum ErrorCode {
     ERR,
     ERR_BUG,
     ERR_TIMEOUT,
-    ERR_ARGUEMENT_INVALID,
+    ERR_ARGUMENT_INVALID,
     ERR_FILEMODE_INVALID,
     ERR_HASHMODE_INVALID,
     ERR_CHAINHASH_MODE_INVALID,
@@ -90,9 +90,9 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
             return "An error occurred due to a bug in the program. Some checks failed: " + err.errorInfo + err_msg;
 
         case ERR_TIMEOUT:
-            return "A timeout occured: " + err_msg;
+            return "A timeout occurred: " + err_msg;
 
-        case ERR_ARGUEMENT_INVALID:
+        case ERR_ARGUMENT_INVALID:
             return "An argument is invalid: " + err.errorInfo + err_msg;
 
         case ERR_PASSWORD_INVALID:

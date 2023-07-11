@@ -2,7 +2,7 @@
 This Api class is the interface between the front-end and the back-end.
 It encapsulates the back-end implementations and provides a simple interface for the front-end.
 
-for full documenation see the documentation of the API class in the documentation folder
+for full documentation see the documentation of the API class in the documentation folder
 */
 #pragma once
 
@@ -16,7 +16,7 @@ for full documenation see the documentation of the API class in the documentatio
 // struct that is returned by the API if you decode a file
 struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
-    // only contains value if no error occured
+    // only contains value if no error occurred
     std::optional<FileDataStruct> file_data;  // file data struct that contains the decrypted content
     std::optional<DataHeader> dh;             // data header of the file
 };
@@ -238,12 +238,12 @@ class API {
     // WORK
     // //*************** WORKFLOW 1 *****************
     // // decoder: gets the data header and the file data struct from the file
-    // ErrorStruct<WorkflowDecStruct> runWorflow1dec(const std::filesystem::path file_path, const std::string password) noexcept;
+    // ErrorStruct<WorkflowDecStruct> runWorkflow1dec(const std::filesystem::path file_path, const std::string password) noexcept;
     // // you can work with the file data object gotten from the file data struct gotten from the WorkflowDecStruct
     // // call createDataHeader in between to change the encryption settings
     // // encoder: writes the file data (gotten from the object.getFileData()) and data header to the file
     // // this can fail due to a non valid file. You have to call setFile() manually before calling this function again
-    // ErrorStruct<bool> runWorflow1enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
+    // ErrorStruct<bool> runWorkflow1enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
 
     // //*************** WORKFLOW 2 *****************
     // // create a new file with createEncFile()
@@ -253,7 +253,7 @@ class API {
     // // you can work with the file data object
     // // encoder: writes the file data (gotten from the object.getFileData()) and data header to the file
     // // this fails if file_path is not the same as in createEncFile(). You have to call setFile() manually before calling this function again
-    // ErrorStruct<bool> runWorflow2enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
+    // ErrorStruct<bool> runWorkflow2enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
 
     // gets the path of the current working directory
     static std::filesystem::path getCurrentDirPath() noexcept;
