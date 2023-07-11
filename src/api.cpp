@@ -718,7 +718,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     }
     if (err_file_data.returnValue()) {
         // file is not empty
-        return ErrorStruct<bool>{FAIL, FILE_NOT_EMPTY, file_path, "", false};
+        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_EMPTY, file_path, "", false};
     }
     // file is valid
     ErrorStruct<bool> err = this->parent->writeFile(file_path);

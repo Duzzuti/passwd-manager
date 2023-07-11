@@ -35,10 +35,10 @@ TEST(RNGClass, entropy_bytes) {
         // getting the random byte and storing it in the bytemap
         bytemap[RNG::get_random_bytes(1)[0]] += 1;
     }
-    // calculates the entropy of the goten bytes
+    // calculates the entropy of the gotten bytes
     double entropy{};
     for (std::pair<unsigned char, u_int64_t> key_value : bytemap) {
-        // calcuates the actual entropy by adding p*log2(p), with p - probability of that byte
+        // calculates the actual entropy by adding p*log2(p), with p - probability of that byte
         double num = key_value.second;
         double charprob = num / TEST_RNG_ITERS_ENTROPY;
         if (isnanl(charprob) || charprob == 0) {
@@ -120,9 +120,9 @@ TEST(RNGClass, entropy_byte) {
             for (u_int64_t i = 0; i < TEST_RNG_ITERS_BYTE_ENTROPY; i++) {
                 bytemap[RNG::get_random_byte(lower, upper, buffer)] += 1;
             }
-            double entropy = log2(range);  // theoretical entropy for perfrct randomness
+            double entropy = log2(range);  // theoretical entropy for perfect randomness
             double actual_entropy{};
-            // calcuates the actual entropy by adding p*log2(p), with p - probability of that byte
+            // calculates the actual entropy by adding p*log2(p), with p - probability of that byte
             for (std::pair<unsigned char, u_int64_t> key_value : bytemap) {
                 double num = key_value.second;
                 double charprob = num / TEST_RNG_ITERS_BYTE_ENTROPY;
@@ -168,7 +168,7 @@ TEST(RNGClass, entropy_byte) {
 TEST(RNGClass, byte_buffer) {
     // checks how the buffer size affects the entropy
     // the rng is calculating a random byte depending on the range and adds the lower bound
-    // that means it is not neccessary to check for different bounds in one range here
+    // that means it is not necessary to check for different bounds in one range here
     std::vector<unsigned char> buffer_sizes = {1, 2, 4, 8};
     for (int range = 1; range < 256; range++) {
         // stores the differences between the actual and expected entropy for each buffer size
@@ -182,7 +182,7 @@ TEST(RNGClass, byte_buffer) {
             }
             double entropy = log2(range);  // theoretical entropy for perfect randomness
             double actual_entropy{};
-            // calcuates the actual entropy by adding p*log2(p), with p - probability of that byte
+            // calculates the actual entropy by adding p*log2(p), with p - probability of that byte
             for (std::pair<unsigned char, u_int64_t> key_value : bytemap) {
                 double num = key_value.second;
                 double charprob = num / TEST_RNG_ITERS_BYTE_BUFFER_ENTROPY;
