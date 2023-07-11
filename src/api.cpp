@@ -716,22 +716,21 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     if (!err_file_data.isSuccess()) {
         return err_file_data;
     }
-    if(err_file_data.returnValue()){
+    if (err_file_data.returnValue()) {
         // file is not empty
         return ErrorStruct<bool>{FAIL, FILE_NOT_EMPTY, file_path, "", false};
     }
     // file is valid
     ErrorStruct<bool> err = this->parent->writeFile(file_path);
-    if(err.isSuccess()){
+    if (err.isSuccess()) {
         this->parent->current_state = ENCRYPTED(this->parent);
     }
     return err;
-    
 }
 
 ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
-    
+
     // checks if the selected file exists (it could be deleted in the meantime)
     ErrorStruct<bool> err_file = this->parent->checkFilePath(this->parent->selected_file, true);
     if (!err_file.isSuccess()) {
@@ -744,7 +743,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     }
     // file is valid
     ErrorStruct<bool> err = this->parent->writeFile(this->parent->selected_file);
-    if(err.isSuccess()){
+    if (err.isSuccess()) {
         this->parent->current_state = FINISHED(this->parent);
     }
     return err;
