@@ -1,7 +1,8 @@
 # API CLASS
 ## Related
 ### Docs
-- [File data](/docs/file_data.md)
+- [File data](file_data.md)
+- [DataHeader](dataheader.md)
 ### Classes
 - [API](/include/api.h)
 
@@ -23,7 +24,7 @@ Every API object starts in the `INIT` state
     *the api has some functionality for these actions*
     1. get the current working directory (`getCurrentDirPath()`)
     1. get the default directory where the .enc files are stored (in the user's home directory) (`getEncDirPath()`)
-    1. get the names of all .enc files in a given directory (`getEncFileNames()`) (not recommended)
+    1. get the names of all .enc files in a given directory (`getAllEncFileNames()`)
     1. get the names of all relevant (that means that they match with the file data mode + a valid header or are empty) .enc files in a given directory (`getRelevantFileNames()`)
 <br/><br/>
 
@@ -46,16 +47,16 @@ Every API object starts in the `INIT` state
         <br/><br/>
     1. if the file is empty (`isFileEmpty()`) you have to create a new dataheader for this file (`createDataHeader()`)
         1. you provide a master password for this file
-        1. you provide settings for the dataheader (see docs/dataheader.md for more information)
-        1. for `DataHeaderSettingsIters` you can also use a timeout (see [dataheader.md](dataheader.md) for more information)
+        1. you provide settings for the dataheader (see [dataheader](dataheader.md#dataheadersettings) for more information)
+        1. for `DataHeaderSettingsIters` you can also use a timeout (see [dataheader](dataheader.md#dataheadersettings) for more information)
         - this changes the state from `FILE_SELECTED` to `DECRYPTED`
     <br/><br/>
 
     1. if the file is not empty you have to verify the password of the file (`verifyPassword()`)
-        1. you provide the password that the user entered
-        1. the password will be checked with the chainhash of the dataheader
+        1. you provide the master password for that file
+        1. the password will be checked with the chainhash of the dataheader (see [dataheader](dataheader.md#how-does-the-data-header-work) for more information)
         1. the checking could take a very long time, you can provide a `timeout` (in ms) for this action (`recommended`)
-        1. if the password is correct the password hash will be saved in the api object
+        1. if the password is correct the password hash will be saved in the API object
         - this changes the state from `FILE_SELECTED` to `PASSWORD_VERIFIED`
 <br/><br/>
 
