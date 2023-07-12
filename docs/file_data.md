@@ -4,10 +4,10 @@
 - [API](/docs/api.md)
 - [Password data](/docs/password_data.md)
 ### Classes
-- [FileData](/include/file_data.h)<br>
+- [FileData](/include/file_data.h)
 - [FileMode](/include/file_modes.h)
 ### Enums
-- [FModes](/include/base.h)<br>
+- [FModes](/include/base.h)
 ### Structs
 - [FileDataStruct](/include/file_data.h)
 ## Why we need different modes
