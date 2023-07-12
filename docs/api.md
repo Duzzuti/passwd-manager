@@ -1,4 +1,10 @@
 # API CLASS
+## Related
+### Docs
+- [File data](/docs/file_data.md)
+### Classes
+- [API](/include/api.h)
+
 API class is used to interact with the architecture of the software.
 
 Top-Layer applications that are using the software should only interact with the api class.
@@ -9,7 +15,7 @@ Every API object starts in the `INIT` state
 
 ## Working with the API
 1. **construct an `API` object with the file mode that you wanna work with**
-    1. see docs/file_data.md for more information
+    1. see [file data](file_data.md#file-data-modes-list) for more information
 <br/><br/>
 
 1. **get the path to the `.enc` file that you wanna work with**
