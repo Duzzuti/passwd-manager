@@ -1,6 +1,7 @@
 # API CLASS
 ## Related
 ### Docs
+- [General](/docs/doc.md)
 - [File data](file_data.md)
 - [DataHeader](dataheader.md)
 ### Classes
@@ -62,15 +63,15 @@ Every API object starts in the `INIT` state
 
 1. **decrypt the data**
     
-    *if you created a new dataheader in `4.1.` you can skip this step*
+    *if you created a new dataheader in `4.2.` you can skip this step*
     1. decrypt the data with `getDecryptedData()`
-        1. if the password was not successfully verified in `4.2.` this method will fail
+        1. if the password was not successfully verified in `4.3.` this method will fail
         - this changes the state from `PASSWORD_VERIFIED` to `DECRYPTED`
 <br/><br/>
 
 1. **create the `FileData` object**
     1. you can get the `FileDataStruct` from the `getDecryptedData()` or from `getFileData()` if you are in the `DECRYPTED` state
-    1. create the `FileData` that belongs to the file mode you gave the constructor (see docs/file_data.md for more information)
+    1. create the `FileData` that belongs to the file mode you gave the constructor (see [file_data.md](file_data.md#where-did-i-use-the-file-data-mode) for more information)
     1. you can now work with the `FileData` object to change internal data or to get the data in a special format
     1. in the end you can get the `FileDataStruct` from the `FileData` object with `getFileData()`
 <br/><br/>
@@ -79,21 +80,21 @@ Every API object starts in the `INIT` state
     
     *there are two possible options*
     1. only change the salt (`changeSalt()`)
-        - it will just change the salt (random) that is used for encryption, that means that the password (hash) will be the same
+        - it will just change (randomize) the salt that is used for encryption, that means that the password (-hash) will be the same
         - it is very fast
         - the encrypted result will look completely different (except the dataheader)
         - it can confuse attackers, but it is safer to change the encryption completely
-
+        - see [dataheader](dataheader.md#how-does-the-data-header-work) for more information about the encryption
     1. create a new dataheader with `createDataHeader()`
-        - you can get the settings object from the old dataheader (by calling DataHeader::getSettings())
-        - to create a new dataheader compute power and time is needed (see docs/dataheader.md for more information)
-        - **NOTE that this new dataheader + password will be used for the next encryption**
+        - you can get the settings object from the old dataheader (by calling `DataHeader::getSettings()`)
+        - to create a new dataheader, compute power and time is needed (see [dataheader](dataheader.md#how-does-the-data-header-work) for more information)
+        - **NOTE that the new dataheader + password will be used for the next encryption**
     
         **THE OLD PASSWORD IS NOT LONGER VALID**
 
 1. **encrypt the data**
     1. encrypt the data with `getEncryptedData()`
-        1. you have to provide the decrypted data (FileDataStruct)
+        1. you have to provide the decrypted data (`FileDataStruct`)
         - this changes the state from `DECRYPTED` to `ENCRYPTED`
 <br/><br/>
 

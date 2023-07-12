@@ -26,7 +26,9 @@ The data is stored in **sets**. One set has a format and represents one piece of
     - you can get it from the `getDecryptedData()` or from `getFileData()` from the [API](api.md#working-with-the-api) object
     - you also can create it by you own with a `FileMode` and some decrypted (or empty) data
 2. construct the `FileData` object (for example [PasswordData](password_data.md)) with the `FileDataStruct`
+    - note that you need to use the corresponding `FileData` object for the `FileMode` (see [below](#file-data-modes-list))
 3. now you can work with the `FileData` object to change internal data or to get the data in a special format
+    - go to the docs of the `FileData` object that you are using [below](#file-data-modes-list)
 4. in the end you can get the new `FileDataStruct` from the `FileData` object with `getFileData()`
 5. you can use this `FileDataStruct` to encrypt the data and save it to the file with [API](api.md#working-with-the-api) methods
 
