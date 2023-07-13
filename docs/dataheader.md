@@ -32,7 +32,7 @@
 
 
 ### Total length of the data header lh:
-    22 + 2*HS <= lh <= 22 + 2*HS + 2*255 Bytes
+    22 + 2*HashSize <= lh <= 22 + 2*HashSize + 2*255 Bytes
 
 |Hash size|Min lh|Max lh|
 |---|---|---|
@@ -72,4 +72,40 @@ the remaining parts of the dataheader are generated automatically:
 
 after that the dataheader is generated with the `DataHeader::setHeaderParts()` method internally
 ## How does the data header work?
-//WORK
+The data header is used to store all information that has to be known in order to decrypt the file. It is stored at the beginning of the file. The header contains the following information (see [above](#dataheader-bytes) for a more ordered list with links to the docs):
+- `file_mode`, `hash_mode`
+- `chainhash1_mode`, `chainhash2_mode`
+- `chainhash1_iters`, `chainhash2_iters`
+- `chainhash1_datablock_size`, `chainhash2_datablock_size`
+- `chainhash1_datablock`, `chainhash2_datablock`
+- `enc_salt`
+- `password validation hash`
+
+The `file_mode` is used to check if the file contains the right kind of data. The API will deny a file if the file mode does not match with the API's file mode. The `file_mode` is also used to create the right `FileData` object (see [FileData](file_data.md#why-we-need-different-modes)).
+
+Due to the `hash_mode` the API knows which hash function was used to encrypt the data. Different hash functions could be added in the future. The `hash_mode` is used to create the right `Hash` object (see [Hash](hash_modes.md#how-does-hash-modes-work)).
+
+The `chainhash1_mode` is another mode that defines how the first chainhash should behave.
+
+The `chainhash1_iters` is an 8 Byte value that defines how many iterations the first chainhash should have.
+
+The `chainhash1_datablock_size` is a 1 Byte value that defines how long (in Bytes) the datablock for the first chainhash should be.
+
+The `chainhash1_datablock` is a `Bytes` object that contains the actual datablock for the first chainhash. That means all data, like salts etc. that are used in that chainhash.
+
+`chainhash2_*` elements are analog to chainhash1 elements, but for the second chainhash (that chainhash that validates the password).
+- see [Chainhash](chainhash_modes.md#how-does-chainhash-modes-work) for more information about chainhashes
+
+The `enc_salt` is a `Bytes` object that contains the encrypted salt. It is exactly as long as the hash function's hash size. It is used to make the encryption more secure:
+- the `enc_salt` has to be decrypted with the passwordhash (XOR)
+- the gotten salt is used with the passwordhash to encrypt the actual data
+- the salt can (and should) be generated randomly
+- for more information see [Encryption](doc.md)//WORK
+
+The `password validation hash` is a `Bytes` object that contains the hash of the passwordhash. It is exactly as long as the hash function's hash size. It is used to validate the password:
+- the password is encrypted with the first chainhash
+- the result is encrypted with the second chainhash
+- the result is compared with the `password validation hash`
+- if the hashes match, the password is correct
+
+A potential attacker can not get the password from the `password validation hash` because the hash function is not reversible. The attacker can only try to guess the password and encrypt it with the chainhashes (brute force).
