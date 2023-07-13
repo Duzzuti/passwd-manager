@@ -17,7 +17,7 @@ bool App::isValidChar(const std::string mode) noexcept {
     // checks if the mode is a valid unsigned char
     try {
         // transform the mode string to an number
-        // checks if the entered mode is an unisgned char (number between 0 and 255)
+        // checks if the entered mode is an unsigned char (number between 0 and 255)
         if (!(0 <= std::stoi(mode) && std::stoi(mode) < 256)) {
             return false;  // not an unsigned char
         }
@@ -28,7 +28,7 @@ bool App::isValidChar(const std::string mode) noexcept {
 }
 
 bool App::isValidFileMode(const std::string mode, const bool accept_blank) noexcept {
-    // checks the file mode (if accept_blank == True, we also acccept an empty string)
+    // checks the file mode (if accept_blank == True, we also accept an empty string)
     if (mode.empty()) {
         // if the mode was empty return if blank is accepted
         return accept_blank;
@@ -44,7 +44,7 @@ bool App::isValidFileMode(const std::string mode, const bool accept_blank) noexc
 }
 
 bool App::isValidHashMode(const std::string mode, const bool accept_blank) noexcept {
-    // checks the hash mode (if accept_blank == True, we also acccept an empty string)
+    // checks the hash mode (if accept_blank == True, we also accept an empty string)
     if (mode.empty()) {
         // if the mode was empty return if blank is accepted
         return accept_blank;
@@ -60,7 +60,7 @@ bool App::isValidHashMode(const std::string mode, const bool accept_blank) noexc
 }
 
 bool App::isValidChainHashMode(const std::string mode, const bool accept_blank) noexcept {
-    // checks the chainhash mode (if accept_blank == True, we also acccept an empty string)
+    // checks the chainhash mode (if accept_blank == True, we also accept an empty string)
     if (mode.empty()) {
         // if the mode was empty return if blank is accepted
         return accept_blank;
@@ -255,7 +255,7 @@ Bytes App::askForHeader() const {
     HModes hash_mode = this->askForHashMode();       // ask for hash mode
     // ask for chainhash1 data, which is used to get the passwordhash from the password
     std::cout << std::endl;
-    std::cout << "In order to get an hash derived from the enterd password, we need to perform a chainhash" << std::endl;
+    std::cout << "In order to get an hash derived from the entered password, we need to perform a chainhash" << std::endl;
     std::cout << "Please enter the preferences for this chainhash:" << std::endl << std::endl;
 
     // create the ChainHash structs

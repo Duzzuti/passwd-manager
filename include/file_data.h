@@ -16,8 +16,8 @@ struct FileDataStruct {
 class FileData {
     /*
     Interface class that holds methods that every FileData class has to implement
-    A FileData class is a class that implements this interface. It is used for the semantik of the data
-    If we decrypted the file's data, the user can do different actions dependend on the type of data that is stored in the file
+    A FileData class is a class that implements this interface. It is used for the semantic of the data
+    If we decrypted the file's data, the user can do different actions dependent on the type of data that is stored in the file
     */
    public:
     // checks if the decrypted data is valid for it's use case. Checks if the file mode is correct

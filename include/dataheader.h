@@ -48,7 +48,7 @@ class DataHeader {
     /*
     this class stores the functionalities of the dataheader
     the header is some byte information about the file that is written at the beginning of the file
-    the programm can read this header and knows everything about the encryption that is used
+    the program can read this header and knows everything about the encryption that is used
     this DataHeader class is handling this information
     more information about the header: docs/dataheader.md
     */
@@ -67,16 +67,16 @@ class DataHeader {
     // calculate the length of the header, get the hash function and it is also const and cannot be changed anyways
     DataHeader(const HModes hash_mode);
     // setter for the data that is needed for the header
-    void setFileDataMode(const FModes file_mode);  // sets the file data mode (semantik of content)
-    // setter for the chainhashs, takes a mode, number of iters, a datablock length (to verify datablock) and the datablock
-    // which conains data for the chainhash
+    void setFileDataMode(const FModes file_mode);  // sets the file data mode (semantic of content)
+    // setter for the chainhashes, takes a mode, number of iters, a datablock length (to verify datablock) and the datablock
+    // which contains data for the chainhash
     void setChainHash1(const ChainHash chainhash, const unsigned char len);
     void setChainHash2(const ChainHash chainhash, const unsigned char len);
     void setValidPasswordHashBytes(const Bytes validBytes);  // sets the passwordhashhash to validate the password hash
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
     void calcHeaderBytes(const Bytes passwordhash, const bool verify_pwhash = true);
-    Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overrites this variable
+    Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overwrites this variable
 
     // creates a new DataHeader object with the given header bytes
     // after this call the fileBytes are the data that is not part of the header

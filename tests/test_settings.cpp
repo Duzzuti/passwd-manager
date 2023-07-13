@@ -6,7 +6,7 @@ you can set the settings to fast or slow (but more test iterations)
 DOCUMENTATION:
 the easy mode is documented.
 All modes have obviously the same variables and semantics.
-It is not neccessary to document all modes
+It is not necessary to document all modes
 before the variable there is a string in the format: {<charactersA>; <charactersB>}
 characterA describes the consequences of incrementing this number in terms of time usage
 characterB describes the consequences of incrementing this number in terms of functionality
@@ -17,9 +17,9 @@ A:
     S - runs slower
     T<num> - runs slower until num
 B:
-    T<num> - more testcases are tested but it is unneccessary; but should be greater or equal to num
-    M - more testcases are tested; but it is not strictly unneccessary
-    A - more testcases are tested; the accuracy is strictly increasing
+    T<num> - more test cases are tested but it is unnecessary; but should be greater or equal to num
+    M - more test cases are tested; but it is not strictly unnecessary
+    A - more test cases are tested; the accuracy is strictly increasing
     D<char><var> - depends on var; inverse if char == i; proportional if char == p
     B - functionality or accuracy is declining
     G - functionality or accuracy is increasing

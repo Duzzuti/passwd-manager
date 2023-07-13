@@ -35,7 +35,7 @@ TEST(SHA384Class, att_strings) {
     */
     for (Bytes b : hashv) {
         EXPECT_EQ(shaObj.getHashSize(), b.getLen());
-        // may be the very unlikely case where two same strings get randomly generated (test failes in this case)
+        // may be the very unlikely case where two same strings get randomly generated (test fails in this case)
         EXPECT_EQ(1, std::count(hashv.begin(), hashv.end(), b));
     }
 }
@@ -77,7 +77,7 @@ TEST(SHA384Class, att_bytes) {
     */
     for (Bytes b : hashv) {
         EXPECT_EQ(shaObj.getHashSize(), b.getLen());
-        // may be the very unlikely case where two same bytes get randomly generated (test failes in this case)
+        // may be the very unlikely case where two same bytes get randomly generated (test fails in this case)
         EXPECT_EQ(1, std::count(hashv.begin(), hashv.end(), b));
     }
 }

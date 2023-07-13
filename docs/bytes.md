@@ -1,5 +1,5 @@
 # Bytes
-
+//WORK
 ## Byte operations
 
 ### Turning Bytes to Numbers
@@ -20,7 +20,7 @@ Due to the fact that we iterate over the highest byte first, the byte position h
 
 The position is the <br>length of the bytestring - the current index position of the byte - 1 <br>(-1 because we count from zero)
 
-The postion of the byte is the exponent for the byte`s position weight.
+The position of the byte is the exponent for the byte`s position weight.
 <br>(We need to take 256^byte_pos, because we are in a number system with base 256 (one byte))
 
 Now we have to add all of the weighted byte values to get the value for the full string.

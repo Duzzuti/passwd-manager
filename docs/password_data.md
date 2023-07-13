@@ -1,4 +1,12 @@
 # Password data
+## Related
+### Docs
+- [File data](/docs/file_data.md)
+### Classes
+- [PasswordData](/include/password_data.h)
+## How to use the password data class
+// WORK
+## How the data is stored
 |Bytes|Type|Doc|More Docs|
 |---|---|-------------|-----|
 |1|unsigned char|saves the length (in bytes) of the site name block|-|

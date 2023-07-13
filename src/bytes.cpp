@@ -57,7 +57,7 @@ std::optional<Bytes> Bytes::popFirstBytes(const int num) {
 
 std::optional<Bytes> Bytes::getFirstBytes(const int num) const {
     if (num < 0) {
-        // how the programm should return the first negative elments?
+        // how the program should return the first negative elements?
         throw std::range_error("The provided len is negative");
     }
     if (num > this->bytes.size()) {
@@ -88,7 +88,7 @@ Bytes Bytes::popFirstBytesFilledUp(const int num, const unsigned char fillup) {
 
 Bytes Bytes::getFirstBytesFilledUp(const int num, const unsigned char fillup) const {
     if (num < 0) {
-        // how the programm should return the first negative elments?
+        // how the program should return the first negative elements?
         throw std::range_error("The provided len is negative");
     }
     Bytes ret = Bytes();

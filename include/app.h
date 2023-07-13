@@ -1,5 +1,5 @@
 /*
-this module holds the application class which is the interface between the main function and the rest of the programm
+this module holds the application class which is the interface between the main function and the rest of the program
 the run() method is the encapsulated main method
 */
 #pragma once

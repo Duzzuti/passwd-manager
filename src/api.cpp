@@ -287,8 +287,30 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     return dhhs;
 }
 
+ErrorStruct<bool> API::writeFile(const std::filesystem::path file_path) const noexcept {
+    // writes new data to the file
+    // overrides old content
+    std::ofstream file(file_path, std::ios::binary);
+    if (!file.is_open()) {
+        // should not happen because the file was checked before
+        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_OPEN, file_path, "", false};
+    }
+    // write the data
+    Bytes full_data;
+    full_data.addBytes(this->dh.getHeaderBytes());  // adds the data header
+    full_data.addBytes(this->encrypted_data);       // adds the encrypted data
+    unsigned char* data = new unsigned char[full_data.getLen()];
+    full_data.getBytesArray(data);
+    file.write(reinterpret_cast<char*>(data), sizeof(reinterpret_cast<char*>(data)));
+    file.close();
+
+    delete[] data;
+    // workflow is finished
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
 API::API(const FModes file_mode) {
-    // constructs the API in a given worflow mode and initializes the private variables
+    // constructs the API in a given workflow mode and initializes the private variables
     if (!FileModes::isModeValid(file_mode)) {
         throw std::invalid_argument("Invalid file mode");
     }
@@ -499,7 +521,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
 
     if (this->parent->file_empty) {
-        // file is empty, veriyPassword is not possible
+        // file is empty, verifyPassword is not possible
         return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "file is empty in verifyPassword"};
     }
 
@@ -545,10 +567,10 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
         return err;
 
     } catch (const std::exception& e) {
-        // some error occured
+        // some error occurred
         ErrorStruct<Bytes> err;
         err.errorCode = ERR;
-        err.errorInfo = "Some error occured while verifying the password";
+        err.errorInfo = "Some error occurred while verifying the password";
         err.what = e.what();
         err.success = FAIL;
         if (hash != nullptr) delete hash;
@@ -684,39 +706,45 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
 ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_path) noexcept {
     // writes encrypted data to a file adds the dataheader, uses the encrypted data from getEncryptedData
 
-    // checks if the selected file exists (it could be deleted in the meantime)
+    // checks if the selected file exists
     ErrorStruct<bool> err_file = this->parent->checkFilePath(file_path, true);
     if (!err_file.isSuccess()) {
         return err_file;
     }
-    // checks if the file is accessible and empty or stores the same file data type
+    // checks if the file is accessible and empty
     ErrorStruct<bool> err_file_data = this->parent->checkFileData(file_path);
     if (!err_file_data.isSuccess()) {
         return err_file_data;
     }
-    // file is valid
-    // overrides old content
-    std::ofstream file(file_path, std::ios::binary);
-    if (!file.is_open()) {
-        // should not happen because the file was checked before
-        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_OPEN, file_path, "", false};
+    if (err_file_data.returnValue()) {
+        // file is not empty
+        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_EMPTY, file_path, "", false};
     }
-    // write the data
-    Bytes full_data;
-    full_data.addBytes(this->parent->dh.getHeaderBytes());  // adds the data header
-    full_data.addBytes(this->parent->encrypted_data);       // adds the encrypted data
-    unsigned char* data = new unsigned char[full_data.getLen()];
-    full_data.getBytesArray(data);
-    file.write(reinterpret_cast<char*>(data), sizeof(reinterpret_cast<char*>(data)));
-    file.close();
-
-    delete[] data;
-    // workflow is finished
-    this->parent->current_state = FINISHED(this->parent);
-    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+    // file is valid
+    ErrorStruct<bool> err = this->parent->writeFile(file_path);
+    if (err.isSuccess()) {
+        this->parent->current_state = ENCRYPTED(this->parent);
+    }
+    return err;
 }
 
 ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
-    return this->parent->writeToFile(this->parent->selected_file);
+
+    // checks if the selected file exists (it could be deleted in the meantime)
+    ErrorStruct<bool> err_file = this->parent->checkFilePath(this->parent->selected_file, true);
+    if (!err_file.isSuccess()) {
+        return err_file;
+    }
+    // checks if the file is accessible and empty or stores the same file data type
+    ErrorStruct<bool> err_file_data = this->parent->checkFileData(this->parent->selected_file);
+    if (!err_file_data.isSuccess()) {
+        return err_file_data;
+    }
+    // file is valid
+    ErrorStruct<bool> err = this->parent->writeFile(this->parent->selected_file);
+    if (err.isSuccess()) {
+        this->parent->current_state = FINISHED(this->parent);
+    }
+    return err;
 }

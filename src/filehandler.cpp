@@ -84,7 +84,7 @@ void FileHandler::createAppDataFile() {
 }
 
 std::filesystem::path FileHandler::getAppDataFilePath() const noexcept {
-    // gets the file path to the app data file by concatinating the dir path with the file name
+    // gets the file path to the app data file by concatenating the dir path with the file name
     return std::filesystem::path(this->appDataDir) / std::filesystem::path(this->appDataName);
 }
 
@@ -119,8 +119,8 @@ bool FileHandler::removeAppSetting(const std::string setting_name) const {
         std::istringstream iss(line);
         std::string setting, value;
         if (!(iss >> setting >> value)) {
-            // if the line does not conatin two strings (setting, value pair)
-            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occured, not in right format
+            // if the line does not contain two strings (setting, value pair)
+            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occurred, not in right format
             std::cout << "Do you wanna reset the appData (y/n): ";
             std::string tmp;
             std::cin >> tmp;
@@ -128,7 +128,7 @@ bool FileHandler::removeAppSetting(const std::string setting_name) const {
                 // reset the app data file to get the right format
                 this->resetAppData();
             }
-            return false;  // cannot proceed due to incorect file format
+            return false;  // cannot proceed due to incorrect file format
         }
         std::cout << setting << "|" << value << std::endl;  // DEBUGONLY
         if (!(setting == setting_name)) {
@@ -156,8 +156,8 @@ std::optional<std::string> FileHandler::getAppSetting(const std::string setting_
         std::istringstream iss(line);
         std::string setting, value;
         if (!(iss >> setting >> value)) {
-            // if the line does not conatin two strings (setting, value pair)
-            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occured, not in right format
+            // if the line does not contain two strings (setting, value pair)
+            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occurred, not in right format
             std::cout << "Do you wanna reset the appData (y/n): ";
             std::string tmp;
             std::cin >> tmp;
@@ -165,7 +165,7 @@ std::optional<std::string> FileHandler::getAppSetting(const std::string setting_
                 // reset the app data file to get the right format
                 this->resetAppData();
             }
-            return {};  // cannot proceed due to incorect file format
+            return {};  // cannot proceed due to incorrect file format
         }
         std::cout << setting << "|" << value << std::endl;  // DEBUGONLY
         if (setting == setting_name) {
@@ -200,8 +200,8 @@ bool FileHandler::setAppSetting(const std::string setting_name, const std::strin
         std::istringstream iss(line);
         std::string setting, value;
         if (!(iss >> setting >> value)) {
-            // if the line does not conatin two strings (setting, value pair)
-            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occured, not in right format
+            // if the line does not contain two strings (setting, value pair)
+            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occurred, not in right format
             std::cout << "Do you wanna reset the appData (y/n): ";
             std::string tmp;
             std::cin >> tmp;
@@ -209,7 +209,7 @@ bool FileHandler::setAppSetting(const std::string setting_name, const std::strin
                 // reset the app data file to get the right format
                 this->resetAppData();
             }
-            return false;  // cannot proceed due to incorect file format
+            return false;  // cannot proceed due to incorrect file format
         }
         std::cout << setting << "|" << value << std::endl;  // DEBUGONLY
         if (!(setting == setting_name)) {

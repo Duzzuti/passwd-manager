@@ -7,7 +7,7 @@ class PwFunc {
     /*
     this class provides methods that can be used to turn a password string u_int64_to a hash.
     Its using different chainhash methods.
-    A chainhash is a hashfunction that is applied to the password and again to the result hash.
+    A chainhash is a hash function that is applied to the password and again to the result hash.
     This will loop for a given number of iterations. If you perform the same chainhash with the same password,
     you will get to the same hash.
 

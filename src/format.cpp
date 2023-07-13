@@ -10,7 +10,7 @@ contains the implementations of the format class
 #include "utility.h"
 
 Format::Format(const CHModes chainhash_mode) {
-    // baisc constructor sets up the format string for the given chainhash mode
+    // basic constructor sets up the format string for the given chainhash mode
     if (!ChainHashModes::isModeValid(chainhash_mode)) {
         // given chainhash mode is not valid
         throw std::invalid_argument("given chainhash mode is not valid");
@@ -64,7 +64,7 @@ std::vector<NameLen> Format::getNameLenList() const {
     bool data_name = false;
     // stores the length of the next data (because we get the length before the name)
     unsigned char data_len = 0;
-    // loops over every format substring seperated by " "
+    // loops over every format substring separated by " "
     while (!format.empty()) {
         ind = format.find(" ");  // finds the next " " in the format string
         if (ind == std::string::npos) {
