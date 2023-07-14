@@ -1,0 +1,118 @@
+<diagram program="umletino" version="15.1"><zoom_level>8</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>440</x><y>48</y><w>144</w><h>56</h></coordinates><panel_attributes>bg=red
+API
+--
+-selected_file: path
+-file_empty: bool</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>384</x><y>184</y><w>88</w><h>32</h></coordinates><panel_attributes>bg=orange
+lt=.
+&lt;&lt;struct&gt;&gt;
+FileDataStruct</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>400</x><y>256</y><w>112</w><h>48</h></coordinates><panel_attributes>bg=green
+lt=.
+&lt;&lt;enum&gt;&gt;
+FModes
+--
+FILEMODE_PASSWORD</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>360</x><y>208</y><w>64</w><h>296</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +dec_data
+m2pos=-40,0
+</panel_attributes><additional_attributes>40;10;40;350</additional_attributes></element><element><id>UMLClass</id><coordinates><x>304</x><y>488</y><w>96</w><h>40</h></coordinates><panel_attributes>bg=blue
+Bytes
+--
+-bytes: vector&lt;uc&gt;
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>440</x><y>208</y><w>72</w><h>64</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +file_mode
+m2pos=0,10</panel_attributes><additional_attributes>10;10;10;60</additional_attributes></element><element><id>Relation</id><coordinates><x>424</x><y>96</y><w>104</w><h>104</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -file_data_struct</panel_attributes><additional_attributes>50;11;50;70;10;110</additional_attributes></element><element><id>Relation</id><coordinates><x>256</x><y>96</y><w>208</w><h>408</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -correct_password_hash\n -encrypted_data
+m2pos=-100,0
+
+
+
+
+</panel_attributes><additional_attributes>240;11;240;60;110;60;100;490</additional_attributes></element><element><id>UMLClass</id><coordinates><x>88</x><y>56</y><w>168</w><h>32</h></coordinates><panel_attributes>bg=black
+&lt;&lt;inner:API&gt;&gt;
+/WorkflowState/
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>248</x><y>80</y><w>208</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -parent</panel_attributes><additional_attributes>10;10;240;11</additional_attributes></element><element><id>Relation</id><coordinates><x>248</x><y>56</y><w>208</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m2= -current_state</panel_attributes><additional_attributes>240;11;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>160</y><w>64</w><h>32</h></coordinates><panel_attributes>bg=blue
+&lt;&lt;inner:API&gt;&gt;
+INIT</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>8</x><y>80</y><w>96</w><h>96</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>100;10;10;100</additional_attributes></element><element><id>Relation</id><coordinates><x>64</x><y>80</y><w>64</w><h>136</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>60;10;10;150</additional_attributes></element><element><id>UMLClass</id><coordinates><x>48</x><y>200</y><w>80</w><h>32</h></coordinates><panel_attributes>bg=blue
+&lt;&lt;inner:API&gt;&gt;
+FILE_SELECTED</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>80</x><y>240</y><w>104</w><h>32</h></coordinates><panel_attributes>bg=blue
+&lt;&lt;inner:API&gt;&gt;
+PASSWORD_VERIFIED</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>192</x><y>240</y><w>72</w><h>32</h></coordinates><panel_attributes>bg=blue
+&lt;&lt;inner:API&gt;&gt;
+DECRYPTED</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>240</x><y>200</y><w>72</w><h>32</h></coordinates><panel_attributes>bg=blue
+&lt;&lt;inner:API&gt;&gt;
+ENCRYPTED</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>256</x><y>144</y><w>72</w><h>32</h></coordinates><panel_attributes>bg=blue
+&lt;&lt;inner:API&gt;&gt;
+FINISHED</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>128</x><y>80</y><w>32</w><h>176</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;20;200</additional_attributes></element><element><id>Relation</id><coordinates><x>176</x><y>80</y><w>64</w><h>176</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;60;200</additional_attributes></element><element><id>Relation</id><coordinates><x>208</x><y>80</y><w>56</w><h>136</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;50;150</additional_attributes></element><element><id>Relation</id><coordinates><x>232</x><y>80</y><w>40</w><h>96</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;30;100</additional_attributes></element><element><id>UMLClass</id><coordinates><x>656</x><y>64</y><w>80</w><h>40</h></coordinates><panel_attributes>bg=blue
+Dataheader
+--
+- hash_size: uc</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>576</x><y>64</y><w>96</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -dh
+m2pos=15,0
+</panel_attributes><additional_attributes>10;21;100;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>584</x><y>136</y><w>152</w><h>64</h></coordinates><panel_attributes>bg=orange
+lt=.
+&lt;&lt;struct&gt;&gt;
+DataHeaderParts
+--
++ chainhash1_datablock_len: uc
++ chainhash2_datablock_len: uc</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>504</x><y>144</y><w>96</w><h>152</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +file_mode
+</panel_attributes><additional_attributes>100;10;60;10;60;160;10;160</additional_attributes></element><element><id>UMLClass</id><coordinates><x>832</x><y>112</y><w>112</w><h>72</h></coordinates><panel_attributes>bg=green
+lt=.
+&lt;&lt;enum&gt;&gt;
+HModes
+--
+HASHMODE_SHA256
+HASHMODE_SHA384
+HASHMODE_SHA512</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>728</x><y>136</y><w>120</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +hash_mode
+m2pos=15,0</panel_attributes><additional_attributes>10;10;130;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>664</x><y>240</y><w>88</w><h>48</h></coordinates><panel_attributes>bg=orange
+lt=.
+&lt;&lt;struct&gt;&gt;
+ChainHash
+--
++ iters: u64</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>832</x><y>248</y><w>184</w><h>96</h></coordinates><panel_attributes>bg=green
+lt=.
+&lt;&lt;enum&gt;&gt;
+CHModes
+--
+CHAINHASH_NORMAL
+CHAINHASH_CONSTANT_SALT
+CHAINHASH_COUNT_SALT
+CHAINHASH_CONSTANT_COUNT_SALT
+CHAINHASH_QUADRATIC</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>744</x><y>248</y><w>104</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +mode
+m2pos=15,0
+</panel_attributes><additional_attributes>10;20;110;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>672</x><y>328</y><w>80</w><h>24</h></coordinates><panel_attributes>bg=blue
+ChainHashData</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>672</x><y>400</y><w>80</w><h>32</h></coordinates><panel_attributes>bg=blue
+Format
+--
+-format:: str</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>744</x><y>336</y><w>240</w><h>104</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -chainhash_mode
+</panel_attributes><additional_attributes>10;110;180;110;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>704</x><y>344</y><w>56</w><h>72</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -format
+m2pos=0,10</panel_attributes><additional_attributes>10;10;10;70</additional_attributes></element><element><id>UMLClass</id><coordinates><x>672</x><y>480</y><w>88</w><h>56</h></coordinates><panel_attributes>bg=orange
+lt=.
+&lt;&lt;struct&gt;&gt;
+NameLen
+--
++ name: str
++ len: uc</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>704</x><y>424</y><w>24</w><h>72</h></coordinates><panel_attributes>lt=&lt;.
+</panel_attributes><additional_attributes>10;70;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>584</x><y>336</y><w>104</w><h>200</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -name_lens[*]
+
+</panel_attributes><additional_attributes>110;10;10;10;10;220;110;220</additional_attributes></element><element><id>Relation</id><coordinates><x>392</x><y>328</y><w>296</w><h>208</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -data_parts[*]
+m2pos=0,-15</panel_attributes><additional_attributes>350;10;230;10;130;240;10;240</additional_attributes></element><element><id>Relation</id><coordinates><x>704</x><y>280</y><w>72</w><h>64</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +datablock
+m2pos=0,10</panel_attributes><additional_attributes>10;10;10;60</additional_attributes></element><element><id>Relation</id><coordinates><x>704</x><y>192</y><w>80</w><h>64</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +chainhash1\n +chainhash2
+m2pos=0,10</panel_attributes><additional_attributes>10;10;10;60</additional_attributes></element><element><id>Relation</id><coordinates><x>392</x><y>192</y><w>240</w><h>320</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= +valid_passwordhash\n +enc_salt
+m2pos=0,-30</panel_attributes><additional_attributes>280;10;120;380;10;380</additional_attributes></element><element><id>Relation</id><coordinates><x>368</x><y>72</y><w>680</w><h>528</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -header_bytes</panel_attributes><additional_attributes>460;10;830;10;830;640;10;640;10;570</additional_attributes></element><element><id>Relation</id><coordinates><x>672</x><y>96</y><w>40</w><h>56</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2= -dh
+m2pos=0,10
+</panel_attributes><additional_attributes>10;10;10;50</additional_attributes></element><element><id>UMLNote</id><coordinates><x>288</x><y>0</y><w>40</w><h>24</h></coordinates><panel_attributes>State</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>168</x><y>8</y><w>136</w><h>64</h></coordinates><panel_attributes>lt=&lt;.</panel_attributes><additional_attributes>10;60;150;10</additional_attributes></element><element><id>Relation</id><coordinates><x>320</x><y>8</y><w>152</w><h>56</h></coordinates><panel_attributes>lt=&lt;.</panel_attributes><additional_attributes>170;50;10;10</additional_attributes></element></diagram>
