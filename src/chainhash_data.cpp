@@ -37,7 +37,7 @@ unsigned char ChainHashData::getPartsNumber() const noexcept {
 }
 
 Bytes ChainHashData::getDataBlock() const {
-    // gets the datablock by concatinating the data parts
+    // gets the datablock by concatenating the data parts
     if (!this->isComplete()) {
         // throws if the block is not completed yet
         throw std::logic_error("trying to get datablock from a non complete ChainHashData object.");

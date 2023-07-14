@@ -11,8 +11,8 @@ std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
         }
         return ret;
     } else {
-        // some error in openssl occured (maybe the given entropy was too low)
-        throw std::runtime_error("Error occured in get_random_bytes: " + std::to_string(ERR_get_error()));
+        // some error in openssl occurred (maybe the given entropy was too low)
+        throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
     }
 }
 
@@ -41,7 +41,7 @@ unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned cha
         }
         return (toLong(tmp_bytes) % (upper - lower)) + lower;
     } else {
-        // some error in openssl occured (maybe the given entropy was too low)
-        throw std::runtime_error("Error occured in get_random_bytes: " + std::to_string(ERR_get_error()));
+        // some error in openssl occurred (maybe the given entropy was too low)
+        throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
     }
 }

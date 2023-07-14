@@ -59,7 +59,7 @@ bool PasswordData::getData(Bytes bytes) noexcept {
         }
         if (siteMap.count(site_str) > 0) {
             this->siteMap.clear();
-            this->error = "The site name " + site_str + " has multiple occurences";
+            this->error = "The site name " + site_str + " has multiple occurrences";
             return false;
         }
         std::vector<std::string> dataV = {charVecToString(user.value().getBytes()), charVecToString(email.value().getBytes()), charVecToString(password.value().getBytes())};

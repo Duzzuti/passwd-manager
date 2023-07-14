@@ -15,7 +15,7 @@ bool endsWith(const std::string& fullString, const std::string& ending) noexcept
 std::vector<unsigned char> LongToCharVec(const u_int64_t a) noexcept;
 // transforms a byte array into a string
 std::string charVecToString(const std::vector<unsigned char> v) noexcept;
-// transforms a string into a byts object
+// transforms a string into a bytes object
 Bytes stringToBytes(const std::string str) noexcept;
 // gets the byte length of a long number
 unsigned int getLongLen(const u_int64_t num) noexcept;

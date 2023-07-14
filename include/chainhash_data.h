@@ -18,14 +18,14 @@ class ChainHashData {
    public:
     ChainHashData(Format format);  // constructs the data object, takes a format for this datablock
 
-    // checks if all expected data is already goten
+    // checks if all expected data is already gotten
     bool isComplete() const noexcept;
     // checks if the datablock is complete and it has the given format
     bool isCompletedFormat(Format format) const noexcept;
 
     // gets the number of gotten parts
     unsigned char getPartsNumber() const noexcept;
-    // gets one Bytes object that is a concatination of all byte parts, throws if not complete
+    // gets one Bytes object that is a concatenation of all byte parts, throws if not complete
     Bytes getDataBlock() const;
     // gets the bytes for a given part name, throws if the part name is not found (or set)
     Bytes getPart(std::string data_name) const;

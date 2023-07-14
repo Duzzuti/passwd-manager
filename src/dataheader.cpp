@@ -174,7 +174,7 @@ DataHeaderParts DataHeader::getDataHeaderParts() const {
 ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     // sets the header bytes by taking the first bytes of the file
     // init error struct
-    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occured while reading the header", "setHeaderBytes", DataHeader(HModes(STANDARD_HASHMODE))};
+    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes", DataHeader(HModes(STANDARD_HASHMODE))};
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
@@ -190,9 +190,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the file mode";
+        err.errorInfo = "An error occurred while reading the file mode";
         err.what = ex.what();
         return err;
     }
@@ -217,9 +217,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the hash mode";
+        err.errorInfo = "An error occurred while reading the hash mode";
         err.what = ex.what();
         return err;
     }
@@ -236,9 +236,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while setting the file mode";
+        err.errorInfo = "An error occurred while setting the file mode";
         err.what = ex.what();
         return err;
     }
@@ -265,9 +265,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the chainhash mode 1";
+        err.errorInfo = "An error occurred while reading the chainhash mode 1";
         err.what = ex.what();
         return err;
     }
@@ -283,9 +283,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the chainhash iters 1";
+        err.errorInfo = "An error occurred while reading the chainhash iters 1";
         err.what = ex.what();
         return err;
     }
@@ -301,9 +301,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the chainhash data block len 1";
+        err.errorInfo = "An error occurred while reading the chainhash data block len 1";
         err.what = ex.what();
         return err;
     }
@@ -337,9 +337,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
             err.what = ex.what();
             return err;
         } catch (const std::exception& ex) {
-            // some other error occured
+            // some other error occurred
             err.errorCode = ERR;
-            err.errorInfo = "An error occured while reading the chainhash data block 1";
+            err.errorInfo = "An error occurred while reading the chainhash data block 1";
             err.what = ex.what();
             return err;
         }
@@ -355,9 +355,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while setting the chainhash data block 1";
+        err.errorInfo = "An error occurred while setting the chainhash data block 1";
         err.what = ex.what();
         return err;
     }
@@ -384,9 +384,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the chainhash mode 2";
+        err.errorInfo = "An error occurred while reading the chainhash mode 2";
         err.what = ex.what();
         return err;
     }
@@ -402,9 +402,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the chainhash iters 2";
+        err.errorInfo = "An error occurred while reading the chainhash iters 2";
         err.what = ex.what();
         return err;
     }
@@ -420,9 +420,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while reading the chainhash data block len 2";
+        err.errorInfo = "An error occurred while reading the chainhash data block len 2";
         err.what = ex.what();
         return err;
     }
@@ -456,9 +456,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
             err.what = ex.what();
             return err;
         } catch (const std::exception& ex) {
-            // some other error occured
+            // some other error occurred
             err.errorCode = ERR;
-            err.errorInfo = "An error occured while reading the chainhash data block 2";
+            err.errorInfo = "An error occurred while reading the chainhash data block 2";
             err.what = ex.what();
             return err;
         }
@@ -474,9 +474,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while setting the chainhash data block 2";
+        err.errorInfo = "An error occurred while setting the chainhash data block 2";
         err.what = ex.what();
         return err;
     }
@@ -500,9 +500,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while setting and reading the password validator hash";
+        err.errorInfo = "An error occurred while setting and reading the password validator hash";
         err.what = ex.what();
         return err;
     }
@@ -526,9 +526,9 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
-        // some other error occured
+        // some other error occurred
         err.errorCode = ERR;
-        err.errorInfo = "An error occured while setting and reading the salt hash";
+        err.errorInfo = "An error occurred while setting and reading the salt hash";
         err.what = ex.what();
         return err;
     }
@@ -554,8 +554,8 @@ ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) no
         return err;
 
     } catch (const std::exception& ex) {
-        // some error occured
-        err.errorInfo = "An error occured while setting the header parts";
+        // some error occurred
+        err.errorInfo = "An error occurred while setting the header parts";
         err.what = ex.what();
         return err;
     }

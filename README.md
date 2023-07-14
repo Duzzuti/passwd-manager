@@ -21,7 +21,7 @@ In order to ensure that all developers use the same environment, we use docker. 
 ## How to set up the development environment
 
 1. Install docker
-2. Install VSCode's `Remote Devlopment` extension pack: `ms-vscode-remote.vscode-remote-extensionpack`
+2. Install VSCode's `Remote Development` extension pack: `ms-vscode-remote.vscode-remote-extensionpack`
 3. Build and run the container image with:
 ```sh
 $ cd <passwd-manager root folder>
@@ -55,7 +55,7 @@ These bytes are added with a hash that is derived from the password.
 And this sum got a third byte block with salt that is derived from the previous block.
 
 The sum mod 256 for each byte is the encrypted data of this block.
-To get all encrypted data, the encrypted bytes of each block are concatinated.
+To get all encrypted data, the encrypted bytes of each block are concatenated.
 
 The length of one block depends on the length of bytes that the hash function is returning. You can use *sha256*, *sha384* and *sha512*.
 

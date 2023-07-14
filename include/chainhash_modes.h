@@ -37,7 +37,7 @@ class ChainHashModes {
     We can add some salt before we hash again and this salt is calculated differently in each mode
     */
    public:
-    static std::string getInfo(const CHModes chainhash_mode);  // gets a string that conatins information about this chainhash mode
+    static std::string getInfo(const CHModes chainhash_mode);  // gets a string that contains information about this chainhash mode
     // ask the user for a string with a given message and max length and returns the bytes of the string
     static Bytes askForSaltString(const std::string msg, const unsigned char max_len);
     // ask the user for a number with a given message and max byte len (8 for ul) and returns the bytes of the number
