@@ -1,45 +1,27 @@
 #pragma once
 
-#include "blockchainBase.h"
 #include "bytes.h"
 
 class Block {
     /*
-    the block class represents one block of the blockchain
-    it has data, salt and the passwordhash to compute the encoded data
+    the abstract block class represents one block of the blockchain
+    one block has a fixed length and a salt that is used to encrypt the input data
+    if new data is pushed into the block (with addData) it is encrypted/decrypted with the salt
+    that should be implemented in the derived class
+    after encrypting/decrypting the data it is added to the data member
+    if the block is completed (the data member is full) the result can be retrieved with getResult
     */
-    friend BlockChain;  // the blockchain has to access private members (like getData)
    private:
-    int len;             // block len in bytes
-    Bytes data;          // plain text data
-    Bytes salt;          // salt to keep the passwordhash secure even if the attacker knows the data
-    Bytes passwordhash;  // passwordhash (hash that is derived from the password)
-    Bytes encoded;       // the encoded data
+    unsigned char block_len;             // block len in bytes
+    Bytes data;          // data produced by the block
+    Bytes salt;          // salt for decryption. The salt is added/subtracted from the input data
 
-   private:
-    Bytes getSalt() const noexcept;          // getter for the salt bytes
-    Bytes getPasswordHash() const noexcept;  // getter for the passwordhash bytes
-    Bytes getData() const noexcept;          // getter for the data bytes
    public:
-    // encrypt
-    Block();                                                                             // creates a block with a length of zero (you have to call setLen to use this block)
-    Block(const int len, const Bytes data, const Bytes salt, const Bytes passwordhash);  // creates a block with all necessary data to encode
-    void setLen(const int len);                                                          // sets the len of the block (note that this only works if no other data is set yet)
-    void setData(const Bytes data);                                                      // sets the data of the block (note that the length has to be right)
-    void setPasswordHash(const Bytes passwordhash);                                      // sets the passwordhash of the block (note that the length has to be right)
-    void setSalt(const Bytes salt);                                                      // sets the salt of the block (note that the length has to be right)
-    int getLen() const noexcept;                                                         // getter for the block length
-    Bytes getEncoded() const noexcept;                                                   // getter for the encoded bytes
-    bool isReadyForEncode() const noexcept;                                              // returns true if the block has all data to compute the encoded data
-    void calcEncoded();                                                                  // computes the encoded data
-    bool isEncoded() const noexcept;                                                     // returns true if the data has been encoded
-
-    // decrypt
-    Block(const Bytes encoded);              // creates a block with only encoded data (to decrypt you have to set a password hash and a salt)
-    void setEncoded(const Bytes encoded);    // setter for encoded data
-    bool isReadyForDecode() const noexcept;  // returns true if the block has all data to decrypt
-    void calcData();                         // decrypt the encoded data to plain data
-    bool isDecoded() const noexcept;         // returns true if the encoded data was decrypted
-
-    void clear() noexcept;  // clears the block data and sets length to zero
+    // delete the default constructor
+    // blocks should only be created with a valid length and salt
+    Block() = delete;
+    Block(const unsigned char len, const Bytes salt);                                    // creates a block with a length and a salt that is used to encrypt input data
+    unsigned char getFreeSpace() const noexcept;                                         // returns the available space in the block
+    virtual void addData(const Bytes data);                                              // adds new data to the block (this data is encrypted with the salt)
+    Bytes getResult() const;                                                             // getter for the result data (throws if the block is not completed)
 };
