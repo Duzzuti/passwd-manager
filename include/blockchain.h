@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+
 #include "block.h"
 #include "hash.h"
 
@@ -21,7 +22,7 @@ class BlockChain {
     It is:
         - deterministic
         - you can only get the next salt if you have the last block hash
-        - the first salt is known to the attacker and even if he knows the data of the first block 
+        - the first salt is known to the attacker and even if he knows the data of the first block
         he cannot get the next salt or passwordhash (except if he knows the inverse hash function :))
     */
    private:
@@ -32,11 +33,11 @@ class BlockChain {
         for every block it generates a new salt with the hash of the last block
         */
        private:
-        bool ready; // is the iterator ready to generate salts
-        bool first; // is this the first salt/block
-        Bytes hash; // the current hash (first is the passwordhash)
-        Bytes salt; // the current salt (first is the encrypted salt)
-        const Hash* hashObj;    // the hash object that provides the hash function
+        bool ready;           // is the iterator ready to generate salts
+        bool first;           // is this the first salt/block
+        Bytes hash;           // the current hash (first is the passwordhash)
+        Bytes salt;           // the current salt (first is the encrypted salt)
+        const Hash* hashObj;  // the hash object that provides the hash function
 
        public:
         SaltIterator() {
@@ -79,8 +80,8 @@ class BlockChain {
     };
 
     std::vector<std::unique_ptr<Block>> chain;  // the chain of blocks
-    const Hash* hash;           // the hash function that is used
-    SaltIterator salt_iter;     // the salt iterator that is used to generate the salts
+    const Hash* hash;                           // the hash function that is used
+    SaltIterator salt_iter;                     // the salt iterator that is used to generate the salts
 
    private:
     // adds a new block to the chain
@@ -102,7 +103,5 @@ class BlockChain {
     Bytes getResult() const;
 
     // virtual destructor frees the resources
-    virtual ~BlockChain() { 
-        delete this->hash;
-    };
+    virtual ~BlockChain() { delete this->hash; };
 };
