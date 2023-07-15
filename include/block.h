@@ -23,5 +23,7 @@ class Block {
     Block(const unsigned char len, const Bytes salt);  // creates a block with a length and a salt that is used to encrypt input data
     unsigned char getFreeSpace() const noexcept;       // returns the available space in the block
     virtual void addData(const Bytes data);            // adds new data to the block (this data is encrypted with the salt)
-    Bytes getResult() const;                           // getter for the result data (throws if the block is not completed)
+    Bytes getResult() const noexcept;                  // getter for the result data
+
+    virtual ~Block() = default;  // virtual destructor to make sure the derived class destructor is called
 };

@@ -22,8 +22,7 @@ unsigned char Block::getFreeSpace() const noexcept {
     return this->block_len - this->data.getLen();
 }
 
-Bytes Block::getResult() const {
-    // returns the resulting data of the block if the block is completed
-    if (this->getFreeSpace() != 0) throw std::logic_error("block is not completed");
+Bytes Block::getResult() const noexcept{
+    // returns the resulting data of the block
     return this->data;
 }
