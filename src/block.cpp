@@ -22,7 +22,7 @@ unsigned char Block::getFreeSpace() const noexcept {
     return this->block_len - this->data.getLen();
 }
 
-Bytes Block::getResult() const noexcept{
+Bytes Block::getResult() const noexcept {
     // returns the resulting data of the block
     return this->data;
 }
