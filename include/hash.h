@@ -1,7 +1,7 @@
 #pragma once
 
-#include "bytes.h"
 #include "block.h"
+#include "bytes.h"
 
 class Hash {
     /*
