@@ -1,6 +1,5 @@
 #pragma once
 #include "block.h"
-#include "blockchainBase.h"
 #include "hash.h"
 
 class BlockChain {
@@ -40,7 +39,7 @@ class BlockChain {
             if (!this->ready) throw std::runtime_error("SaltIterator is not ready, call init first");
             this->hash = this->hashObj->hash(this->hash + this->salt + last_block_hash);
             this->salt = this->hashObj->hash(this->hash + this->salt + last_block_hash);
-            return this->hashObj->hash(this->hash + this->salt + last_block_hash);
+            return this->hashObj->hash(this->hash + this->salt);
         }
         ~SaltIterator() { delete this->hashObj; }
     };
