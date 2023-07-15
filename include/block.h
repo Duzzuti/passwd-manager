@@ -12,16 +12,16 @@ class Block {
     if the block is completed (the data member is full) the result can be retrieved with getResult
     */
    private:
-    unsigned char block_len;             // block len in bytes
-    Bytes data;          // data produced by the block
-    Bytes salt;          // salt for decryption. The salt is added/subtracted from the input data
+    unsigned char block_len;  // block len in bytes
+    Bytes data;               // data produced by the block
+    Bytes salt;               // salt for decryption. The salt is added/subtracted from the input data
 
    public:
     // delete the default constructor
     // blocks should only be created with a valid length and salt
     Block() = delete;
-    Block(const unsigned char len, const Bytes salt);                                    // creates a block with a length and a salt that is used to encrypt input data
-    unsigned char getFreeSpace() const noexcept;                                         // returns the available space in the block
-    virtual void addData(const Bytes data);                                              // adds new data to the block (this data is encrypted with the salt)
-    Bytes getResult() const;                                                             // getter for the result data (throws if the block is not completed)
+    Block(const unsigned char len, const Bytes salt);  // creates a block with a length and a salt that is used to encrypt input data
+    unsigned char getFreeSpace() const noexcept;       // returns the available space in the block
+    virtual void addData(const Bytes data);            // adds new data to the block (this data is encrypted with the salt)
+    Bytes getResult() const;                           // getter for the result data (throws if the block is not completed)
 };

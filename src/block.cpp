@@ -17,14 +17,13 @@ Block::Block(const unsigned char len, const Bytes salt) {
     this->salt = salt;
 }
 
-unsigned char Block::getFreeSpace() const noexcept { 
+unsigned char Block::getFreeSpace() const noexcept {
     // returns the number of bytes that can be added to the block until it is completed
     return this->block_len - this->data.getLen();
 }
 
 Bytes Block::getResult() const {
     // returns the resulting data of the block if the block is completed
-    if(this->getFreeSpace() != 0)
-        throw std::logic_error("block is not completed");
+    if (this->getFreeSpace() != 0) throw std::logic_error("block is not completed");
     return this->data;
 }
