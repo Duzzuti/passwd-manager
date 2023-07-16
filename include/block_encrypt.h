@@ -8,5 +8,5 @@ class EncryptBlock : public Block {
     its a block that is used to encrypt data
     */
    public:
-    void addData(const Bytes data);            // adds new data to the block (this data is encrypted with the salt)
+    void addData(const Bytes data);  // adds new data to the block (this data is encrypted with the salt)
 };
