@@ -25,7 +25,7 @@ class BlockChain {
         - the first salt is known to the attacker and even if he knows the data of the first block
         he cannot get the next salt or passwordhash (except if he knows the inverse hash function :))
     */
-   private:
+   protected:
     class SaltIterator {
         /*
         the SaltIterator class is used to generate the salts for the blocks
@@ -83,7 +83,7 @@ class BlockChain {
     const Hash* hash;                           // the hash function that is used
     SaltIterator salt_iter;                     // the salt iterator that is used to generate the salts
 
-   private:
+   protected:
     // adds a new block to the chain
     virtual bool addBlock() noexcept;
     // returns the free space in the last block
