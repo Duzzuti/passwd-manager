@@ -1,14 +1,15 @@
 #include "blockchain_decrypt.h"
+
 #include "block_decrypt.h"
 
 bool DecryptBlockChain::addBlock() noexcept {
-    if(this->getFreeSpaceInLastBlock() != 0)
+    if (this->getFreeSpaceInLastBlock() != 0)
         // there is still free space in the last block no new block is needed
         return false;
 
     // get the next block salt
     Bytes next_salt;
-    if(this->chain.size() > 0)
+    if (this->chain.size() > 0)
         // hashes the last block and use it to generate the next salt
         next_salt = this->salt_iter.next(this->hash->hash(this->chain.back().get()));
     else

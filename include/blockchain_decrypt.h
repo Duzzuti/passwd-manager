@@ -2,7 +2,7 @@
 
 #include "blockchain.h"
 
-class DecryptBlockChain : public BlockChain{
+class DecryptBlockChain : public BlockChain {
     /*
     the DecryptBlockChain class represents a queue (vector) of DecryptBlocks
     it is used to decrypt data, its one type of BlockChain
