@@ -8,5 +8,6 @@ class EncryptBlockChain : public BlockChain {
     it is used to encrypt data, its one type of BlockChain
     */
    public:
+    EncryptBlockChain(const Hash* hash, const Bytes passwordhash, const Bytes enc_salt) : BlockChain(hash, passwordhash, enc_salt){};
     bool addBlock() noexcept override;  // adds a new EncryptBlocks to the chain
 };

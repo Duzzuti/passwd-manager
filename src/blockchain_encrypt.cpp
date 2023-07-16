@@ -20,7 +20,7 @@ bool EncryptBlockChain::addBlock() noexcept {
     std::unique_ptr<Block> new_block = std::make_unique<Block>(EncryptBlock(this->hash->getHashSize(), next_salt));
 
     // add the new block to the chain
-    this->chain.push_back(new_block);
+    this->chain.push_back(std::move(new_block));
 
     return true;
 }

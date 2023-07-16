@@ -17,10 +17,10 @@ bool DecryptBlockChain::addBlock() noexcept {
         next_salt = this->salt_iter.next();
 
     // create the new block
-    std::unique_ptr<Block> new_block = std::make_unique<Block>(DecryptBlock{this->hash->getHashSize(), next_salt});
+    std::unique_ptr<Block> new_block = std::make_unique<Block>(DecryptBlock(this->hash->getHashSize(), next_salt));
 
     // add the new block to the chain
-    this->chain.push_back(new_block);
+    this->chain.push_back(std::move(new_block));
 
     return true;
 }
