@@ -8,5 +8,6 @@ class DecryptBlock : public Block {
     its a block that is used to decrypt data
     */
    public:
-    void addData(const Bytes data);  // adds new data to the block (this data is decrypted with the salt)
+    DecryptBlock(const int len, const Bytes salt) : Block(len, salt) {};
+    void addData(const Bytes data) override;  // adds new data to the block (this data is decrypted with the salt)
 };
