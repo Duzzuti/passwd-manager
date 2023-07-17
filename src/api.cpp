@@ -4,6 +4,8 @@ implementation of api.h
 
 #include "api.h"
 
+#include "blockchain_decrypt.h"
+#include "blockchain_encrypt.h"
 #include "file_modes.h"
 #include "filehandler.h"
 #include "timer.h"
@@ -632,19 +634,59 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
     // decrypts the data (requires successful verifyPassword or createDataHeader run)
     // returns the decrypted content (without the data header)
     // uses the password and data header that were passed to verifyPassword (or createDataHeader for new files)
-
-    // WORK
-    Bytes decrypted;
-
-    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, decrypted};
-    ErrorStruct<FileDataStruct> err_res{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct};
-    this->parent->current_state = DECRYPTED(this->parent);
-    return err_res;
+    
+    try{
+        // get the hash object that corresponds to the hash mode
+        Hash* hash = HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode);
+        // construct the blockchain
+        DecryptBlockChain dbc{hash, this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
+        // add the data onto the blockchain
+        dbc.addData(this->parent->encrypted_data);
+        // get the decrypted data
+        Bytes decrypted = dbc.getResult();
+        FileDataStruct result{this->parent->file_data_struct.file_mode, decrypted};
+        this->parent->file_data_struct = result;
+        // changes the state
+        this->parent->current_state = DECRYPTED(this->parent);
+        return ErrorStruct<FileDataStruct>{result};
+    }catch(const std::exception& e){
+        ErrorStruct<FileDataStruct> err{FAIL, ERR, "", "", FileDataStruct()};
+        err.errorInfo = "In getDecryptedData: Something went wrong while decrypting the data";
+        err.what = e.what();
+        return err;
+    }
 }
 
 ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_data) noexcept {
-    // WORK
-    return ErrorStruct<Bytes>();
+    // encrypts the data and returns the encrypted data
+    // uses the password and data header that were passed to verifyPassword
+    ErrorStruct<Bytes> err{FAIL, ERR, "", "", Bytes()};
+    if(file_data.file_mode != this->parent->file_data_struct.file_mode){
+        // the user wants to encrypt data with a different file mode
+        err.errorCode = ERR_FILEMODE_INVALID;
+        err.errorInfo = " In getEncryptedData: The provided file mode does not match with the given file data mode";
+        return err;
+    }
+    this->parent->file_data_struct = file_data;
+    try{
+        // get the hash ptr
+        Hash* hash = HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode);
+        // construct the blockchain
+        EncryptBlockChain ebc{hash, this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
+        // add the data onto the blockchain
+        ebc.addData(this->parent->file_data_struct.dec_data);
+        // get the encrypted data
+        Bytes encrypted = ebc.getResult();
+        this->parent->encrypted_data = encrypted;
+        // change the state
+        this->parent->current_state = ENCRYPTED(this->parent);
+        // returns the result
+        return ErrorStruct<Bytes>{encrypted};
+    }catch(const std::exception& e){
+        err.errorInfo = "In getEncryptedData: Something went wrong while encrypting the data";
+        err.what = e.what();
+        return err;
+    }
 }
 
 ErrorStruct<FileDataStruct> API::DECRYPTED::getFileData() noexcept { return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct}; }

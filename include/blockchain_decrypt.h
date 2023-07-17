@@ -9,5 +9,6 @@ class DecryptBlockChain : public BlockChain {
     */
    public:
     DecryptBlockChain(const Hash* hash, const Bytes passwordhash, const Bytes enc_salt) : BlockChain(hash, passwordhash, enc_salt){};
+   protected:
     bool addBlock() noexcept override;  // adds a new DecryptBlock to the chain
 };
