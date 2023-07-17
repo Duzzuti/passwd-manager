@@ -88,7 +88,7 @@ class DataHeader {
     // all set data, such as chainhash data etc. are used to calculate this expected len. If the data is not enough we return 0
     unsigned int getHeaderLength() const noexcept;
     // gets the hash size of the hash function that is used
-    unsigned char getHashSize() const noexcept;
+    int getHashSize() const noexcept;
     // gets the dataheader parts if they are complete
     DataHeaderParts getDataHeaderParts() const;
     // WORK

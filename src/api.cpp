@@ -14,36 +14,33 @@ ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, cons
     // checks if the given file path is valid (file_path has to be not empty and have the right extension)
     // if should_exist is true, the file has to exist otherwise it has to not exist
     ErrorStruct<bool> err;
-    err.success = FAIL;
+    err.success = SuccessType::FAIL;
+    err.errorInfo = file_path.c_str();
     if (file_path.empty()) {
         // the given path is empty
-        err.errorCode = ERR_EMPTY_FILEPATH;
-        err.errorInfo = file_path.c_str();
+        err.errorCode = ErrorCode::ERR_EMPTY_FILEPATH;
         return err;
     }
     if (file_path.extension() != FileHandler::extension) {
         // the given path does not have the right extension
-        err.errorCode = ERR_EXTENSION_INVALID;
-        err.errorInfo = file_path.c_str();
+        err.errorCode = ErrorCode::ERR_EXTENSION_INVALID;
         return err;
     }
     if (should_exist) {
         if (!std::filesystem::exists(file_path)) {
             // the given path does not exist
-            err.errorCode = ERR_FILE_NOT_FOUND;
-            err.errorInfo = file_path.c_str();
+            err.errorCode = ErrorCode::ERR_FILE_NOT_FOUND;
             return err;
         }
     } else {
         if (std::filesystem::exists(file_path)) {
             // the given path already exists
-            err.errorCode = ERR_FILE_EXISTS;
-            err.errorInfo = file_path.c_str();
+            err.errorCode = ErrorCode::ERR_FILE_EXISTS;
             return err;
         }
     }
     // all checks passed
-    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+    return ErrorStruct<bool>{true};
 }
 
 ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) const noexcept {
@@ -56,7 +53,7 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     }
     if (err1.returnValue().isEmpty()) {
         // the file is empty
-        return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", false};
+        return ErrorStruct<bool>{SuccessType::SUCCESS, ErrorCode::NO_ERR, "", "", false};
     }
     ErrorStruct<DataHeader> err2 = this->getDataHeader(err1.returnValue());
     if (!err2.isSuccess()) {
@@ -65,15 +62,15 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     }
     if (err2.returnValue().getDataHeaderParts().file_mode != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
-        return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, file_path.c_str(), "", false};
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILEMODE_INVALID, file_path.c_str(), "", false};
     }
-    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+    return ErrorStruct<bool>{true};
 }
 
 ErrorStruct<std::filesystem::path> API::addExtension(const std::filesystem::path file_path) const noexcept {
     // adds the extension to the given file path if it does not have one
     ErrorStruct<std::filesystem::path> err;
-    err.success = FAIL;
+    err.success = SuccessType::FAIL;
     std::filesystem::path file_path_copy = file_path;
     if (!file_path_copy.has_extension()) {
         // the given path does not have an extension
@@ -81,19 +78,16 @@ ErrorStruct<std::filesystem::path> API::addExtension(const std::filesystem::path
         file_path_copy = std::filesystem::path(file_path_copy.c_str() + FileHandler::extension);
         if (!file_path_copy.has_extension()) {
             // something went wrong
-            err.errorCode = ERR_BUG;
+            err.errorCode = ErrorCode::ERR_BUG;
             err.errorInfo = "In function addExtension: file_path_copy has no extension after adding one";
             return err;
         }
     }
-    return ErrorStruct<std::filesystem::path>{SUCCESS, NO_ERR, "", "", file_path_copy};
+    return ErrorStruct<std::filesystem::path>{file_path_copy};
 }
 
 ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) const noexcept {
     // gets the content of the given file in Bytes
-    ErrorStruct<Bytes> err;
-    err.success = FAIL;
-
     // add the extension if it does not have one
     ErrorStruct<std::filesystem::path> err_ext = this->addExtension(file_path);
     if (!err_ext.isSuccess()) {
@@ -111,26 +105,29 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) co
     // the content is valid
     FileHandler fh;
     fh.setEncryptionFilePath(file_path_copy);
+
+    ErrorStruct<Bytes> err;
+    err.success = SuccessType::FAIL;
     try {
         err.setReturnValue(fh.getAllBytes());
     } catch (const std::exception& e) {
         // something went wrong while reading the file
-        err.errorCode = ERR;
+        err.errorCode = ErrorCode::ERR;
         err.errorInfo = "Something went wrong while reading the file (trying to get all bytes)[getFileContent]";
         err.what = e.what();
         return err;
     }
-    err.success = SUCCESS;
+    err.success = SuccessType::SUCCESS;
     return err;
 }
 
 DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
-    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     DataHeaderHelperStruct dhhs{err};
     if (ds.file_mode != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
-        dhhs.errorStruct.errorCode = ERR_FILEMODE_INVALID;
+        dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
     }
@@ -182,8 +179,8 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
         if (timeout <= elapsedTime) {
             // should not happen, but if the function closes and the timeout runs out shortly after, we have to return an timeout
             delete hash;
-            dhhs.errorStruct.success = TIMEOUT;
-            dhhs.errorStruct.errorCode = ERR_TIMEOUT;
+            dhhs.errorStruct.success = SuccessType::TIMEOUT;
+            dhhs.errorStruct.errorCode = ErrorCode::ERR_TIMEOUT;
             return dhhs;
         } else {
             // if there is still time left, we have to subtract the elapsed time from the timeout
@@ -214,12 +211,12 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
 DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     // sets up the return struct
-    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     DataHeaderHelperStruct dhhs{err};
 
     if (ds.file_mode != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
-        dhhs.errorStruct.errorCode = ERR_FILEMODE_INVALID;
+        dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
     }
@@ -295,7 +292,7 @@ ErrorStruct<bool> API::writeFile(const std::filesystem::path file_path) const no
     std::ofstream file(file_path, std::ios::binary);
     if (!file.is_open()) {
         // should not happen because the file was checked before
-        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_OPEN, file_path, "", false};
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, file_path, "", false};
     }
     // write the data
     Bytes full_data;
@@ -308,7 +305,7 @@ ErrorStruct<bool> API::writeFile(const std::filesystem::path file_path) const no
 
     delete[] data;
     // workflow is finished
-    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+    return ErrorStruct<bool>{true};
 }
 
 API::API(const FModes file_mode) {
@@ -335,18 +332,18 @@ ErrorStruct<std::filesystem::path> API::getEncDirPath() noexcept {
     std::filesystem::path enc_path = fh.getEncryptionFilePath();
     ErrorStruct<std::filesystem::path> err;
     err.setReturnValue(enc_path);
-    err.success = FAIL;
+    err.success = SuccessType::FAIL;
     if (enc_path.empty()) {
         // if the path is empty, the filehandler could not find the encryption dir
-        err.errorCode = ERR_EMPTY_FILEPATH;
+        err.errorCode = ErrorCode::ERR_EMPTY_FILEPATH;
         err.errorInfo = "Encryption dir";
     } else if (!std::filesystem::exists(enc_path)) {
         // if the path does not exist, the encryption dir does not exist
-        err.errorCode = ERR_FILEPATH_INVALID;
+        err.errorCode = ErrorCode::ERR_FILEPATH_INVALID;
         err.errorInfo = enc_path.c_str();
     } else {
         // otherwise the path is valid
-        err.success = SUCCESS;
+        err.success = SuccessType::SUCCESS;
     }
     return err;
 }
@@ -355,15 +352,15 @@ ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(const std::filesys
     // gets all the .enc file names in the given directory
     std::vector<std::string> file_names;
     ErrorStruct<std::vector<std::string>> err;
-    err.success = FAIL;
+    err.success = SuccessType::FAIL;
     if (dir.empty()) {
         // the given path is empty
-        err.errorCode = ERR_EMPTY_FILEPATH;
+        err.errorCode = ErrorCode::ERR_EMPTY_FILEPATH;
         return err;
     }
     if (!std::filesystem::exists(dir)) {
         // the given path does not exist
-        err.errorCode = ERR_FILEPATH_INVALID;
+        err.errorCode = ErrorCode::ERR_FILEPATH_INVALID;
         err.errorInfo = dir.c_str();
         return err;
     }
@@ -374,9 +371,7 @@ ErrorStruct<std::vector<std::string>> API::getAllEncFileNames(const std::filesys
             file_names.push_back(entry.path().filename().string());
         }
     }
-    err.success = SUCCESS;
-    err.setReturnValue(file_names);
-    return err;
+    return ErrorStruct<std::vector<std::string>>{file_names};
 }
 
 ErrorStruct<DataHeader> API::getDataHeader(const Bytes file_content) noexcept {
@@ -396,7 +391,7 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     err.errorInfo = err_header.errorInfo;
     err.what = err_header.what;
     err.success = err_header.success;
-    if (err_header.success) {
+    if (err_header.isSuccess()) {
         // sets the bytes that are remaining after the header as the data
         err.setReturnValue(file_content_copy);
     }
@@ -410,12 +405,11 @@ ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std:
     if (!err.isSuccess()) {
         return err;
     }
-    ErrorStruct<std::vector<std::string>> ret{SUCCESS, NO_ERR, "", "", std::vector<std::string>()};
+    ErrorStruct<std::vector<std::string>> ret{std::vector<std::string>()};
     for (int i = 0; i < err.returnValue().size(); i++) {
         // checks for every file if it has the same file mode as the given file data
         // build the complete file path
         std::filesystem::path fp = dir / err.returnValue()[i];
-        std::ifstream file(fp);
         // checks if the file data mode matches with the file mode of the file is empty
         ErrorStruct<bool> err2 = this->parent->checkFileData(fp);
         if (err2.isSuccess()) {
@@ -432,7 +426,7 @@ ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std:
 ErrorStruct<bool> API::INIT::createFile(const std::filesystem::path file_path) noexcept {
     // creates a new .enc file at the given path and validates it
     ErrorStruct<bool> err;
-    err.success = FAIL;
+    err.success = SuccessType::FAIL;
     // check if the file path is valid and the file does not exist
     ErrorStruct<bool> err2 = this->parent->checkFilePath(file_path);
     if (!err2.isSuccess()) {
@@ -443,13 +437,11 @@ ErrorStruct<bool> API::INIT::createFile(const std::filesystem::path file_path) n
     std::ofstream file(file_path);
     if (!file.is_open()) {
         // the file could not be created
-        err.errorCode = ERR_FILE_NOT_CREATED;
+        err.errorCode = ErrorCode::ERR_FILE_NOT_CREATED;
         err.errorInfo = file_path.c_str();
         return err;
     }
-    err.success = SUCCESS;
-    err.setReturnValue(true);
-    return err;
+    return ErrorStruct<bool>{true};
 }
 
 ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) noexcept {
@@ -462,16 +454,17 @@ ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) n
     // sets the file data
     if (err.returnValue()) {
         // the file is not empty
-        ErrorStruct<Bytes> err_file = this->getFileContent();
+        ErrorStruct<Bytes> err_file = this->parent->getFileContent(file_path);
         if (!err_file.isSuccess()) {
             // the file could not be read
-            return ErrorStruct<bool>{FAIL, err_file.errorCode, err_file.errorInfo};
+            return ErrorStruct<bool>{err_file.success, err_file.errorCode, err_file.errorInfo};
         }
         this->parent->encrypted_data = err_file.returnValue();
         ErrorStruct<DataHeader> err_dh = this->parent->getDataHeader(this->parent->encrypted_data);
         if (!err_dh.isSuccess()) {
             // the file data header is invalid
-            return ErrorStruct<bool>{FAIL, err_dh.errorCode, err_dh.errorInfo};
+            this->parent->encrypted_data = Bytes();
+            return ErrorStruct<bool>{err_dh.success, err_dh.errorCode, err_dh.errorInfo};
         }
         this->parent->dh = err_dh.returnValue();
     }
@@ -485,7 +478,7 @@ ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) n
 
 ErrorStruct<bool> API::FILE_SELECTED::isFileEmpty() const noexcept {
     // gets if the working file is empty
-    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", this->parent->file_empty};
+    return ErrorStruct<bool>{this->parent->file_empty};
     ;
 }
 
@@ -493,13 +486,10 @@ ErrorStruct<bool> API::FILE_SELECTED::deleteFile() noexcept {
     // deletes the working file
     if (!std::filesystem::remove(this->parent->selected_file)) {
         // the file could not be deleted
-        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_DELETED, this->parent->selected_file.c_str()};
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_DELETED, this->parent->selected_file.c_str()};
     }
     // reset the selected file
-    this->parent->selected_file = "";
-    this->parent->encrypted_data = Bytes();
-    this->parent->current_state = INIT(this->parent);
-    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+    return this->unselectFile();
 }
 
 ErrorStruct<Bytes> API::FILE_SELECTED::getFileContent() noexcept {
@@ -512,7 +502,7 @@ ErrorStruct<bool> API::FILE_SELECTED::unselectFile() noexcept {
     this->parent->selected_file = "";
     this->parent->encrypted_data = Bytes();
     this->parent->current_state = INIT(this->parent);
-    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+    return ErrorStruct<bool>{true};
 }
 
 ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password, const u_int64_t timeout) noexcept {
@@ -524,7 +514,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
 
     if (this->parent->file_empty) {
         // file is empty, verifyPassword is not possible
-        return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "file is empty in verifyPassword"};
+        return ErrorStruct<Bytes>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is empty in verifyPassword"};
     }
 
     Hash* hash;
@@ -550,31 +540,23 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
         }
         if (err2.returnValue() == dhp.valid_passwordhash) {
             // the password is valid (because the validation hashes match)
-            ErrorStruct<Bytes> err;
-            err.success = SUCCESS;
-            err.setReturnValue(err1.returnValue());
-
             // updating the state
             // setting the correct password hash and dataheader to the application
             this->parent->correct_password_hash = err1.returnValue();
             this->parent->current_state = PASSWORD_VERIFIED(this->parent);
             delete hash;
-            return err;
+            return err1;
         }
         // the password is invalid
         ErrorStruct<Bytes> err;
-        err.success = FAIL;
-        err.errorCode = ERR_PASSWORD_INVALID;
+        err.success = SuccessType::FAIL;
+        err.errorCode = ErrorCode::ERR_PASSWORD_INVALID;
         delete hash;
         return err;
 
     } catch (const std::exception& e) {
         // some error occurred
-        ErrorStruct<Bytes> err;
-        err.errorCode = ERR;
-        err.errorInfo = "Some error occurred while verifying the password";
-        err.what = e.what();
-        err.success = FAIL;
+        ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, "Some error occurred while verifying the password", e.what()};
         if (hash != nullptr) delete hash;
         return err;
     }
@@ -588,7 +570,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
 
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
-        return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     }
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
@@ -612,7 +594,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
 
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
-        return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
     }
 
     // calculates the data header (its a refactored function that is used more than once)
@@ -650,46 +632,47 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
         this->parent->current_state = DECRYPTED(this->parent);
         return ErrorStruct<FileDataStruct>{result};
     } catch (const std::exception& e) {
-        ErrorStruct<FileDataStruct> err{FAIL, ERR, "", "", FileDataStruct()};
-        err.errorInfo = "In getDecryptedData: Something went wrong while decrypting the data";
-        err.what = e.what();
-        return err;
+        // something went wrong inside of one of these functions, read what message for more information
+        return ErrorStruct<FileDataStruct>{SuccessType::FAIL, ErrorCode::ERR, 
+            "In getDecryptedData: Something went wrong while decrypting the data", e.what()};
     }
 }
 
 ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_data) noexcept {
     // encrypts the data and returns the encrypted data
     // uses the password and data header that were passed to verifyPassword
-    ErrorStruct<Bytes> err{FAIL, ERR, "", "", Bytes()};
+    ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     if (file_data.file_mode != this->parent->file_data_struct.file_mode) {
         // the user wants to encrypt data with a different file mode
-        err.errorCode = ERR_FILEMODE_INVALID;
+        err.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         err.errorInfo = " In getEncryptedData: The provided file mode does not match with the given file data mode";
         return err;
     }
-    this->parent->file_data_struct = file_data;
     try {
         // get the hash ptr
         Hash* hash = HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode);
         // construct the blockchain
         EncryptBlockChain ebc{hash, this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
         // add the data onto the blockchain
-        ebc.addData(this->parent->file_data_struct.dec_data);
+        ebc.addData(file_data.dec_data);
         // get the encrypted data
         Bytes encrypted = ebc.getResult();
+
+        this->parent->file_data_struct = file_data;
         this->parent->encrypted_data = encrypted;
         // change the state
         this->parent->current_state = ENCRYPTED(this->parent);
         // returns the result
         return ErrorStruct<Bytes>{encrypted};
     } catch (const std::exception& e) {
+        // something went wrong inside of one of these functions, read what message for more information
         err.errorInfo = "In getEncryptedData: Something went wrong while encrypting the data";
         err.what = e.what();
         return err;
     }
 }
 
-ErrorStruct<FileDataStruct> API::DECRYPTED::getFileData() noexcept { return ErrorStruct<FileDataStruct>{SUCCESS, NO_ERR, "", "", this->parent->file_data_struct}; }
+ErrorStruct<FileDataStruct> API::DECRYPTED::getFileData() noexcept { return ErrorStruct<FileDataStruct>{this->parent->file_data_struct}; }
 
 ErrorStruct<DataHeader> API::DECRYPTED::changeSalt() noexcept {
     // creates data header with the current settings and password, just changes the salt
@@ -760,12 +743,12 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     }
     if (err_file_data.returnValue()) {
         // file is not empty
-        return ErrorStruct<bool>{FAIL, ERR_FILE_NOT_EMPTY, file_path, "", false};
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, file_path, "", false};
     }
     // file is valid
     ErrorStruct<bool> err = this->parent->writeFile(file_path);
     if (err.isSuccess()) {
-        this->parent->current_state = ENCRYPTED(this->parent);
+        this->parent->current_state = FINISHED(this->parent);
     }
     return err;
 }

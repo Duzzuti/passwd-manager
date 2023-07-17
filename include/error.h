@@ -56,11 +56,12 @@ struct ErrorStruct {
         : success(success), errorCode(errorCode), errorInfo(errorInfo), what(what), returnvalue(returnvalue){};
     ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo) : success(success), errorCode(errorCode), errorInfo(errorInfo){};
     ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo, std::string what) : success(success), errorCode(errorCode), errorInfo(errorInfo), what(what){};
+    ErrorStruct(T returnvalue) : success(SuccessType::SUCCESS), errorCode(ErrorCode::NO_ERR), errorInfo(""), what(""), returnvalue(returnvalue){};
 
     // getters and setters
     T returnValue() {
         // you cannot access the return value if the function failed
-        if (success != SUCCESS) throw std::logic_error("Cannot access the return value, because the struct is not successful");
+        if (!isSuccess()) throw std::logic_error("Cannot access the return value, because the struct is not successful");
         return returnvalue;
     };
     bool isSuccess() { return success == SUCCESS; };
