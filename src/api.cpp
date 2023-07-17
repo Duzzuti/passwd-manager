@@ -633,8 +633,7 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
         return ErrorStruct<FileDataStruct>{result};
     } catch (const std::exception& e) {
         // something went wrong inside of one of these functions, read what message for more information
-        return ErrorStruct<FileDataStruct>{SuccessType::FAIL, ErrorCode::ERR, 
-            "In getDecryptedData: Something went wrong while decrypting the data", e.what()};
+        return ErrorStruct<FileDataStruct>{SuccessType::FAIL, ErrorCode::ERR, "In getDecryptedData: Something went wrong while decrypting the data", e.what()};
     }
 }
 
