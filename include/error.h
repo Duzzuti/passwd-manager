@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-
+#include <optional>
 #include "base.h"
 
 enum ErrorCode {
@@ -62,13 +62,14 @@ struct ErrorStruct {
     T returnValue() {
         // you cannot access the return value if the function failed
         if (!isSuccess()) throw std::logic_error("Cannot access the return value, because the struct is not successful");
-        return returnvalue;
+        if (!returnvalue.has_value()) throw std::logic_error("Return value is not set");
+        return returnvalue.value();
     };
     bool isSuccess() { return success == SUCCESS; };
     void setReturnValue(T value) { returnvalue = value; };
 
    private:
-    T returnvalue;  // return value
+    std::optional<T> returnvalue;  // return value
 };
 
 // returns an error message based on the error code and the error info

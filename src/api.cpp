@@ -49,7 +49,7 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     ErrorStruct<Bytes> err1 = this->getFileContent(file_path);
     if (!err1.isSuccess()) {
         // the file could not be read
-        return ErrorStruct<bool>{err1.success, err1.errorCode, err1.errorInfo, err1.what, false};
+        return ErrorStruct<bool>{err1.success, err1.errorCode, err1.errorInfo, err1.what};
     }
     if (err1.returnValue().isEmpty()) {
         // the file is empty
@@ -58,11 +58,11 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     ErrorStruct<DataHeader> err2 = this->getDataHeader(err1.returnValue());
     if (!err2.isSuccess()) {
         // the data header could not be read
-        return ErrorStruct<bool>{err2.success, err2.errorCode, err2.errorInfo, err2.what, false};
+        return ErrorStruct<bool>{err2.success, err2.errorCode, err2.errorInfo, err2.what};
     }
     if (err2.returnValue().getDataHeaderParts().file_mode != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILEMODE_INVALID, file_path.c_str(), "", false};
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILEMODE_INVALID, file_path.c_str()};
     }
     return ErrorStruct<bool>{true};
 }
@@ -123,7 +123,7 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) co
 
 DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
-    ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     DataHeaderHelperStruct dhhs{err};
     if (ds.file_mode != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
@@ -211,7 +211,7 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
 DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     // sets up the return struct
-    ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", ""};
     DataHeaderHelperStruct dhhs{err};
 
     if (ds.file_mode != this->file_data_struct.file_mode) {
@@ -292,7 +292,7 @@ ErrorStruct<bool> API::writeFile(const std::filesystem::path file_path) const no
     std::ofstream file(file_path, std::ios::binary);
     if (!file.is_open()) {
         // should not happen because the file was checked before
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, file_path, "", false};
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, file_path};
     }
     // write the data
     Bytes full_data;
@@ -570,7 +570,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
 
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
-        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader"};
     }
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
@@ -594,7 +594,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
 
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
-        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader"};
     }
 
     // calculates the data header (its a refactored function that is used more than once)
@@ -743,7 +743,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     }
     if (err_file_data.returnValue()) {
         // file is not empty
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, file_path, "", false};
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, file_path};
     }
     // file is valid
     ErrorStruct<bool> err = this->parent->writeFile(file_path);

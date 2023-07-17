@@ -28,7 +28,7 @@ bool DataHeader::isComplete() const noexcept {
 }
 
 unsigned int DataHeader::getHeaderLength() const noexcept {
-    // gets the header len, if there is not header set try to calculate the len, else return 0
+    // gets the header len, if there is no header set try to calculate the len, else return 0
     if (this->header_bytes.getLen() > 0) {
         return this->header_bytes.getLen();  // header bytes are set, so we get this length
     }
@@ -39,7 +39,7 @@ unsigned int DataHeader::getHeaderLength() const noexcept {
     }
 }
 
-unsigned char DataHeader::getHashSize() const noexcept {
+int DataHeader::getHashSize() const noexcept {
     // gets the hash size
     return this->hash_size;
 }
@@ -134,7 +134,7 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
     }
     // saves the expected length to validate the result
     // need to clear header bytes to calculate the length. If it is not clear getHeaderLength() may return the current length
-    this->header_bytes = Bytes();
+    this->header_bytes.clear();
     unsigned int len = this->getHeaderLength();
 
     Bytes dataheader = Bytes();
@@ -174,7 +174,7 @@ DataHeaderParts DataHeader::getDataHeaderParts() const {
 ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     // sets the header bytes by taking the first bytes of the file
     // init error struct
-    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes", DataHeader(HModes(STANDARD_HASHMODE))};
+    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes"};
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
@@ -538,7 +538,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
 ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) noexcept {
     // creating a new header by setting the header parts
-    ErrorStruct<DataHeader> err{FAIL, ERR, "", "", DataHeader{HModes(STANDARD_HASHMODE)}};
+    ErrorStruct<DataHeader> err{FAIL, ERR, ""};
     try {
         // these methods throw exceptions if the data is invalid
         DataHeader dh{dhp.hash_mode};                                    // setting the hash mode
