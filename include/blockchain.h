@@ -102,6 +102,12 @@ class BlockChain {
     // returns the result data of the blockchain
     Bytes getResult() const;
 
+    // returns the number of blocks in the chain
+    size_t getHeight() const noexcept { return this->chain.size(); };
+
+    // returns the size of the data in the chain (in Bytes)
+    size_t getDataSize() const noexcept { return this->getHeight()*this->hash->getHashSize() - this->getFreeSpaceInLastBlock(); };
+
     // virtual destructor frees the resources
     virtual ~BlockChain() { delete this->hash; };
 };
