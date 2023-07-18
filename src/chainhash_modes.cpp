@@ -143,13 +143,13 @@ ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode) {
     return chd;
 }
 
-ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, const Hash* hash, const Bytes data, const u_int64_t timeout) {
+ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const Bytes data, const u_int64_t timeout) {
     // performs a chainhash on bytes
     ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
     if (!err.isSuccess()) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
-    PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
+    PwFunc pwf = PwFunc(std::move(hash));    // init the pwfunc object with the given hash function
     std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared
     u_int64_t count_salt{};
     u_int64_t a{};
@@ -179,13 +179,13 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, cons
     }
 }
 
-ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, const Hash* hash, const std::string data, const u_int64_t timeout) {
+ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const std::string data, const u_int64_t timeout) {
     // performs a chainhash on a string
     ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
     if (!err.isSuccess()) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
-    PwFunc pwf = PwFunc(hash);    // init the pwfunc object with the given hash function
+    PwFunc pwf = PwFunc(std::move(hash));    // init the pwfunc object with the given hash function
     std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared
     u_int64_t count_salt{};
     u_int64_t a{};
@@ -215,12 +215,12 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, cons
     }
 }
 
-ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data) {
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const Bytes data) {
     // WORK
     return ErrorStruct<ChainHashResult>();
 }
 
-ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data) {
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const std::string data) {
     // WORK
     return ErrorStruct<ChainHashResult>();
 }

@@ -106,9 +106,8 @@ TEST(DataHeaderClass, setChainHash) {
             // testing the chainhash modes on the setter
             // init dataheader with random hashmode
             HModes hash_mode = HModes(RNG::get_random_byte(1, MAX_HASHMODE_NUMBER));
-            Hash* hash = HashModes::getHash(hash_mode);
+            std::unique_ptr<Hash> hash = std::move(HashModes::getHash(hash_mode));
             unsigned char hash_size = hash->getHashSize();
-            delete hash;
             DataHeader dh{hash_mode};   // testing chainhash1
             DataHeader dh2{hash_mode};  // testing chainhash2
             if (i == 0 || i == ch_modes.size() - 1) {
@@ -165,9 +164,8 @@ TEST(DataHeaderClass, setValidPasswordHashBytes) {
         DataHeader dh{HModes(hash_mode)};  // init dataheader with every possible hashmode
 
         // getting the hashsize
-        Hash* hash = HashModes::getHash(HModes(hash_mode));
+        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(HModes(hash_mode)));
         unsigned char hash_size = hash->getHashSize();
-        delete hash;
 
         // checking if the setter returns void
         EXPECT_EQ(typeid(void), typeid(DataHeader{HModes(hash_mode)}.setValidPasswordHashBytes(Bytes(hash_size))));
@@ -196,7 +194,7 @@ TEST(DataHeaderClass, calcHeaderBytes) {
             DataHeader dh{HModes(hash_mode)};  // init dataheader with every possible hashmode
 
             // getting the hashsize
-            Hash* hash = HashModes::getHash(HModes(hash_mode));
+            std::shared_ptr<Hash> hash = std::move(HashModes::getHash(HModes(hash_mode)));
             unsigned char hash_size = hash->getHashSize();
 
             Bytes tmp;
@@ -258,7 +256,6 @@ TEST(DataHeaderClass, calcHeaderBytes) {
             std::string password = charVecToString(RNG::get_random_bytes(16));  // random password with 16 characters
             Bytes phash = ChainHashModes::performChainHash(chainhash1, hash, password).returnValue();
             Bytes pval = ChainHashModes::performChainHash(chainhash2, hash, phash).returnValue();
-            delete hash;
 
             // wrong valid password hash validator and passwordhash
             EXPECT_NO_THROW(dh2.setValidPasswordHashBytes(Bytes(hash_size)));

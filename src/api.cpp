@@ -154,7 +154,8 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     // setting up the other parts
     dhp.file_mode = ds.file_mode;
     dhp.hash_mode = ds.hash_mode;
-    Hash* hash = HashModes::getHash(dhp.hash_mode);
+    // create a new shared hash ptr
+    std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.hash_mode));
     dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
 
     // setting up an timer to calculate the remaining time for the second chainhash
@@ -164,7 +165,6 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     ErrorStruct<Bytes> ch1_err = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
     if (!ch1_err.isSuccess()) {
         // something went wrong while performing the first chainhash
-        delete hash;
         dhhs.errorStruct.success = ch1_err.success;
         dhhs.errorStruct.errorCode = ch1_err.errorCode;
         dhhs.errorStruct.errorInfo = ch1_err.errorInfo;
@@ -178,7 +178,6 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
         // if the user set a timeout, we have to check how much time is left
         if (timeout <= elapsedTime) {
             // should not happen, but if the function closes and the timeout runs out shortly after, we have to return an timeout
-            delete hash;
             dhhs.errorStruct.success = SuccessType::TIMEOUT;
             dhhs.errorStruct.errorCode = ErrorCode::ERR_TIMEOUT;
             return dhhs;
@@ -189,7 +188,6 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     }
     // second chainhash (passwordhash -> passwordhashhash = validation hash)
     ErrorStruct<Bytes> ch2_err = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1_err.returnValue(), timeout_copy);
-    delete hash;
     if (!ch2_err.isSuccess()) {
         // something went wrong while performing the second chainhash
         dhhs.errorStruct.success = ch2_err.success;
@@ -248,14 +246,14 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     // setting up the other parts
     dhp.file_mode = ds.file_mode;
     dhp.hash_mode = ds.hash_mode;
-    Hash* hash = HashModes::getHash(dhp.hash_mode);
+    // create new shared hash ptr
+    std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.hash_mode));
     dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
 
     // first chainhash (password -> passwordhash)
     ErrorStruct<ChainHashResult> ch1_err = ChainHashModes::performChainHash(ch1, hash, password);
     if (!ch1_err.isSuccess()) {
         // something went wrong while performing the first chainhash
-        delete hash;
         dhhs.errorStruct.success = ch1_err.success;
         dhhs.errorStruct.errorCode = ch1_err.errorCode;
         dhhs.errorStruct.errorInfo = ch1_err.errorInfo;
@@ -267,7 +265,6 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
 
     // second chainhash (passwordhash -> passwordhashhash = validation hash)
     ErrorStruct<ChainHashResult> ch2_err = ChainHashModes::performChainHash(ch2, hash, ch1_err.returnValue().result);
-    delete hash;
     if (!ch2_err.isSuccess()) {
         // something went wrong while performing the second chainhash
         dhhs.errorStruct.success = ch2_err.success;
@@ -517,25 +514,23 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
         return ErrorStruct<Bytes>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is empty in verifyPassword"};
     }
 
-    Hash* hash;
+    std::shared_ptr<Hash> hash = nullptr;
 
     try {
         // gets the header parts to work with (could throw)
         DataHeaderParts dhp = this->parent->dh.getDataHeaderParts();
         // gets the hash function (could throw)
-        hash = HashModes::getHash(dhp.hash_mode);
+        hash = std::move(HashModes::getHash(dhp.hash_mode));
         // perform the first chain hash (password -> passwordhash)
         ErrorStruct<Bytes> err1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
         if (!err1.isSuccess()) {
             // the first chain hash failed (due to timeout or other error)
-            delete hash;
             return err1;
         }
         // perform the second chain hash (passwordhash -> passwordhashhash = validation hash)
         ErrorStruct<Bytes> err2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, err1.returnValue(), timeout);
         if (!err2.isSuccess()) {
             // the second chain hash failed (due to timeout or other error)
-            delete hash;
             return err2;
         }
         if (err2.returnValue() == dhp.valid_passwordhash) {
@@ -544,20 +539,17 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
             // setting the correct password hash and dataheader to the application
             this->parent->correct_password_hash = err1.returnValue();
             this->parent->current_state = PASSWORD_VERIFIED(this->parent);
-            delete hash;
             return err1;
         }
         // the password is invalid
         ErrorStruct<Bytes> err;
         err.success = SuccessType::FAIL;
         err.errorCode = ErrorCode::ERR_PASSWORD_INVALID;
-        delete hash;
         return err;
 
     } catch (const std::exception& e) {
         // some error occurred
         ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, "Some error occurred while verifying the password", e.what()};
-        if (hash != nullptr) delete hash;
         return err;
     }
 }
@@ -616,12 +608,11 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
     // decrypts the data (requires successful verifyPassword or createDataHeader run)
     // returns the decrypted content (without the data header)
     // uses the password and data header that were passed to verifyPassword (or createDataHeader for new files)
-
     try {
         // get the hash object that corresponds to the hash mode
-        Hash* hash = HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode);
+        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode));
         // construct the blockchain
-        DecryptBlockChain dbc{hash, this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
+        DecryptBlockChain dbc{std::move(hash), this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
         // add the data onto the blockchain
         dbc.addData(this->parent->encrypted_data);
         // get the decrypted data
@@ -649,9 +640,9 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
     }
     try {
         // get the hash ptr
-        Hash* hash = HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode);
+        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode));
         // construct the blockchain
-        EncryptBlockChain ebc{hash, this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
+        EncryptBlockChain ebc{std::move(hash), this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
         // add the data onto the blockchain
         ebc.addData(file_data.dec_data);
         // get the encrypted data

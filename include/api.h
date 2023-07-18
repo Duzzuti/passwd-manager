@@ -140,7 +140,6 @@ class API {
 
        public:
         WorkflowState(API* x) : parent(x){};
-        virtual ~WorkflowState() { delete parent; };
     };
 
     class INIT : public WorkflowState {

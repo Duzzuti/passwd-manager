@@ -13,9 +13,8 @@ DataHeader::DataHeader(const HModes hash_mode) {
         throw std::invalid_argument("invalid hash mode");
     }
     this->dh.hash_mode = hash_mode;
-    Hash* hash = HashModes::getHash(hash_mode);
+    std::unique_ptr<Hash> hash = std::move(HashModes::getHash(hash_mode));
     this->hash_size = hash->getHashSize();  // gets the hash size of the hash that corresponds to the given mode
-    delete hash;
 }
 
 bool DataHeader::isComplete() const noexcept {
@@ -123,10 +122,9 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
     }
     if (verify_pwhash) {
         // verifies the given pwhash with the currently set validator
-        Hash* hash = HashModes::getHash(this->dh.hash_mode);  // gets the right hash function
+        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->dh.hash_mode));  // gets the right hash function
         // is the chainhash from the given hash equal to the validator
-        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(this->dh.chainhash2, hash, passwordhash).returnValue());
-        delete hash;
+        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(this->dh.chainhash2, std::move(hash), passwordhash).returnValue());
         if (!isOkay) {
             // given pwhash is not valid
             throw std::invalid_argument("provided passwordhash is not valid (against validator)");

@@ -37,7 +37,8 @@ class BlockChain {
         bool first;           // is this the first salt/block
         Bytes hash;           // the current hash (first is the passwordhash)
         Bytes salt;           // the current salt (first is the encrypted salt)
-        const Hash* hashObj;  // the hash object that provides the hash function
+       public:
+        std::unique_ptr<Hash> hashObj;  // the hash object that provides the hash function
 
        public:
         SaltIterator() {
@@ -45,7 +46,7 @@ class BlockChain {
             this->ready = false;
             this->first = true;
         }
-        void init(const Bytes pwhash, const Bytes enc_salt, const Hash* hashObj) {
+        void init(const Bytes pwhash, const Bytes enc_salt, std::unique_ptr<Hash> hashObj) {
             // note that SaltIterator does not take ownership of the hashObj pointer you need to delete it yourself
             // initializes the iterator with the password hash and the encrypted salt
             if (hashObj == nullptr) throw std::invalid_argument("hash cannot be nullptr");
@@ -54,7 +55,7 @@ class BlockChain {
             this->ready = true;
             this->hash = pwhash;
             this->salt = enc_salt;
-            this->hashObj = hashObj;
+            this->hashObj = std::move(hashObj);
         }
         Bytes next(Bytes last_block_hash = Bytes(0)) {
             // generates the next salt with the last block hash
@@ -80,8 +81,8 @@ class BlockChain {
     };
 
     std::vector<std::unique_ptr<Block>> chain;  // the chain of blocks
-    const Hash* hash;                           // the hash function that is used
     SaltIterator salt_iter;                     // the salt iterator that is used to generate the salts
+    size_t hash_size;                           // the byte size of the hash function
 
    protected:
     // adds a new block to the chain
@@ -91,7 +92,7 @@ class BlockChain {
 
    public:
     // creates a new empty blockchain with the hash function, the password hash and the encrypted salt
-    BlockChain(const Hash* hash, const Bytes passwordhash, const Bytes enc_salt);
+    BlockChain(std::unique_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt);
     BlockChain(const BlockChain&) = delete;
     BlockChain& operator=(const BlockChain&) = delete;
     BlockChain() = delete;
@@ -106,8 +107,5 @@ class BlockChain {
     size_t getHeight() const noexcept { return this->chain.size(); };
 
     // returns the size of the data in the chain (in Bytes)
-    size_t getDataSize() const noexcept { return this->getHeight() * this->hash->getHashSize() - this->getFreeSpaceInLastBlock(); };
-
-    // virtual destructor frees the resources
-    virtual ~BlockChain() { delete this->hash; };
+    size_t getDataSize() const noexcept { return this->getHeight() * this->hash_size - this->getFreeSpaceInLastBlock(); };
 };

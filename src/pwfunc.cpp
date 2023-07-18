@@ -34,7 +34,7 @@ ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
     return ret;
 }
 
-PwFunc::PwFunc(const Hash* hash) noexcept { this->hash = hash; }
+PwFunc::PwFunc(std::shared_ptr<Hash> hash) noexcept { this->hash = std::move(hash); }
 
 ErrorStruct<Bytes> PwFunc::chainhash(const std::string password, const u_int64_t iterations, const u_int64_t timeout) const noexcept {
     Timer timer;
