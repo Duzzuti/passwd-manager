@@ -1,6 +1,6 @@
 #include "blockchain.h"
 
-BlockChain::BlockChain(std::unique_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt) {
+BlockChain::BlockChain(std::shared_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt) {
     // initialize the salt generator (iterator)
     this->hash_size = hash->getHashSize();
     this->salt_iter.init(passwordhash, enc_salt, std::move(hash));
