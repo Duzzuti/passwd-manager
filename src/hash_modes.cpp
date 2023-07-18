@@ -17,11 +17,11 @@ std::unique_ptr<Hash> HashModes::getHash(const HModes hash_mode) {
     // gets the concrete hash sub class
     switch (hash_mode) {
         case HASHMODE_SHA256:  // sha256
-            return std::make_unique<Hash>(sha256());
+            return std::make_unique<sha256>();
         case HASHMODE_SHA384:  // sha384
-            return std::make_unique<Hash>(sha384());
+            return std::make_unique<sha384>();
         case HASHMODE_SHA512:  // sha512
-            return std::make_unique<Hash>(sha512());
+            return std::make_unique<sha512>();
         default:  // hash mode is out of range
             throw std::invalid_argument("hash mode does not exist");
     }
