@@ -24,9 +24,9 @@ int Block::getFreeSpace() const noexcept {
     return this->block_len - this->data.getLen();
 }
 
-Bytes Block::getHash() const { 
+Bytes Block::getHash() const {
     // returns the block hash of the decrypted data if the block is completed
-    if(this->data.getLen() != this->block_len) throw std::length_error("block is not completed, cannot get hash");
-    if(this->dec_hash.getLen() == 0) throw std::length_error("block hash was not calculated");
+    if (this->data.getLen() != this->block_len) throw std::length_error("block is not completed, cannot get hash");
+    if (this->dec_hash.getLen() == 0) throw std::length_error("block hash was not calculated");
     return this->dec_hash;
 }
