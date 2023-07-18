@@ -149,8 +149,8 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
     if (!err.isSuccess()) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
-    PwFunc pwf = PwFunc(std::move(hash));    // init the pwfunc object with the given hash function
-    std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared
+    PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
+    std::string constant_salt{};           // init all variables we might need, because in the switch statement no variables can be declared
     u_int64_t count_salt{};
     u_int64_t a{};
     u_int64_t b{};
@@ -185,8 +185,8 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
     if (!err.isSuccess()) {
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
-    PwFunc pwf = PwFunc(std::move(hash));    // init the pwfunc object with the given hash function
-    std::string constant_salt{};  // init all variables we might need, because in the switch statement no variables can be declared
+    PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
+    std::string constant_salt{};           // init all variables we might need, because in the switch statement no variables can be declared
     u_int64_t count_salt{};
     u_int64_t a{};
     u_int64_t b{};

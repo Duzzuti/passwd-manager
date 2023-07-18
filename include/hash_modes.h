@@ -1,7 +1,7 @@
 #pragma once
 
-#include <sstream>
 #include <memory>
+#include <sstream>
 
 #include "base.h"
 #include "hash.h"

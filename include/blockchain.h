@@ -33,10 +33,10 @@ class BlockChain {
         for every block it generates a new salt with the hash of the last block
         */
        private:
-        bool ready;           // is the iterator ready to generate salts
-        bool first;           // is this the first salt/block
-        Bytes hash;           // the current hash (first is the passwordhash)
-        Bytes salt;           // the current salt (first is the encrypted salt)
+        bool ready;  // is the iterator ready to generate salts
+        bool first;  // is this the first salt/block
+        Bytes hash;  // the current hash (first is the passwordhash)
+        Bytes salt;  // the current salt (first is the encrypted salt)
        public:
         std::unique_ptr<Hash> hashObj;  // the hash object that provides the hash function
 
