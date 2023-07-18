@@ -8,6 +8,7 @@ class EncryptBlock : public Block {
     its a block that is used to encrypt data
     */
    public:
-    EncryptBlock(const int len, const Bytes salt) : Block(len, salt){};
-    void addData(const Bytes data) override;  // adds new data to the block (this data is encrypted with the salt)
+    EncryptBlock(std::shared_ptr<Hash> hash, const int len, const Bytes salt) : Block(std::move(hash), len, salt){};
+    void addData(const Bytes dec_data) override;  // adds new data to the block (this data is encrypted with the salt)
+    Bytes getResult() const noexcept override;        // getter for the result data
 };

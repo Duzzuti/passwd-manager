@@ -3,7 +3,7 @@ contains the implementation of the abstract Block class
 */
 #include "block.h"
 
-Block::Block(const int len, const Bytes salt) {
+Block::Block(std::shared_ptr<Hash> hash, const int len, const Bytes salt) {
     if (len <= 0) {
         // invalid block length
         throw std::range_error("length of the block cannot be negative or zero");
@@ -14,7 +14,9 @@ Block::Block(const int len, const Bytes salt) {
     }
     this->block_len = len;
     this->data = Bytes();
+    this->dec_hash = Bytes();
     this->salt = salt;
+    this->hash = std::move(hash);
 }
 
 int Block::getFreeSpace() const noexcept {
@@ -22,7 +24,9 @@ int Block::getFreeSpace() const noexcept {
     return this->block_len - this->data.getLen();
 }
 
-Bytes Block::getResult() const noexcept {
-    // returns the resulting data of the block
-    return this->data;
+Bytes Block::getHash() const { 
+    // returns the block hash of the decrypted data if the block is completed
+    if(this->data.getLen() != this->block_len) throw std::length_error("block is not completed, cannot get hash");
+    if(this->dec_hash.getLen() == 0) throw std::length_error("block hash was not calculated");
+    return this->dec_hash;
 }
