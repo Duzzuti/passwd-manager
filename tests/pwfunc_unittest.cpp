@@ -9,8 +9,8 @@
 
 TEST(PWFUNCClass, returnTypes) {
     // check if the return types are correct
-    Hash* hash = new sha256();
-    PwFunc pwf = PwFunc(hash);
+    std::unique_ptr<Hash> hash = std::make_unique<sha256>();
+    PwFunc pwf = PwFunc(std::move(hash));
 
     EXPECT_EQ(typeid(ErrorStruct<bool>), typeid(PwFunc::isPasswordValid("test")));
     EXPECT_EQ(typeid(ErrorStruct<Bytes>), typeid(pwf.chainhash("test", 1)));
@@ -23,8 +23,6 @@ TEST(PWFUNCClass, returnTypes) {
     EXPECT_EQ(typeid(ErrorStruct<Bytes>), typeid(pwf.chainhashWithCountAndConstantSalt(Bytes(10), 1, 1, "test")));
     EXPECT_EQ(typeid(ErrorStruct<Bytes>), typeid(pwf.chainhashWithCountSalt(Bytes(10), 1, 1)));
     EXPECT_EQ(typeid(ErrorStruct<Bytes>), typeid(pwf.chainhashWithQuadraticCountSalt(Bytes(10), 1, 10, 89, 28, 18)));
-
-    delete hash;
 }
 
 TEST(PWFUNCClass, passwordvalid) {
@@ -88,8 +86,8 @@ TEST(PWFUNCClass, passwordvalid) {
 
 TEST(PWFUNCClass, input_output) {
     // check if the input and output has the correct format
-    sha256* hash = new sha256();
-    PwFunc pwf = PwFunc(hash);
+    std::unique_ptr<Hash> hash = std::make_unique<sha256>();
+    PwFunc pwf = PwFunc(std::move(hash));
 
     for (int i = 0; i < TEST_MAX_PW_LEN; i++) {
         Bytes rand_b;
@@ -155,14 +153,12 @@ TEST(PWFUNCClass, input_output) {
         Bytes tmp19 = pwf.chainhashWithQuadraticCountSalt(passwordbytes, l1, l2, l3, l4, l5).returnValue();
         EXPECT_EQ(SHA256_DIGEST_LENGTH, tmp19.getLen());
     }
-
-    delete hash;
 }
 
 TEST(PWFUNCClass, consistency) {
     // check if the output is consistent (same input -> same output)
-    sha256* hash = new sha256();
-    PwFunc pwf = PwFunc(hash);
+    std::unique_ptr<Hash> hash = std::make_unique<sha256>();
+    PwFunc pwf = PwFunc(std::move(hash));
 
     for (int i = 0; i < TEST_MAX_PW_LEN; i++) {
         // create same random password string and Bytes
@@ -228,14 +224,12 @@ TEST(PWFUNCClass, consistency) {
         EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(password, l1).returnValue(), pwf.chainhashWithQuadraticCountSalt(passwordbytes, l1).returnValue());
         EXPECT_EQ(pwf.chainhashWithQuadraticCountSalt(password, l1, l2, l3, l4, l5).returnValue(), pwf.chainhashWithQuadraticCountSalt(passwordbytes, l1, l2, l3, l4, l5).returnValue());
     }
-
-    delete hash;
 }
 
 TEST(PWFUNCClass, correctness) {
     // checks if the output is correct
-    sha256* hash = new sha256();
-    PwFunc pwf = PwFunc(hash);
+    std::unique_ptr<Hash> hash = std::make_unique<sha256>();
+    PwFunc pwf = PwFunc(std::move(hash));
     // setting the passwords (string and Bytes) and salt
     std::string password = "Password";
     Bytes passwordbytes;
@@ -287,6 +281,4 @@ TEST(PWFUNCClass, correctness) {
     EXPECT_EQ(phashchainccount, toHex(pwf.chainhashWithCountAndConstantSalt(passwordbytes, 3, 100, s).returnValue()));
     EXPECT_EQ(phashchainquadnoargs, toHex(pwf.chainhashWithQuadraticCountSalt(passwordbytes, 3).returnValue()));
     EXPECT_EQ(phashchainquad, toHex(pwf.chainhashWithQuadraticCountSalt(passwordbytes, 3, 90, 5, 8, 3).returnValue()));
-
-    delete hash;
 }

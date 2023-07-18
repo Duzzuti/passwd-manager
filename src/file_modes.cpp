@@ -28,13 +28,3 @@ bool FileModes::isModeValid(const FModes file_mode) noexcept {
     // checks whether the given file mode is in the accepted range
     return (1 <= file_mode && file_mode <= MAX_FILEMODE_NUMBER);
 }
-
-// FileData* FileModes::getFileDataClass(const FModes file_mode) {
-//     // gets the specific FileData subclass
-//     switch (file_mode) {
-//         case FILEMODE_PASSWORD:  // password data
-//             return new PasswordData();
-//         default:
-//             throw std::logic_error("Invalid file mode passed into getFileDataClass");
-//     }
-// }

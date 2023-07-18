@@ -13,15 +13,15 @@ bool HashModes::isModeValid(const HModes hash_mode) noexcept {
     return (1 <= hash_mode && hash_mode <= MAX_HASHMODE_NUMBER);
 }
 
-Hash* HashModes::getHash(const HModes hash_mode) {
+std::unique_ptr<Hash> HashModes::getHash(const HModes hash_mode) {
     // gets the concrete hash sub class
     switch (hash_mode) {
         case HASHMODE_SHA256:  // sha256
-            return new sha256();
+            return std::make_unique<sha256>();
         case HASHMODE_SHA384:  // sha384
-            return new sha384();
+            return std::make_unique<sha384>();
         case HASHMODE_SHA512:  // sha512
-            return new sha512();
+            return std::make_unique<sha512>();
         default:  // hash mode is out of range
             throw std::invalid_argument("hash mode does not exist");
     }

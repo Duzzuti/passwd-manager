@@ -5,16 +5,15 @@
 class BrutePwAttacker : public BaseAttacker {
     // attacker that is trying every possible password combination
     AttackerReturn attack(DataHeaderParts dhp, Bytes data, std::string decrypted_content) const noexcept override {
-        AttackerReturn ret;                              // return struct
-        u_int64_t tries = 1;                             // number of tries
-        Hash* hash = HashModes::getHash(dhp.hash_mode);  // get the hash function used
+        AttackerReturn ret;                                                         // return struct
+        u_int64_t tries = 1;                                                        // number of tries
+        std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.hash_mode));  // get the hash function used
         // tries the empty string first, hashes to a password hash
         Bytes ch1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, "").returnValue();
         // hashes that password hash to another hash (to check if the password is correct)
         Bytes ch2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1).returnValue();
         if (ch2 == dhp.valid_passwordhash) {
             // passwordhash is correct
-            delete hash;  // free that hash ptr
             // got a success with that passwordhash
             ret.success_type = SUCCESS;
             ret.progress = 0;
@@ -46,7 +45,6 @@ class BrutePwAttacker : public BaseAttacker {
                 Bytes ch2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1).returnValue();
                 if (ch2 == dhp.valid_passwordhash) {
                     // got the right password hash
-                    delete hash;
                     ret.success_type = SUCCESS;
                     ret.progress = l;  // progress is the length of the combination
                     ret.tries = tries;
@@ -67,7 +65,6 @@ class BrutePwAttacker : public BaseAttacker {
                 break;
             }
         }
-        delete hash;
         return ret;
     }
 };

@@ -8,7 +8,7 @@ class DecryptBlockChain : public BlockChain {
     it is used to decrypt data, its one type of BlockChain
     */
    public:
-    DecryptBlockChain(const Hash* hash, const Bytes passwordhash, const Bytes enc_salt) : BlockChain(hash, passwordhash, enc_salt){};
+    DecryptBlockChain(std::unique_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt) : BlockChain(std::move(hash), passwordhash, enc_salt){};
 
    protected:
     bool addBlock() noexcept override;  // adds a new DecryptBlock to the chain

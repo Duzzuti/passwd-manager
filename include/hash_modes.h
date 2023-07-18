@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <sstream>
 
 #include "base.h"
@@ -15,7 +16,7 @@ class HashModes {
     // checks if the hash mode exists (has to be in a defined range)
     static bool isModeValid(const HModes hash_mode) noexcept;
     // gets the hash sub class (e.g sha256) to perform a hash (strategy pattern)
-    static Hash* getHash(const HModes hash_mode);
+    static std::unique_ptr<Hash> getHash(const HModes hash_mode);
     // gets some information about that hash mode (info about the hash function)
     static std::string getInfo(const HModes hash_mode);
 };

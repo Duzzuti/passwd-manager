@@ -56,6 +56,7 @@ void FileHandler::getAppDataDir() {
     if (homeDirChar != nullptr) {
         std::string homeDir = homeDirChar;
         this->appDataDir = homeDir + "/.pman";
+        free(homeDirChar);
     }
 #else
 #error Unsupported platform

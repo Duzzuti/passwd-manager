@@ -106,7 +106,7 @@ bool App::run() {
     this->printStart();  // get the file location from the user (if not set in the app data)
     std::cout << std::endl;
     Bytes header;
-    std::unique_ptr<FileData*> filedata;
+    std::unique_ptr<FileData> filedata;
     try {
         this->FH.getFirstBytes(1);  // try to get the first byte of the file
     } catch (std::length_error) {
@@ -316,12 +316,11 @@ Bytes App::askForHeader() const {
     std::cout << "Keep in mind that you need a stronger password if the decrypt time is shorter (its shorter too for an attacker, who can faster bruteforce your password).";
     // WORK time measurement //ISSUE
     std::cout << std::endl << "Generating password hash..." << std::endl;
-    Hash* hash = HashModes::getHash(hash_mode);
+    std::shared_ptr<Hash> hash = std::move(HashModes::getHash(hash_mode));
     Bytes pwhash = ChainHashModes::performChainHash(chainhash1, hash, pw).returnValue();  // calculate passwordhash
     std::cout << "Password hash generated. Generating password validator..." << std::endl;
     Bytes pwval = ChainHashModes::performChainHash(chainhash2, hash, pwhash).returnValue();  // calculate passwordhashhash
     std::cout << "Password validator generated." << std::endl;
-    delete hash;
     std::cout << "PW HASH: " << toHex(pwhash) << std::endl;      // DEBUGONLY
     std::cout << "PW VALIDATOR: " << toHex(pwval) << std::endl;  // DEBUGONLY
 

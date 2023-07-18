@@ -1,9 +1,9 @@
 #include "blockchain.h"
 
-BlockChain::BlockChain(const Hash* hash, const Bytes passwordhash, const Bytes enc_salt) {
+BlockChain::BlockChain(std::unique_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt) {
     // initialize the salt generator (iterator)
-    this->salt_iter.init(passwordhash, enc_salt, hash);
-    this->hash = hash;
+    this->hash_size = hash->getHashSize();
+    this->salt_iter.init(passwordhash, enc_salt, std::move(hash));
 }
 
 void BlockChain::addData(const Bytes data) noexcept {

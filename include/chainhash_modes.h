@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "base.h"
 #include "chainhash_data.h"
 #include "error.h"
@@ -48,10 +50,10 @@ class ChainHashModes {
     static ChainHashData askForData(const CHModes chainhash_mode);  // gets data from the user that is needed for this chainhash mode
     // two methods for actually performing the chainhash, one for Bytes input and one for string input
     // expensive methods, you can set an timeout (in ms). 0 means no timeout.
-    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const Bytes data, const u_int64_t timeout = 0);
-    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, const Hash* hash, const std::string data, const u_int64_t timeout = 0);
+    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const Bytes data, const u_int64_t timeout = 0);
+    static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const std::string data, const u_int64_t timeout = 0);
     // two other methods for actually performing the chainhash, one for Bytes input and one for string input
     // these methods use a runtime instead of iterations and are returning a ChainHash
-    static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, const Hash* hash, const Bytes data);
-    static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, const Hash* hash, const std::string data);
+    static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const Bytes data);
+    static ErrorStruct<ChainHashResult> performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const std::string data);
 };
