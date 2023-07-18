@@ -38,7 +38,7 @@ class BlockChain {
         Bytes hash;  // the current hash (first is the passwordhash)
         Bytes salt;  // the current salt (first is the encrypted salt)
        public:
-        std::unique_ptr<Hash> hashObj;  // the hash object that provides the hash function
+        std::shared_ptr<Hash> hashObj;  // the hash object that provides the hash function
 
        public:
         SaltIterator() {
@@ -46,7 +46,7 @@ class BlockChain {
             this->ready = false;
             this->first = true;
         }
-        void init(const Bytes pwhash, const Bytes enc_salt, std::unique_ptr<Hash> hashObj) {
+        void init(const Bytes pwhash, const Bytes enc_salt, std::shared_ptr<Hash> hashObj) {
             // note that SaltIterator does not take ownership of the hashObj pointer you need to delete it yourself
             // initializes the iterator with the password hash and the encrypted salt
             if (hashObj == nullptr) throw std::invalid_argument("hash cannot be nullptr");
@@ -92,7 +92,7 @@ class BlockChain {
 
    public:
     // creates a new empty blockchain with the hash function, the password hash and the encrypted salt
-    BlockChain(std::unique_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt);
+    BlockChain(std::shared_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt);
     BlockChain(const BlockChain&) = delete;
     BlockChain& operator=(const BlockChain&) = delete;
     BlockChain() = delete;
