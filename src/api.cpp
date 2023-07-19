@@ -305,17 +305,15 @@ ErrorStruct<bool> API::writeFile(const std::filesystem::path file_path) const no
     return ErrorStruct<bool>{true};
 }
 
-API::API(const FModes file_mode) {
+API::API(const FModes file_mode) : current_state(INIT(this)), dh(DataHeader{HModes(STANDARD_HASHMODE)}){
     // constructs the API in a given workflow mode and initializes the private variables
     if (!FileModes::isModeValid(file_mode)) {
         throw std::invalid_argument("Invalid file mode");
     }
     this->file_data_struct = FileDataStruct{file_mode, Bytes()};
     this->correct_password_hash = Bytes();
-    this->dh = DataHeader{HModes(STANDARD_HASHMODE)};
     this->encrypted_data = Bytes();
     this->selected_file = std::filesystem::path();
-    this->current_state = INIT(this);
 }
 
 std::filesystem::path API::getCurrentDirPath() noexcept {
