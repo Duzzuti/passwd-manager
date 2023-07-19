@@ -3,6 +3,8 @@ this file contains implementations of HashModes class
 */
 #include "hash_modes.h"
 
+#include "logger.h"
+
 #include "settings.h"
 #include "sha256.h"
 #include "sha384.h"
@@ -15,6 +17,7 @@ bool HashModes::isModeValid(const HModes hash_mode) noexcept {
 
 std::unique_ptr<Hash> HashModes::getHash(const HModes hash_mode) {
     // gets the concrete hash sub class
+    PLOG_VERBOSE << "getting hash function for hash mode: " << +hash_mode;
     switch (hash_mode) {
         case HASHMODE_SHA256:  // sha256
             return std::make_unique<sha256>();
@@ -23,6 +26,7 @@ std::unique_ptr<Hash> HashModes::getHash(const HModes hash_mode) {
         case HASHMODE_SHA512:  // sha512
             return std::make_unique<sha512>();
         default:  // hash mode is out of range
+            PLOG_ERROR << "invalid hash mode passed to getHash (hash mode: " << +hash_mode << ")";
             throw std::invalid_argument("hash mode does not exist");
     }
 }
@@ -44,6 +48,7 @@ std::string HashModes::getInfo(const HModes hash_mode) {
             msg << "Sha512";
             break;
         default:  // hash mode is out of range
+            PLOG_ERROR << "invalid hash mode passed to getInfo (hash mode: " << +hash_mode << ")";
             throw std::invalid_argument("hash mode does not exist");
     }
     return msg.str();
