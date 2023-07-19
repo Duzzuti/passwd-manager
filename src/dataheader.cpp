@@ -3,9 +3,8 @@ this file contains the implementations of Data header class
 */
 #include "dataheader.h"
 
-#include "logger.h"
-
 #include "file_modes.h"
+#include "logger.h"
 #include "rng.h"
 #include "utility.h"
 
@@ -170,9 +169,9 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
     dataheader.addBytes(this->dh.chainhash2.datablock.getDataBlock());  // add second datablock
     dataheader.addBytes(this->dh.valid_passwordhash);                   // add password validator
     // generate the salt with random bytes
-    this->dh.enc_salt = Bytes(this->hash_size);                         // set the encrypted salt
-    dataheader.addBytes(this->dh.enc_salt);                             // add encrypted salt
-    if (dataheader.getLen() != len) {                                   // checks if the length is equal to the expected length
+    this->dh.enc_salt = Bytes(this->hash_size);  // set the encrypted salt
+    dataheader.addBytes(this->dh.enc_salt);      // add encrypted salt
+    if (dataheader.getLen() != len) {            // checks if the length is equal to the expected length
         PLOG_FATAL << "calculated header has not the expected length (expected: " << +len << ", actual: " << +dataheader.getLen() << ")";
         throw std::logic_error("calculated header has not the expected length");
     }
@@ -549,8 +548,8 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         return err;
     } catch (const std::length_error& ex) {
         // password validator hash has the wrong len
-        PLOG_ERROR << "length of the password validator hash does not match with the hash size (validator hash len: " << +tmp.getLen() << ", hash size: "
-                   << +err.returnValue().hash_size << ") (error msg: " << ex.what() << ")";
+        PLOG_ERROR << "length of the password validator hash does not match with the hash size (validator hash len: " << +tmp.getLen() << ", hash size: " << +err.returnValue().hash_size
+                   << ") (error msg: " << ex.what() << ")";
         err.errorCode = ERR_LEN_INVALID;
         err.errorInfo = toHex(tmp);
         err.what = ex.what();
@@ -579,8 +578,8 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         return err;
     } catch (const std::length_error& ex) {
         // salt hash has the wrong len
-        PLOG_ERROR << "length of the salt hash does not match with the hash size (salt hash len: " << +tmp.getLen() << ", hash size: " << +err.returnValue().hash_size
-                   << ") (error msg: " << ex.what() << ")";
+        PLOG_ERROR << "length of the salt hash does not match with the hash size (salt hash len: " << +tmp.getLen() << ", hash size: " << +err.returnValue().hash_size << ") (error msg: " << ex.what()
+                   << ")";
         err.errorCode = ERR_LEN_INVALID;
         err.errorInfo = toHex(tmp);
         err.what = ex.what();

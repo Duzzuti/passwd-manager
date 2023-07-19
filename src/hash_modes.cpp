@@ -4,7 +4,6 @@ this file contains implementations of HashModes class
 #include "hash_modes.h"
 
 #include "logger.h"
-
 #include "settings.h"
 #include "sha256.h"
 #include "sha384.h"
