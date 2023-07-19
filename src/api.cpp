@@ -305,7 +305,7 @@ ErrorStruct<bool> API::writeFile(const std::filesystem::path file_path) const no
     return ErrorStruct<bool>{true};
 }
 
-API::API(const FModes file_mode) : current_state(INIT(this)), dh(DataHeader{HModes(STANDARD_HASHMODE)}){
+API::API(const FModes file_mode) : current_state(INIT(this)), dh(DataHeader{HModes(STANDARD_HASHMODE)}) {
     // constructs the API in a given workflow mode and initializes the private variables
     if (!FileModes::isModeValid(file_mode)) {
         throw std::invalid_argument("Invalid file mode");

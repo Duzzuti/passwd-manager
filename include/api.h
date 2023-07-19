@@ -9,11 +9,10 @@ for full documentation see the documentation of the API class in the documentati
 #include <filesystem>
 #include <iostream>
 
-#include "logger.h"
-
 #include "dataheader.h"
 #include "error.h"
 #include "file_data.h"
+#include "logger.h"
 
 // struct that is returned by the API if you decode a file
 struct WorkflowDecStruct {
@@ -146,9 +145,7 @@ class API {
 
     class INIT : public WorkflowState {
        public:
-        INIT(API* x) : WorkflowState(x){
-            PLOG_DEBUG << "API state changed to INIT";
-        };
+        INIT(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to INIT"; };
         ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept override;
         ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept override;
         ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept override;
@@ -156,9 +153,7 @@ class API {
 
     class FILE_SELECTED : public WorkflowState {
        public:
-        FILE_SELECTED(API* x) : WorkflowState(x){
-            PLOG_DEBUG << "API state changed to FILE_SELECTED";
-        };
+        FILE_SELECTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to FILE_SELECTED"; };
         ErrorStruct<bool> isFileEmpty() const noexcept override;
         ErrorStruct<bool> deleteFile() noexcept override;
         ErrorStruct<Bytes> getFileContent() noexcept override;
@@ -170,17 +165,13 @@ class API {
 
     class PASSWORD_VERIFIED : public WorkflowState {
        public:
-        PASSWORD_VERIFIED(API* x) : WorkflowState(x){
-            PLOG_DEBUG << "API state changed to PASSWORD_VERIFIED";
-        };
+        PASSWORD_VERIFIED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to PASSWORD_VERIFIED"; };
         ErrorStruct<FileDataStruct> getDecryptedData() noexcept override;
     };
 
     class DECRYPTED : public WorkflowState {
        public:
-        DECRYPTED(API* x) : WorkflowState(x){
-            PLOG_DEBUG << "API state changed to DECRYPTED";
-        };
+        DECRYPTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to DECRYPTED"; };
         ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept override;
         ErrorStruct<FileDataStruct> getFileData() noexcept override;
         ErrorStruct<DataHeader> changeSalt() noexcept override;
@@ -190,18 +181,14 @@ class API {
 
     class ENCRYPTED : public WorkflowState {
        public:
-        ENCRYPTED(API* x) : WorkflowState(x){
-            PLOG_DEBUG << "API state changed to ENCRYPTED";
-        };
+        ENCRYPTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to ENCRYPTED"; };
         ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept override;
         ErrorStruct<bool> writeToFile() noexcept override;
     };
 
     class FINISHED : public WorkflowState {
        public:
-        FINISHED(API* x) : WorkflowState(x){
-            PLOG_DEBUG << "API state changed to FINISHED";
-        };
+        FINISHED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to FINISHED"; };
     };
 
     // the current state of the API (makes sure that the API is used correctly)
@@ -278,11 +265,11 @@ class API {
     // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
     ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept {
         PLOG_DEBUG << "API call made (getRelevantFileNames) with dir: " << dir;
-        return this->current_state.getRelevantFileNames(dir); 
+        return this->current_state.getRelevantFileNames(dir);
     }
 
     // creates a new .enc file at the given path (path contains the name of the file)
-    ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept { 
+    ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept {
         PLOG_DEBUG << "API call made (createFile) with file_path: " << file_path;
         return this->current_state.createFile(file_path);
     }
@@ -295,7 +282,7 @@ class API {
     }
 
     // checks if the selected file is empty
-    ErrorStruct<bool> isFileEmpty() const noexcept { 
+    ErrorStruct<bool> isFileEmpty() const noexcept {
         PLOG_DEBUG << "API call made (isFileEmpty)";
         return this->current_state.isFileEmpty();
     }
@@ -307,13 +294,13 @@ class API {
     }
 
     // deletes the selected .enc file
-    ErrorStruct<bool> deleteFile() noexcept { 
+    ErrorStruct<bool> deleteFile() noexcept {
         PLOG_DEBUG << "API call made (deleteFile)";
-        return this->current_state.deleteFile(); 
+        return this->current_state.deleteFile();
     }
 
     // gets the content of the selected file
-    ErrorStruct<Bytes> getFileContent() noexcept { 
+    ErrorStruct<Bytes> getFileContent() noexcept {
         PLOG_DEBUG << "API call made (getFileContent)";
         return this->current_state.getFileContent();
     }
@@ -331,7 +318,7 @@ class API {
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
     ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept {
         PLOG_DEBUG << "API call made (verifyPassword) with timeout: " << timeout;
-        return this->current_state.verifyPassword(password, timeout); 
+        return this->current_state.verifyPassword(password, timeout);
     }
 
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
@@ -390,9 +377,9 @@ class API {
 
     // deletes saved data (password hash, data header, encrypted data)
     // after this call, the API object is in the same state as after the constructor call
-    void logout(const FModes file_mode) noexcept { 
+    void logout(const FModes file_mode) noexcept {
         PLOG_DEBUG << "API call made (logout) with new file_mode" << +file_mode;
-        this->current_state.logout(file_mode); 
+        this->current_state.logout(file_mode);
     }
     // this call preserves the file mode
     void logout() noexcept {
