@@ -1,8 +1,7 @@
 #include <iostream>
 
-#include "logger.h"
 #include "api.h"
-
+#include "logger.h"
 
 int main(int argc, char* argv[]) {
     // for (int i = 0; i < argc; i++){
