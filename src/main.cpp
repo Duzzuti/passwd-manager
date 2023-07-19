@@ -1,11 +1,8 @@
 #include <iostream>
-// include plog
-#include <plog/Appenders/ColorConsoleAppender.h>
-#include <plog/Formatters/TxtFormatter.h>
-#include <plog/Init.h>
-#include <plog/Log.h>
 
-#include "app.h"
+#include "logger.h"
+#include "api.h"
+
 
 int main(int argc, char* argv[]) {
     // for (int i = 0; i < argc; i++){
@@ -23,11 +20,14 @@ int main(int argc, char* argv[]) {
     //         continue;
     //     }
     // }
-    App app;
-    // init plog
+
+    // init logger
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
     plog::init(plog::verbose, &consoleAppender);
-    PLOG_DEBUG << "Message to show that debugging logs work."
-                  " Initializing app...";
-    return app.run();
+
+    PLOG_INFO << "Starting application";
+
+    API api{FModes::FILEMODE_PASSWORD};
+
+    PLOG_INFO << "Application finished";
 }
