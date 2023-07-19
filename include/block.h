@@ -29,8 +29,8 @@ class Block {
     // requires a Hash to calculate the block hash of the decrypted data if necessary (save memory)
     Block(std::shared_ptr<Hash> hash, const int len, const Bytes salt);
     int getFreeSpace() const noexcept;         // returns the available space in the block
-    virtual void addData(const Bytes data);    // adds new data to the block (this data is encrypted/decrypted with the salt)
-    virtual Bytes getResult() const noexcept;  // getter for the result data
+    virtual void addData(const Bytes data) = 0;    // adds new data to the block (this data is encrypted/decrypted with the salt)
+    virtual Bytes getResult() const noexcept = 0;  // getter for the result data
     Bytes getHash() const;                     // getter for the block hash of the decrypted data (block has to be completed)
 
     virtual ~Block() = default;  // virtual destructor to make sure the derived class destructor is called

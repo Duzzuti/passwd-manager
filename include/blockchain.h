@@ -86,7 +86,7 @@ class BlockChain {
 
    protected:
     // adds a new block to the chain
-    virtual bool addBlock() noexcept;
+    virtual bool addBlock() noexcept = 0;
     // returns the free space in the last block
     unsigned char getFreeSpaceInLastBlock() const noexcept;
 
