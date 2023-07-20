@@ -4,12 +4,11 @@ implementation of api.h
 
 #include "api.h"
 
-#include "logger.h"
-
 #include "blockchain_decrypt.h"
 #include "blockchain_encrypt.h"
 #include "file_modes.h"
 #include "filehandler.h"
+#include "logger.h"
 #include "timer.h"
 
 ErrorStruct<bool> API::checkFilePath(const std::filesystem::path file_path, const bool should_exist) const noexcept {
@@ -51,8 +50,8 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     ErrorStruct<Bytes> err1 = this->getFileContent(file_path);
     if (!err1.isSuccess()) {
         // the file could not be read
-        PLOG_DEBUG << "The file could not be read (checkFileData) (file_path: " << file_path << ") (err1.errorCode: " 
-            << +err1.errorCode << ") (err1.errorInfo: " << err1.errorInfo << ") (err1.what: " << err1.what << ")";
+        PLOG_DEBUG << "The file could not be read (checkFileData) (file_path: " << file_path << ") (err1.errorCode: " << +err1.errorCode << ") (err1.errorInfo: " << err1.errorInfo
+                   << ") (err1.what: " << err1.what << ")";
         return ErrorStruct<bool>{err1.success, err1.errorCode, err1.errorInfo, err1.what};
     }
     if (err1.returnValue().isEmpty()) {
@@ -62,8 +61,8 @@ ErrorStruct<bool> API::checkFileData(const std::filesystem::path file_path) cons
     ErrorStruct<DataHeader> err2 = this->getDataHeader(err1.returnValue());
     if (!err2.isSuccess()) {
         // the data header could not be read
-        PLOG_DEBUG << "The data header could not be read (checkFileData) (file_path: " << file_path << ") (err2.errorCode: " 
-            << +err2.errorCode << ") (err2.errorInfo: " << err2.errorInfo << ") (err2.what: " << err2.what << ")";
+        PLOG_DEBUG << "The data header could not be read (checkFileData) (file_path: " << file_path << ") (err2.errorCode: " << +err2.errorCode << ") (err2.errorInfo: " << err2.errorInfo
+                   << ") (err2.what: " << err2.what << ")";
         return ErrorStruct<bool>{err2.success, err2.errorCode, err2.errorInfo, err2.what};
     }
     if (err2.returnValue().getDataHeaderParts().file_mode != this->file_data_struct.file_mode) {
@@ -125,7 +124,8 @@ ErrorStruct<Bytes> API::getFileContent(const std::filesystem::path file_path) co
 
 DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
-    PLOG_VERBOSE << "Creating data header with iter settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1iters: " << ds.chainhash1_iters << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
+    PLOG_VERBOSE << "Creating data header with iter settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1iters: " << ds.chainhash1_iters
+                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     DataHeaderHelperStruct dhhs{err};
     if (ds.file_mode != this->file_data_struct.file_mode) {
@@ -170,8 +170,8 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     ErrorStruct<Bytes> ch1_err = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
     if (!ch1_err.isSuccess()) {
         // something went wrong while performing the first chainhash
-        PLOG_ERROR << "Something went wrong while performing the first chainhash (success: " << +ch1_err.success << ", errorCode: " 
-                   << +ch1_err.errorCode << ", errorInfo: " << ch1_err.errorInfo << ", what: " << ch1_err.what << ")";
+        PLOG_ERROR << "Something went wrong while performing the first chainhash (success: " << +ch1_err.success << ", errorCode: " << +ch1_err.errorCode << ", errorInfo: " << ch1_err.errorInfo
+                   << ", what: " << ch1_err.what << ")";
         dhhs.errorStruct.success = ch1_err.success;
         dhhs.errorStruct.errorCode = ch1_err.errorCode;
         dhhs.errorStruct.errorInfo = ch1_err.errorInfo;
@@ -198,8 +198,8 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     ErrorStruct<Bytes> ch2_err = ChainHashModes::performChainHash(dhp.chainhash2, hash, ch1_err.returnValue(), timeout_copy);
     if (!ch2_err.isSuccess()) {
         // something went wrong while performing the second chainhash
-        PLOG_ERROR << "Something went wrong while performing the second chainhash (success: " << +ch2_err.success << ", errorCode: " 
-                   << +ch2_err.errorCode << ", errorInfo: " << ch2_err.errorInfo << ", what: " << ch2_err.what << ")";
+        PLOG_ERROR << "Something went wrong while performing the second chainhash (success: " << +ch2_err.success << ", errorCode: " << +ch2_err.errorCode << ", errorInfo: " << ch2_err.errorInfo
+                   << ", what: " << ch2_err.what << ")";
         dhhs.errorStruct.success = ch2_err.success;
         dhhs.errorStruct.errorCode = ch2_err.errorCode;
         dhhs.errorStruct.errorInfo = ch2_err.errorInfo;
@@ -219,7 +219,8 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
 DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     // sets up the return struct
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
+    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time
+                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", ""};
     DataHeaderHelperStruct dhhs{err};
 
@@ -267,8 +268,8 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     ErrorStruct<ChainHashResult> ch1_err = ChainHashModes::performChainHash(ch1, hash, password);
     if (!ch1_err.isSuccess()) {
         // something went wrong while performing the first chainhash
-        PLOG_ERROR << "Something went wrong while performing the first chainhash (success: " << +ch1_err.success << ", errorCode: " 
-                   << +ch1_err.errorCode << ", errorInfo: " << ch1_err.errorInfo << ", what: " << ch1_err.what << ")";
+        PLOG_ERROR << "Something went wrong while performing the first chainhash (success: " << +ch1_err.success << ", errorCode: " << +ch1_err.errorCode << ", errorInfo: " << ch1_err.errorInfo
+                   << ", what: " << ch1_err.what << ")";
         dhhs.errorStruct.success = ch1_err.success;
         dhhs.errorStruct.errorCode = ch1_err.errorCode;
         dhhs.errorStruct.errorInfo = ch1_err.errorInfo;
@@ -282,8 +283,8 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     ErrorStruct<ChainHashResult> ch2_err = ChainHashModes::performChainHash(ch2, hash, ch1_err.returnValue().result);
     if (!ch2_err.isSuccess()) {
         // something went wrong while performing the second chainhash
-        PLOG_ERROR << "Something went wrong while performing the second chainhash (success: " << +ch2_err.success << ", errorCode: " 
-                   << +ch2_err.errorCode << ", errorInfo: " << ch2_err.errorInfo << ", what: " << ch2_err.what << ")";
+        PLOG_ERROR << "Something went wrong while performing the second chainhash (success: " << +ch2_err.success << ", errorCode: " << +ch2_err.errorCode << ", errorInfo: " << ch2_err.errorInfo
+                   << ", what: " << ch2_err.what << ")";
         dhhs.errorStruct.success = ch2_err.success;
         dhhs.errorStruct.errorCode = ch2_err.errorCode;
         dhhs.errorStruct.errorInfo = ch2_err.errorInfo;
@@ -414,7 +415,7 @@ ErrorStruct<Bytes> API::getData(const Bytes file_content) noexcept {
     if (err.isSuccess()) {
         // sets the bytes that are remaining after the header as the data
         err.setReturnValue(file_content_copy);
-    }else{
+    } else {
         PLOG_ERROR << "Could not read the dataheader (getData) (err.errorCode: " << +err.errorCode << ", err.errorInfo: " << err.errorInfo << ", err.what: " << err.what << ")";
     }
     return err;
@@ -562,16 +563,16 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
         ErrorStruct<Bytes> err1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
         if (!err1.isSuccess()) {
             // the first chain hash failed (due to timeout or other error)
-            PLOG_ERROR << "The first chain hash failed (verifyPassword) (err1.success: " << +err1.success << ", err1.errorCode: " 
-                       << +err1.errorCode << ", err1.errorInfo: " << err1.errorInfo << ", err1.what: " << err1.what << ")";
+            PLOG_ERROR << "The first chain hash failed (verifyPassword) (err1.success: " << +err1.success << ", err1.errorCode: " << +err1.errorCode << ", err1.errorInfo: " << err1.errorInfo
+                       << ", err1.what: " << err1.what << ")";
             return err1;
         }
         // perform the second chain hash (passwordhash -> passwordhashhash = validation hash)
         ErrorStruct<Bytes> err2 = ChainHashModes::performChainHash(dhp.chainhash2, hash, err1.returnValue(), timeout);
         if (!err2.isSuccess()) {
             // the second chain hash failed (due to timeout or other error)
-            PLOG_ERROR << "The second chain hash failed (verifyPassword) (err2.success: " << +err2.success << ", err2.errorCode: " 
-                       << +err2.errorCode << ", err2.errorInfo: " << err2.errorInfo << ", err2.what: " << err2.what << ")";
+            PLOG_ERROR << "The second chain hash failed (verifyPassword) (err2.success: " << +err2.success << ", err2.errorCode: " << +err2.errorCode << ", err2.errorInfo: " << err2.errorInfo
+                       << ", err2.what: " << err2.what << ")";
             return err2;
         }
         if (err2.returnValue() == dhp.valid_passwordhash) {
@@ -603,8 +604,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
-    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode 
-                 << ", ch1iters: " << ds.chainhash1_iters << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
+    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1iters: " << ds.chainhash1_iters
+                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
         PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file << ")";
@@ -614,8 +615,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
-        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " 
-                   << +dhhs.errorStruct.errorCode << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
+        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
+                   << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
         return dhhs.errorStruct;
     }
 
@@ -632,8 +633,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " 
-                 << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
+    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time
+                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
     if (!this->parent->file_empty) {
         // file is not empty, createDataHeader is not possible
         PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file << ")";
@@ -644,8 +645,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
-        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " 
-                   << +dhhs.errorStruct.errorCode << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
+        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
+                   << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
         return dhhs.errorStruct;
     }
 
@@ -691,8 +692,8 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
     ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     if (file_data.file_mode != this->parent->file_data_struct.file_mode) {
         // the user wants to encrypt data with a different file mode
-        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (getEncryptedData) (provided file mode: " 
-                   << +file_data.file_mode << ", selected file mode: " << +this->parent->file_data_struct.file_mode << ")";
+        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (getEncryptedData) (provided file mode: " << +file_data.file_mode
+                   << ", selected file mode: " << +this->parent->file_data_struct.file_mode << ")";
         err.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         err.errorInfo = " In getEncryptedData: The provided file mode does not match with the given file data mode";
         return err;
@@ -735,9 +736,9 @@ ErrorStruct<DataHeader> API::DECRYPTED::changeSalt() noexcept {
     ErrorStruct<DataHeader> err = DataHeader::setHeaderParts(dhp);
     if (err.isSuccess()) {
         this->parent->dh = err.returnValue();
-    }else{
-        PLOG_ERROR << "The data header could not be created (changeSalt) (success: " << +err.success << ", errorCode: " 
-                   << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
+    } else {
+        PLOG_ERROR << "The data header could not be created (changeSalt) (success: " << +err.success << ", errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what
+                   << ")";
     }
     return err;
 }
@@ -748,17 +749,17 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
-    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode 
-                 << ", ch1iters: " << ds.chainhash1_iters << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
+    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1iters: " << ds.chainhash1_iters
+                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
-        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " 
-                   << +dhhs.errorStruct.errorCode << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
+        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
+                   << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
         return dhhs.errorStruct;
     }
-    
+
     PLOG_INFO << "The data header was created successfully (createDataHeader)";
     // updating the data header and the password hash
     this->parent->correct_password_hash = dhhs.Password_hash();
@@ -771,14 +772,14 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " 
-                 << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
+    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time
+                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
-        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " 
-                   << +dhhs.errorStruct.errorCode << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
+        PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
+                   << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
         return dhhs.errorStruct;
     }
 
@@ -801,8 +802,8 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     // checks if the file is accessible and empty
     ErrorStruct<bool> err_file_data = this->parent->checkFileData(file_path);
     if (!err_file_data.isSuccess()) {
-        PLOG_ERROR << "Some error occurred while checking the file data (writeToFile) (errorCode: " 
-                   << +err_file_data.errorCode << ", errorInfo: " << err_file_data.errorInfo << ", what: " << err_file_data.what << ")";
+        PLOG_ERROR << "Some error occurred while checking the file data (writeToFile) (errorCode: " << +err_file_data.errorCode << ", errorInfo: " << err_file_data.errorInfo
+                   << ", what: " << err_file_data.what << ")";
         return err_file_data;
     }
     if (err_file_data.returnValue()) {
@@ -814,9 +815,8 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     ErrorStruct<bool> err = this->parent->writeFile(file_path);
     if (err.isSuccess()) {
         this->parent->current_state = FINISHED(this->parent);
-    }else{
-        PLOG_ERROR << "Some error occurred while writing to the file (writeToFile) (errorCode: " 
-                   << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
+    } else {
+        PLOG_ERROR << "Some error occurred while writing to the file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
     }
     return err;
 }
@@ -833,17 +833,16 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // checks if the file is accessible and empty or stores the same file data type
     ErrorStruct<bool> err_file_data = this->parent->checkFileData(this->parent->selected_file);
     if (!err_file_data.isSuccess()) {
-        PLOG_FATAL << "Some error occurred while checking the selected file data (writeToFile) (errorCode: " 
-                   << +err_file_data.errorCode << ", errorInfo: " << err_file_data.errorInfo << ", what: " << err_file_data.what << ")";
+        PLOG_FATAL << "Some error occurred while checking the selected file data (writeToFile) (errorCode: " << +err_file_data.errorCode << ", errorInfo: " << err_file_data.errorInfo
+                   << ", what: " << err_file_data.what << ")";
         return err_file_data;
     }
     // file is valid
     ErrorStruct<bool> err = this->parent->writeFile(this->parent->selected_file);
     if (err.isSuccess()) {
         this->parent->current_state = FINISHED(this->parent);
-    }else{
-        PLOG_FATAL << "Some error occurred while writing to the selected file (writeToFile) (errorCode: " 
-                   << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
+    } else {
+        PLOG_FATAL << "Some error occurred while writing to the selected file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
     }
     return err;
 }

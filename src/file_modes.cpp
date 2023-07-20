@@ -6,7 +6,6 @@ this file contains the implementations of FileModes class
 #include <sstream>
 
 #include "logger.h"
-
 #include "password_data.h"
 #include "settings.h"
 
