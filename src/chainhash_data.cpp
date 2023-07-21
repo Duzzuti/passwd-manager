@@ -6,6 +6,7 @@ contains the implementations of the ChainHashData class
 #include <algorithm>
 
 #include "utility.h"
+#include "logger.h"
 
 void ChainHashData::clear() noexcept {
     // clears the data of the object
@@ -40,6 +41,7 @@ Bytes ChainHashData::getDataBlock() const {
     // gets the datablock by concatenating the data parts
     if (!this->isComplete()) {
         // throws if the block is not completed yet
+        PLOG_ERROR << "trying to get datablock from a non complete ChainHashData object";
         throw std::logic_error("trying to get datablock from a non complete ChainHashData object.");
     }
     Bytes ret;
@@ -59,6 +61,7 @@ Bytes ChainHashData::getPart(std::string data_name) const {
             return this->data_parts[i];
         }
     }
+    PLOG_ERROR << "Could not find data name in data parts (name: " << data_name << ")";
     throw std::invalid_argument("Could not find data name in data parts");
 }
 
@@ -76,6 +79,7 @@ void ChainHashData::addBytes(Bytes bytes) {
     // adds a new part to the data parts vector
     if (this->isComplete()) {
         // cannot proceed, the datablock is complete. No new data can be added
+        PLOG_ERROR << "Datablock is completed. No new data can be added";
         throw std::logic_error("Datablock is completed. No new data can be added");
     }
     unsigned char current_parts = this->getPartsNumber();  // gets the current parts
@@ -84,13 +88,14 @@ void ChainHashData::addBytes(Bytes bytes) {
     if (current_name_len.len != bytes.getLen() && current_name_len.len != 0) {
         // if current len is 0, all lengths are allowed
         // cannot add the given bytes. The length does not match with the set format
+        PLOG_ERROR << "tried to add a data part with a not matching length (to the format) (len: " << bytes.getLen() << ", expected_len: " << current_name_len.len << ")";
         throw std::invalid_argument("tried to add a data part with a not matching length (to the format).");
     }
     this->data_parts.push_back(bytes);  // add the new byte part
     if (this->getLen() > 255) {
         // datablock is too long
         this->data_parts.pop_back();  // remove the last added part
-        std::cout << "Length of datablock: " << this->getLen() << std::endl;
+        PLOG_ERROR << "the datablock exceeded the length limit after adding new bytes (len: " << this->getLen() << ")";
         throw std::length_error("you added some bytes to the datablock. Now the datablock exceeded the length limit");
     }
 }
@@ -99,6 +104,7 @@ void ChainHashData::generateRandomData() {
     // fills the datablock with random data
     if (!this->data_parts.empty() && !this->name_lens.empty()) {
         // some parts have been set, therefore this function is not working
+        PLOG_ERROR << "Cannot generate random data, because some data parts have been set.";
         throw new std::logic_error("Cannot generate random data, because some data parts have been set.");
     }
     for (NameLen nl : this->name_lens) {

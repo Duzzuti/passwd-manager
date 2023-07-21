@@ -9,6 +9,7 @@ contains the implementations for the chainhashModes class
 #include "rng.h"
 #include "settings.h"
 #include "utility.h"
+#include "logger.h"
 
 std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
     // gets some information about the given chainhash mode
@@ -31,11 +32,13 @@ std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
             msg << "that hashes the old hash + quadratic value derived from an incrementing salt and 3 coefficients";
             break;
         default:  // invalid chainhash mode
+            PLOG_FATAL << "invalid chainhash mode provided (" << +chainhash_mode << ")";
             throw std::invalid_argument("chainhash mode does not exist");
     }
     return msg.str();
 }
 
+//WORK
 Bytes ChainHashModes::askForSaltString(const std::string msg, const unsigned char max_len) {
     // asks the user for a string that is used as a salt and returns the string bytes
     if (max_len < 1) {
@@ -91,22 +94,26 @@ ErrorStruct<bool> ChainHashModes::isChainHashValid(const ChainHash chainh) noexc
     // checks if the chainhash is valid
     ErrorStruct<bool> es;
     if (!ChainHashModes::isModeValid(chainh.mode)) {
+        PLOG_WARNING << "chainhash mode is not valid (" << +chainh.mode << ")";
         es.errorCode = ERR_CHAINHASH_MODE_INVALID;
         es.success = FAIL;
         return es;  // chainhash mode is not valid
     }
     if (!(chainh.iters > 0 && chainh.iters <= MAX_ITERATIONS)) {
+        PLOG_WARNING << "chainhash iterations are not valid (" << chainh.iters << ")";
         es.errorCode = ERR_ITERATIONS_INVALID;
         es.success = FAIL;
         return es;  // iteration number is not valid
     }
     if (!chainh.datablock.isCompletedFormat(Format(chainh.mode))) {
+        PLOG_WARNING << "chainhash datablock is not completed or has the wrong format";
         // checks if the datablock is already completed
         es.errorCode = ERR_DATABLOCK_NOT_COMPLETED;
         es.success = FAIL;
         return es;
     }
     if (chainh.datablock.getLen() > 255) {
+        PLOG_WARNING << "chainhash datablock is too long (" << chainh.datablock.getLen() << ")";
         es.errorCode = ERR_DATABLOCK_TOO_LONG;
         es.success = FAIL;
         return es;  // datablock is too long
@@ -145,8 +152,10 @@ ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode) {
 
 ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const Bytes data, const u_int64_t timeout) {
     // performs a chainhash on bytes
+    PLOG_VERBOSE << "performing chainhash (mode: " << +chainh.mode << ", iterations: " << chainh.iters << ", timeout " << timeout << ")";
     ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
     if (!err.isSuccess()) {
+        PLOG_ERROR << "chainhash is not valid cannot perform chainhash";
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
@@ -175,14 +184,17 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
             c = toLong(chainh.datablock.getPart("C"));                                                             // get the c number
             return pwf.chainhashWithQuadraticCountSalt(data, chainh.iters, count_salt, a, b, c, timeout);          // use the count salt and a,b,c
         default:                                                                                                   // invalid chainhash mode
+            PLOG_FATAL << "invalid chainhash mode provided (" << +chainh.mode << ")";
             throw std::invalid_argument("chainhash mode does not exist");
     }
 }
 
 ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const std::string data, const u_int64_t timeout) {
     // performs a chainhash on a string
+    PLOG_VERBOSE << "performing chainhash (mode: " << +chainh.mode << ", iterations: " << chainh.iters << ", timeout " << timeout << ")";
     ErrorStruct err = ChainHashModes::isChainHashValid(chainh);  // check if the chainhash is valid
     if (!err.isSuccess()) {
+        PLOG_ERROR << "chainhash is not valid cannot perform chainhash";
         throw std::invalid_argument(getErrorMessage(err));  // chainhash is not valid
     }
     PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
@@ -211,16 +223,19 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
             c = toLong(chainh.datablock.getPart("C"));                                                             // get the c number
             return pwf.chainhashWithQuadraticCountSalt(data, chainh.iters, count_salt, a, b, c, timeout);          // use the count salt and a,b,c
         default:                                                                                                   // invalid chainhash mode
+            PLOG_FATAL << "invalid chainhash mode provided (" << +chainh.mode << ")";
             throw std::invalid_argument("chainhash mode does not exist");
     }
 }
 
 ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const Bytes data) {
+    PLOG_VERBOSE << "performing chainhash timed (mode: " << +chainh.mode << ", runtime: " << chainh.run_time << ")";
     // WORK
     return ErrorStruct<ChainHashResult>();
 }
 
 ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const std::string data) {
+    PLOG_VERBOSE << "performing chainhash timed (mode: " << +chainh.mode << ", runtime: " << chainh.run_time << ")";
     // WORK
     return ErrorStruct<ChainHashResult>();
 }
