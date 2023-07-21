@@ -5,8 +5,8 @@ contains the implementations of the ChainHashData class
 
 #include <algorithm>
 
-#include "utility.h"
 #include "logger.h"
+#include "utility.h"
 
 void ChainHashData::clear() noexcept {
     // clears the data of the object

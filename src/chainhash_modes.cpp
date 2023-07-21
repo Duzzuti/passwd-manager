@@ -5,11 +5,11 @@ contains the implementations for the chainhashModes class
 
 #include "app.h"
 #include "chainhash_data.h"
+#include "logger.h"
 #include "pwfunc.h"
 #include "rng.h"
 #include "settings.h"
 #include "utility.h"
-#include "logger.h"
 
 std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
     // gets some information about the given chainhash mode
@@ -38,7 +38,7 @@ std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
     return msg.str();
 }
 
-//WORK
+// WORK
 Bytes ChainHashModes::askForSaltString(const std::string msg, const unsigned char max_len) {
     // asks the user for a string that is used as a salt and returns the string bytes
     if (max_len < 1) {
