@@ -2,6 +2,7 @@
 implementation of timer.h
 */
 #include "timer.h"
+
 #include "logger.h"
 
 void Timer::start() {
