@@ -9,7 +9,7 @@ class EncryptBlockChain : public BlockChain {
     it is used to encrypt data, its one type of BlockChain
     */
    public:
-    EncryptBlockChain(std::unique_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt) : BlockChain(std::move(hash), passwordhash, enc_salt){
+    EncryptBlockChain(std::unique_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt) : BlockChain(std::move(hash), passwordhash, enc_salt) {
         PLOG_VERBOSE << "created new EncryptBlockChain";
     };
 

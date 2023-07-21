@@ -50,15 +50,15 @@ class BlockChain {
         void init(const Bytes pwhash, const Bytes enc_salt, std::shared_ptr<Hash> hashObj) {
             // note that SaltIterator does not take ownership of the hashObj pointer you need to delete it yourself
             // initializes the iterator with the password hash and the encrypted salt
-            if (hashObj == nullptr){
+            if (hashObj == nullptr) {
                 PLOG_FATAL << "given hash object is nullptr";
                 throw std::invalid_argument("hash cannot be nullptr");
             }
-            if (pwhash.getLen() != hashObj->getHashSize()){
+            if (pwhash.getLen() != hashObj->getHashSize()) {
                 PLOG_FATAL << "passwordhash has to be the same size as the hash from the hash function (passwordhash_len: " << pwhash.getLen() << ", hash_size: " << hashObj->getHashSize() << ")";
                 throw std::invalid_argument("passwordhash has to be the same size as the hash");
             }
-            if (enc_salt.getLen() != hashObj->getHashSize()){
+            if (enc_salt.getLen() != hashObj->getHashSize()) {
                 PLOG_FATAL << "encrypted salt has to be the same size as the hash from the hash function (enc_salt_len: " << enc_salt.getLen() << ", hash_size: " << hashObj->getHashSize() << ")";
                 throw std::invalid_argument("enc_salt has to be the same size as the hash");
             }
@@ -69,18 +69,19 @@ class BlockChain {
         }
         Bytes next(Bytes last_block_hash = Bytes(0)) {
             // generates the next salt with the last block hash
-            if(this->first) {
+            if (this->first) {
                 // if this is the first block, the last_block_hash is set to 0
                 first = false;
                 // generate a Bytes object with the size of the hash with all bytes set to 0
                 last_block_hash = Bytes(0);
                 last_block_hash = last_block_hash.getFirstBytesFilledUp(this->hashObj->getHashSize(), 0);
             }
-            if (last_block_hash.getLen() != this->hashObj->getHashSize()){
-                PLOG_FATAL << "last_block_hash has to be the same size as the hash from the hash function (last_block_hash_len: " << last_block_hash.getLen() << ", hash_size: " << this->hashObj->getHashSize() << ")";
+            if (last_block_hash.getLen() != this->hashObj->getHashSize()) {
+                PLOG_FATAL << "last_block_hash has to be the same size as the hash from the hash function (last_block_hash_len: " << last_block_hash.getLen()
+                           << ", hash_size: " << this->hashObj->getHashSize() << ")";
                 throw std::invalid_argument("last_block_hash has to be the same size as the hash");
             }
-            if (!this->ready){
+            if (!this->ready) {
                 PLOG_FATAL << "SaltIterator is not ready, call init first";
                 throw std::runtime_error("SaltIterator is not ready, call init first");
             }
