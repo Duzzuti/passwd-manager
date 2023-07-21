@@ -63,11 +63,11 @@ struct ErrorStruct {
     // getters and setters
     T returnValue() {
         // you cannot access the return value if the function failed
-        if (!isSuccess()){
+        if (!isSuccess()) {
             PLOG_FATAL << "Cannot access the return value, because the struct is not successful";
             throw std::logic_error("Cannot access the return value, because the struct is not successful");
         }
-        if (!returnvalue.has_value()){
+        if (!returnvalue.has_value()) {
             PLOG_ERROR << "Return value is not set";
             throw std::logic_error("Return value is not set");
         }
@@ -85,7 +85,7 @@ template <typename T>
 std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
     // verbose_err_msg triggers the return of a more detailed error message
     //  returns an error message based on the error code and the error info
-    if (err.isSuccess()){
+    if (err.isSuccess()) {
         PLOG_WARNING << "getErrorMessage was called on a succeeded ErrorStruct";
         return "getErrorMessage was called on a succeeded ErrorStruct";
     }
