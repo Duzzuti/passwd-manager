@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "base.h"
+#include "logger.h"
 
 enum ErrorCode {
     NO_ERR,
@@ -62,8 +63,14 @@ struct ErrorStruct {
     // getters and setters
     T returnValue() {
         // you cannot access the return value if the function failed
-        if (!isSuccess()) throw std::logic_error("Cannot access the return value, because the struct is not successful");
-        if (!returnvalue.has_value()) throw std::logic_error("Return value is not set");
+        if (!isSuccess()){
+            PLOG_FATAL << "Cannot access the return value, because the struct is not successful";
+            throw std::logic_error("Cannot access the return value, because the struct is not successful");
+        }
+        if (!returnvalue.has_value()){
+            PLOG_ERROR << "Return value is not set";
+            throw std::logic_error("Return value is not set");
+        }
         return returnvalue.value();
     };
     bool isSuccess() { return success == SUCCESS; };
@@ -78,7 +85,10 @@ template <typename T>
 std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
     // verbose_err_msg triggers the return of a more detailed error message
     //  returns an error message based on the error code and the error info
-    if (err.isSuccess()) return "getErrorMessage was called on a succeeded ErrorStruct";
+    if (err.isSuccess()){
+        PLOG_WARNING << "getErrorMessage was called on a succeeded ErrorStruct";
+        return "getErrorMessage was called on a succeeded ErrorStruct";
+    }
     std::string err_msg = "";
     if (verbose_err_msg) err_msg = "\nException message: " + err.what;
 
@@ -198,6 +208,7 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
             return err.errorInfo + err_msg;
 
         default:
+            PLOG_FATAL << "Unknown error code: " << +err.errorCode;
             return "Unknown error" + err_msg;
     }
 }
