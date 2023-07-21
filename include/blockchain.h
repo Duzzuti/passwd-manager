@@ -3,6 +3,7 @@
 
 #include "block.h"
 #include "hash.h"
+#include "logger.h"
 
 class BlockChain {
     /*
@@ -23,7 +24,7 @@ class BlockChain {
         - deterministic
         - you can only get the next salt if you have the last block hash
         - the first salt is known to the attacker and even if he knows the data of the first block
-        he cannot get the next salt or passwordhash (except if he knows the inverse hash function :))
+        he cannot get the next salt or passwordhash (except he knows the inverse hash function :))
     */
    protected:
     class SaltIterator {
@@ -49,9 +50,18 @@ class BlockChain {
         void init(const Bytes pwhash, const Bytes enc_salt, std::shared_ptr<Hash> hashObj) {
             // note that SaltIterator does not take ownership of the hashObj pointer you need to delete it yourself
             // initializes the iterator with the password hash and the encrypted salt
-            if (hashObj == nullptr) throw std::invalid_argument("hash cannot be nullptr");
-            if (pwhash.getLen() != hashObj->getHashSize()) throw std::invalid_argument("passwordhash has to be the same size as the hash");
-            if (enc_salt.getLen() != hashObj->getHashSize()) throw std::invalid_argument("enc_salt has to be the same size as the hash");
+            if (hashObj == nullptr){
+                PLOG_FATAL << "given hash object is nullptr";
+                throw std::invalid_argument("hash cannot be nullptr");
+            }
+            if (pwhash.getLen() != hashObj->getHashSize()){
+                PLOG_FATAL << "passwordhash has to be the same size as the hash from the hash function (passwordhash_len: " << pwhash.getLen() << ", hash_size: " << hashObj->getHashSize() << ")";
+                throw std::invalid_argument("passwordhash has to be the same size as the hash");
+            }
+            if (enc_salt.getLen() != hashObj->getHashSize()){
+                PLOG_FATAL << "encrypted salt has to be the same size as the hash from the hash function (enc_salt_len: " << enc_salt.getLen() << ", hash_size: " << hashObj->getHashSize() << ")";
+                throw std::invalid_argument("enc_salt has to be the same size as the hash");
+            }
             this->ready = true;
             this->hash = pwhash;
             this->salt = enc_salt;
@@ -59,18 +69,21 @@ class BlockChain {
         }
         Bytes next(Bytes last_block_hash = Bytes(0)) {
             // generates the next salt with the last block hash
-            if (!first) {
-                // if this is not the first block, the last_block_hash has to be provided
-                if (last_block_hash.getLen() != this->hashObj->getHashSize()) throw std::invalid_argument("last_block_hash has to be the same size as the hash");
-            } else {
+            if(this->first) {
                 // if this is the first block, the last_block_hash is set to 0
                 first = false;
                 // generate a Bytes object with the size of the hash with all bytes set to 0
                 last_block_hash = Bytes(0);
                 last_block_hash = last_block_hash.getFirstBytesFilledUp(this->hashObj->getHashSize(), 0);
             }
-            if (last_block_hash.getLen() != this->hashObj->getHashSize()) throw std::invalid_argument("last_block_hash has to be the same size as the hash");
-            if (!this->ready) throw std::runtime_error("SaltIterator is not ready, call init first");
+            if (last_block_hash.getLen() != this->hashObj->getHashSize()){
+                PLOG_FATAL << "last_block_hash has to be the same size as the hash from the hash function (last_block_hash_len: " << last_block_hash.getLen() << ", hash_size: " << this->hashObj->getHashSize() << ")";
+                throw std::invalid_argument("last_block_hash has to be the same size as the hash");
+            }
+            if (!this->ready){
+                PLOG_FATAL << "SaltIterator is not ready, call init first";
+                throw std::runtime_error("SaltIterator is not ready, call init first");
+            }
             // generate the next hash and salt by hashing the last hash and salt with the last block hash
             this->hash = this->hashObj->hash(this->hash + this->salt + last_block_hash);
             // note that the salt is not equal to the hash because the salt is generated with the new hash
