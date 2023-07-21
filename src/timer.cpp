@@ -2,6 +2,7 @@
 implementation of timer.h
 */
 #include "timer.h"
+#include "logger.h"
 
 void Timer::start() {
     // start the timer
@@ -67,24 +68,28 @@ size_t Timer::getLaps() {
 
 void Timer::require_started() {
     if (!this->started) {
+        PLOG_ERROR << "Timer must be started before calling this method";
         throw std::logic_error("Timer must be started before calling this method");
     }
 }
 
 void Timer::require_stopped() {
     if (!this->stopped) {
+        PLOG_ERROR << "Timer must be stopped before calling this method";
         throw std::logic_error("Timer must be stopped before calling this method");
     }
 }
 
 void Timer::require_not_started() {
     if (this->started) {
+        PLOG_ERROR << "This method is only available before the timer gets started";
         throw std::logic_error("This method is only available before the timer gets started");
     }
 }
 
 void Timer::require_not_stopped() {
     if (this->stopped) {
+        PLOG_ERROR << "This method is only available before the timer gets stopped";
         throw std::logic_error("This method is only available before the timer gets stopped");
     }
 }
