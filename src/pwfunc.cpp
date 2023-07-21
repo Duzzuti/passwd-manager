@@ -1,9 +1,9 @@
 #include "pwfunc.h"
 
+#include "logger.h"
 #include "settings.h"
 #include "timer.h"
 #include "utility.h"
-#include "logger.h"
 
 ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
     // checks the password for illegal format, sets an error if it is not valid

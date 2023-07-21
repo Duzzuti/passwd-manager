@@ -7,8 +7,8 @@ contains the implementations of the format class
 #include <algorithm>
 
 #include "chainhash_modes.h"
-#include "utility.h"
 #include "logger.h"
+#include "utility.h"
 
 Format::Format(const CHModes chainhash_mode) {
     // basic constructor sets up the format string for the given chainhash mode
@@ -134,7 +134,7 @@ std::vector<NameLen> Format::getNameLenList() const {
     if (!(0 < name_lens.size() && name_lens.size() < 256)) {
         // the algorithm did not add anything to the list, but the user entered a non empty format string
         // or the user inputs more than 256 datasets
-        PLOG_ERROR << "format is not valid. Got invalid entry number from a non empty format. " 
+        PLOG_ERROR << "format is not valid. Got invalid entry number from a non empty format. "
                    << "Please provide an empty string for 0 entries, or a maximum of 255 entries (Format: " << this->format << ")";
         throw std::invalid_argument("format is not valid. Got invalid entry number from a non empty format");
     }
