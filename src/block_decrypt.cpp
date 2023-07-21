@@ -1,11 +1,13 @@
 #include "block_decrypt.h"
 
+#include "logger.h"
 #include "hash.h"
 
 void DecryptBlock::addData(const Bytes enc_data) {
     // add the data to the block
     this->data.addBytes(enc_data);
     if (this->data.getLen() > this->block_len) {
+        PLOG_ERROR << "block data length exceeded the DecryptBlock length (block_len: " << this->block_len << ", data_len: " << this->data.getLen() << ")";
         // reset the data
         this->data = this->data.getFirstBytes(this->data.getLen() - enc_data.getLen()).value();
         throw std::length_error("block data length exceeded the block length");
