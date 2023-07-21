@@ -1,7 +1,7 @@
 #include "block_decrypt.h"
 
-#include "logger.h"
 #include "hash.h"
+#include "logger.h"
 
 void DecryptBlock::addData(const Bytes enc_data) {
     // add the data to the block

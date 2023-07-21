@@ -30,12 +30,12 @@ int Block::getFreeSpace() const noexcept {
 
 Bytes Block::getHash() const {
     // returns the block hash of the decrypted data if the block is completed
-    if (this->data.getLen() != this->block_len){
+    if (this->data.getLen() != this->block_len) {
         // block is not completed
         PLOG_ERROR << "block is not completed, cannot get hash (block_len: " << this->block_len << ", data_len: " << this->data.getLen() << ")";
         throw std::length_error("block is not completed, cannot get hash");
     }
-    if (this->dec_hash.getLen() == 0){
+    if (this->dec_hash.getLen() == 0) {
         // block hash was not calculated previously. The only way that should happen is if the block is not yet completed
         // this is checked in the previous if statement so this should never happen
         PLOG_FATAL << "block hash was not calculated, but the block is completed (block_len: " << this->block_len << ", data_len: " << this->data.getLen() << ")";
