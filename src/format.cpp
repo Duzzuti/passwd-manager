@@ -8,11 +8,13 @@ contains the implementations of the format class
 
 #include "chainhash_modes.h"
 #include "utility.h"
+#include "logger.h"
 
 Format::Format(const CHModes chainhash_mode) {
     // basic constructor sets up the format string for the given chainhash mode
     if (!ChainHashModes::isModeValid(chainhash_mode)) {
         // given chainhash mode is not valid
+        PLOG_FATAL << "given chainhash mode is not valid (chainhash_mode: " << chainhash_mode << ")";
         throw std::invalid_argument("given chainhash mode is not valid");
     }
     // sets up the correct format string for that chainhash mode
@@ -33,6 +35,7 @@ Format::Format(const CHModes chainhash_mode) {
             this->format = "8B SN 8B A 8B B 8B C";
             break;
         default:  // invalid chainhash mode, should not throw
+            PLOG_FATAL << "invalid chainhash mode, implementation missing (chainhash_mode: " << chainhash_mode << ")";
             throw std::logic_error("invalid chainhash mode");
     }
     this->chainhash_mode = chainhash_mode;
@@ -73,16 +76,19 @@ std::vector<NameLen> Format::getNameLenList() const {
         }
         std::string substring = format.substr(0, ind);  // gets the substring with the given index
         if (substring.empty()) {
+            PLOG_ERROR << "format is not valid. Got some empty substring";
             throw std::invalid_argument("format is not valid. Got some empty substring");
         }
         if (!data_name) {
             if (star) {
                 // a star element has to be the last one
+                PLOG_ERROR << "format is not valid. Star element is not the last element";
                 throw std::invalid_argument("format is not valid. Star element is not the last element");
             }
             // getting the size of the part
             if (!endsWith(substring, "B")) {
                 // size does not end with B (wrong format)
+                PLOG_ERROR << "format is not valid. Contains no B on the end of size part.";
                 throw std::invalid_argument("format is not valid. Contains no B on the end of size part.");
             }
             substring.pop_back();  // delete the B
@@ -94,10 +100,12 @@ std::vector<NameLen> Format::getNameLenList() const {
                     size_int = std::stoi(substring);  // transform the string to an int
                 } catch (std::exception) {
                     // could not convert string to int
+                    PLOG_ERROR << "format is not valid. Size could not be converted to int";
                     throw std::invalid_argument("format is not valid. Size could not be converted to int");
                 }
                 if (size_int <= 0 || size_int >= 256) {
                     // provided size is not valid
+                    PLOG_ERROR << "format is not valid. Size has to be between 0 and 256 exclusive.";
                     throw std::invalid_argument("format is not valid. Size has to be between 0 and 256 exclusive.");
                 }
             } else {
@@ -108,11 +116,13 @@ std::vector<NameLen> Format::getNameLenList() const {
             accumulated_size += size_int;
             if (accumulated_size > 255) {
                 // datablock gets bigger than allowed
+                PLOG_ERROR << "format is not valid. Accumulated size gets greater than 255 bytes";
                 throw std::invalid_argument("format is not valid. Accumulated size gets greater than 255 bytes");
             }
         } else {
             if (std::find(data_names.begin(), data_names.end(), substring) != data_names.end()) {
                 // found the current data name already in the list
+                PLOG_ERROR << "format is not valid. Found multiple parts with the same name";
                 throw std::invalid_argument("format is not valid. Found multiple parts with the same name");
             }
             data_names.push_back(substring);
@@ -124,9 +134,8 @@ std::vector<NameLen> Format::getNameLenList() const {
     if (!(0 < name_lens.size() && name_lens.size() < 256)) {
         // the algorithm did not add anything to the list, but the user entered a non empty format string
         // or the user inputs more than 256 datasets
-        std::cout << "Format: " << this->format << std::endl;
-        std::cout << "Format has to contain between 0 and 256 entries exclusive";
-        std::cout << "or the format string has to be empty for 0 entries" << std::endl;
+        PLOG_ERROR << "format is not valid. Got invalid entry number from a non empty format. " 
+                   << "Please provide an empty string for 0 entries, or a maximum of 255 entries (Format: " << this->format << ")";
         throw std::invalid_argument("format is not valid. Got invalid entry number from a non empty format");
     }
     return name_lens;
