@@ -2,9 +2,10 @@
 implements the FileHandler class
 */
 
+#include "filehandler.h"
+
 #include <fstream>
 
-#include "filehandler.h"
 #include "logger.h"
 
 const std::string FileHandler::extension = ".enc";
@@ -53,7 +54,7 @@ ErrorStruct<bool> FileHandler::isValidPath(std::filesystem::path file, bool shou
     return ErrorStruct<bool>{true};
 }
 
-ErrorStruct<bool> FileHandler::createFile(std::filesystem::path file) noexcept{
+ErrorStruct<bool> FileHandler::createFile(std::filesystem::path file) noexcept {
     // creates a new .enc file at the given path and validates it
     PLOG_VERBOSE << "Creating new file (file_path: " << file << ")";
     ErrorStruct<bool> err;
@@ -80,7 +81,7 @@ ErrorStruct<bool> FileHandler::createFile(std::filesystem::path file) noexcept{
 
 FileHandler::FileHandler(std::filesystem::path file) {
     // sets the filepath
-    if(FileHandler::isValidPath(file, true).isSuccess()){
+    if (FileHandler::isValidPath(file, true).isSuccess()) {
         this->filepath = file;
         return;
     }
@@ -90,24 +91,25 @@ FileHandler::FileHandler(std::filesystem::path file) {
 
 bool FileHandler::isDataHeader(FModes exp_file_mode) const noexcept {
     ErrorStruct<DataHeader> err = this->getDataHeader();
-    if(!err.isSuccess()){
+    if (!err.isSuccess()) {
         // the data header could not be read
         PLOG_ERROR << "The data header could not be read (isDataHeader) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
         return false;
-    }else if(err.returnValue().getDataHeaderParts().file_mode == exp_file_mode){
+    } else if (err.returnValue().getDataHeaderParts().file_mode == exp_file_mode) {
         // the data header was read successfully and the file mode is correct
         return true;
     }
-    PLOG_WARNING << "The data header was read successfully but the file mode is incorrect (isDataHeader) (file path: " << this->filepath << ", expected file mode: " << exp_file_mode << ", actual file mode: " << err.returnValue().getDataHeaderParts().file_mode << ")";
+    PLOG_WARNING << "The data header was read successfully but the file mode is incorrect (isDataHeader) (file path: " << this->filepath << ", expected file mode: " << exp_file_mode
+                 << ", actual file mode: " << err.returnValue().getDataHeaderParts().file_mode << ")";
     return false;
 }
 
 bool FileHandler::isEmtpy() const noexcept {
     // checks if the file is empty
-    try{
+    try {
         // try to read the first byte
         this->getFirstBytes(1);
-    }catch(std::length_error& e){
+    } catch (std::length_error& e) {
         // the file is empty
         return true;
     }
@@ -124,7 +126,7 @@ ErrorStruct<Bytes> FileHandler::getData() const noexcept {
     // reads the data from the file (without the data header)
     Bytes content = this->getAllBytes();
     ErrorStruct<DataHeader> err = DataHeader::setHeaderBytes(content);
-    if(!err.isSuccess()){
+    if (!err.isSuccess()) {
         // the data header could not be read
         PLOG_ERROR << "The data header could not be read (getData) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
         return ErrorStruct<Bytes>{err.success, err.errorCode, err.errorInfo, err.what};
@@ -134,7 +136,7 @@ ErrorStruct<Bytes> FileHandler::getData() const noexcept {
     return ErrorStruct<Bytes>{content};
 }
 
-ErrorStruct<bool> FileHandler::writeBytes(Bytes bytes) const noexcept{
+ErrorStruct<bool> FileHandler::writeBytes(Bytes bytes) const noexcept {
     // writes bytes to the file
     // overrides old content
     PLOG_VERBOSE << "Writing to file (file_path: " << this->filepath << ")";
@@ -161,9 +163,9 @@ ErrorStruct<bool> FileHandler::writeBytes(Bytes bytes) const noexcept{
     return ErrorStruct<bool>{true};
 }
 
-ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes bytes) const noexcept{
+ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes bytes) const noexcept {
     // writes bytes to the file if the file is empty
-    if(!this->isEmtpy()){
+    if (!this->isEmtpy()) {
         // the file is not empty
         PLOG_WARNING << "The file is not empty (writeBytesIfEmpty) (file_path: " << this->filepath << ")";
         return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
@@ -180,8 +182,8 @@ Bytes FileHandler::getAllBytes() const {
         throw std::runtime_error("file cannot be opened");
     }
     // get length of file:
-    file.seekg(0, file.end);    // jump to the end
-    int num = file.tellg();  // saves the position
+    file.seekg(0, file.end);  // jump to the end
+    int num = file.tellg();   // saves the position
     file.close();
 
     // gets the Bytes
@@ -219,6 +221,3 @@ Bytes FileHandler::getFirstBytes(const int num) const {
     }
     return ret;
 }
-
-
-
