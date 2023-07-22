@@ -27,6 +27,15 @@ int main(int argc, char* argv[]) {
     PLOG_INFO << "Starting application";
 
     API api{FModes::FILEMODE_PASSWORD};
+    PLOG_DEBUG << "API created";
+    ErrorStruct<std::filesystem::path> dir = api.getEncDirPath();
+    PLOG_DEBUG << "Getting enc dir path: " << dir.returnValue();
+    ErrorStruct<std::vector<std::string>> paths = api.getAllEncFileNames(dir.returnValue());
+    PLOG_DEBUG << "Getting all enc file names: " << paths.returnValue().size();
+    for (auto& path : paths.returnValue()) {
+        PLOG_DEBUG << path;
+    }
+    //WORK
 
     PLOG_INFO << "Application finished";
 }
