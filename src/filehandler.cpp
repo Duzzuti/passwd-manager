@@ -234,7 +234,7 @@ bool FileHandler::setEncryptionFilePath(const std::string path) noexcept {
     bool exist = std::filesystem::exists(fp);  // checks whether the provided path exists
     if (exist) {
         // if it exists, change the path in the app data
-        this->setAppSetting("filePath", path);
+        // this->setAppSetting("filePath", path);
         this->encryption_filepath = path;
     }
     return exist;  // return the success bool

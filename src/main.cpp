@@ -1,11 +1,7 @@
 #include <iostream>
-// include plog
-#include <plog/Appenders/ColorConsoleAppender.h>
-#include <plog/Formatters/TxtFormatter.h>
-#include <plog/Init.h>
-#include <plog/Log.h>
 
-#include "app.h"
+#include "api.h"
+#include "logger.h"
 
 int main(int argc, char* argv[]) {
     // for (int i = 0; i < argc; i++){
@@ -23,11 +19,23 @@ int main(int argc, char* argv[]) {
     //         continue;
     //     }
     // }
-    App app;
-    // init plog
+
+    // init logger
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
     plog::init(plog::verbose, &consoleAppender);
-    PLOG_DEBUG << "Message to show that debugging logs work."
-                  " Initializing app...";
-    return app.run();
+
+    PLOG_INFO << "Starting application";
+
+    API api{FModes::FILEMODE_PASSWORD};
+    PLOG_DEBUG << "API created";
+    ErrorStruct<std::filesystem::path> dir = api.getEncDirPath();
+    PLOG_DEBUG << "Getting enc dir path: " << dir.returnValue();
+    ErrorStruct<std::vector<std::string>> paths = api.getAllEncFileNames(dir.returnValue());
+    PLOG_DEBUG << "Getting all enc file names: " << paths.returnValue().size();
+    for (auto& path : paths.returnValue()) {
+        PLOG_DEBUG << path;
+    }
+    // WORK
+
+    PLOG_INFO << "Application finished";
 }

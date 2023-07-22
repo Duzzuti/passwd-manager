@@ -5,6 +5,7 @@ this file contains the implementations of FileModes class
 
 #include <sstream>
 
+#include "logger.h"
 #include "password_data.h"
 #include "settings.h"
 
@@ -19,6 +20,7 @@ std::string FileModes::getInfo(const FModes file_mode) {
             break;
         default:  // not an valid mode
             std::cout << msg.str();
+            PLOG_ERROR << "Invalid file mode passed into get info file mode: " << +file_mode;
             throw std::logic_error("Invalid file mode passed into get info");
     }
     return msg.str();

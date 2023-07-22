@@ -3,9 +3,11 @@
 #include "block_encrypt.h"
 
 bool EncryptBlockChain::addBlock() noexcept {
-    if (this->getFreeSpaceInLastBlock() != 0)
+    if (this->getFreeSpaceInLastBlock() != 0) {
         // there is still free space in the last block no new block is needed
+        PLOG_WARNING << "tried to add a new block but there is still free space in the last block (free_space: " << this->getFreeSpaceInLastBlock() << ")";
         return false;
+    }
 
     // get the next block salt
     Bytes next_salt;

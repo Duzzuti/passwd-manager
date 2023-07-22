@@ -1,5 +1,6 @@
 #include "pwfunc.h"
 
+#include "logger.h"
 #include "settings.h"
 #include "timer.h"
 #include "utility.h"
@@ -17,6 +18,7 @@ ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
             }
         }
         if (!found) {  // invalid character, is not in charset
+            PLOG_WARNING << "invalid character found in password (char: " << password[i] << ", ascii: " << +password[i] << ")";
             ret.errorCode = ERR_PASSWD_CHAR_INVALID;
             ret.errorInfo = password[i];
             ret.success = FAIL;  // passwd contains illegal char
@@ -24,6 +26,7 @@ ErrorStruct<bool> PwFunc::isPasswordValid(const std::string password) noexcept {
         }
     }
     if (password.length() < MIN_PASS_LEN) {  // password length does not match the min length
+        PLOG_WARNING << "password is too short (length: " << password.length() << ", min length: " << MIN_PASS_LEN << ")";
         ret.errorCode = ERR_PASSWD_TOO_SHORT;
         ret.errorInfo = std::to_string(MIN_PASS_LEN);
         ret.success = FAIL;  // passwd too short
@@ -45,6 +48,7 @@ ErrorStruct<Bytes> PwFunc::chainhash(const std::string password, const u_int64_t
         ret = this->hash->hash(ret);
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -62,6 +66,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithConstantSalt(const std::string password,
         ret = this->hash->hash(ret);
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -80,6 +85,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountSalt(const std::string password, co
         ret = this->hash->hash(ret);
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -100,6 +106,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const std::string p
         ret = this->hash->hash(ret);
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -119,6 +126,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const std::string pas
         ret = this->hash->hash(ret);
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -135,6 +143,7 @@ ErrorStruct<Bytes> PwFunc::chainhash(const Bytes data, const u_int64_t iteration
         ret = this->hash->hash(ret);
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -152,6 +161,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithConstantSalt(const Bytes data, const u_i
         ret = this->hash->hash(ret);
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -170,6 +180,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountSalt(const Bytes data, const u_int6
         salt_start++;
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -189,6 +200,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithCountAndConstantSalt(const Bytes data, c
         salt_start++;
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }
@@ -208,6 +220,7 @@ ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, con
         salt_start++;
         if (timeout != 0 && i % TIMEOUT_ITERATIONS == 0) {
             if (timeout <= timer.peekTime()) {
+                PLOG_WARNING << "timeout reached (timeout: " << timeout << ", iterations: " << i << ")";
                 return ErrorStruct<Bytes>{TIMEOUT, ERR_TIMEOUT, "", "", Bytes()};
             }
         }

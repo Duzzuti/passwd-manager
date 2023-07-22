@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "logger.h"
 #include "rng.h"
 
 Bytes::Bytes() { this->clear(); }
@@ -9,6 +10,7 @@ Bytes::Bytes() { this->clear(); }
 Bytes::Bytes(const int len) {
     if (len < 0) {
         // invalid length given
+        PLOG_ERROR << "The provided len is negative (len: " << len << ")";
         throw std::range_error("The provided len is negative");
     }
     // sets random bytes (with a cryptographically secure algorithm from openssl)
@@ -28,6 +30,7 @@ void Bytes::getBytesArray(unsigned char* array) const {
     // gets the content of the vector as a array
     if (sizeof(array) < this->bytes.size()) {
         // if the array is not big enough
+        PLOG_ERROR << "The provided array is not big enough (array_size: " << sizeof(array) << ", bytes_size: " << this->bytes.size() << ")";
         throw std::range_error("The provided array is not big enough");
     }
     std::copy(this->bytes.begin(), this->bytes.end(), array);
@@ -58,10 +61,12 @@ std::optional<Bytes> Bytes::popFirstBytes(const int num) {
 std::optional<Bytes> Bytes::getFirstBytes(const int num) const {
     if (num < 0) {
         // how the program should return the first negative elements?
+        PLOG_ERROR << "The provided len is negative (len: " << num << ")";
         throw std::range_error("The provided len is negative");
     }
     if (num > this->bytes.size()) {
         // if there are not enough bytes, its returning an empty optional
+        PLOG_WARNING << "The provided len is bigger than the bytes size, getting nothing (len: " << num << ", bytes_size: " << this->bytes.size() << ")";
         return {};
     }
     Bytes ret = Bytes();
@@ -89,6 +94,7 @@ Bytes Bytes::popFirstBytesFilledUp(const int num, const unsigned char fillup) {
 Bytes Bytes::getFirstBytesFilledUp(const int num, const unsigned char fillup) const {
     if (num < 0) {
         // how the program should return the first negative elements?
+        PLOG_ERROR << "The provided len is negative (len: " << num << ")";
         throw std::range_error("The provided len is negative");
     }
     Bytes ret = Bytes();
@@ -116,6 +122,7 @@ bool operator==(const Bytes b1, const Bytes b2) {
 Bytes operator+(const Bytes b1, const Bytes b2) {
     if (b1.getLen() != b2.getLen()) {
         // the two Bytes need to have the same length to perform an elementwise addition
+        PLOG_ERROR << "The provided bytes have different lengths (b1_len: " << b1.getLen() << ", b2_len: " << b2.getLen() << ")";
         throw std::length_error("bytes have different lengths");
     }
     Bytes ret = Bytes();
@@ -129,6 +136,7 @@ Bytes operator+(const Bytes b1, const Bytes b2) {
 Bytes operator-(const Bytes b1, const Bytes b2) {
     if (b1.getLen() != b2.getLen()) {
         // the two Bytes need to have the same length to perform an elementwise subtraction
+        PLOG_ERROR << "The provided bytes have different lengths (b1_len: " << b1.getLen() << ", b2_len: " << b2.getLen() << ")";
         throw std::length_error("bytes have different lengths");
     }
     Bytes ret = Bytes();

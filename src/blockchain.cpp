@@ -24,6 +24,7 @@ void BlockChain::addData(const Bytes data) noexcept {
         else
             break;
     }
+    PLOG_VERBOSE << "added new data to blockchain [HEIGHT] " << this->getHeight() << " [DATA_SIZE] " << this->getDataSize() << "B";
 }
 
 Bytes BlockChain::getResult() const {

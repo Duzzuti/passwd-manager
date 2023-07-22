@@ -1,6 +1,7 @@
 #include "rng.h"
 
 #include "bytes.h"
+#include "logger.h"
 
 std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
     unsigned char rand_bytes[num];  // creates a new buffer with the given length
@@ -12,6 +13,7 @@ std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
         return ret;
     } else {
         // some error in openssl occurred (maybe the given entropy was too low)
+        PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
         throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
     }
 }
@@ -23,12 +25,14 @@ unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned cha
     // the buffer size should be long if really random numbers are needed
     // it can be short (1) if the range is 255.WORK
     if (buffer_size < 1 || buffer_size > 8) {
+        PLOG_FATAL << "buffer size cannot be zero or greater than 8";
         throw std::logic_error("buffer size cannot be zero or greater than 8");
     }
     if (upper <= lower) {
         if (upper == lower) {
             return upper;  // if upper and lower are equal, return it (there is no need to randomize)
         } else {
+            PLOG_FATAL << "upper bound cannot be <= lower bound";
             throw std::logic_error("upper bound cannot be <= lower bound");
         }
     }
@@ -42,6 +46,7 @@ unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned cha
         return (toLong(tmp_bytes) % (upper - lower)) + lower;
     } else {
         // some error in openssl occurred (maybe the given entropy was too low)
+        PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
         throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
     }
 }
