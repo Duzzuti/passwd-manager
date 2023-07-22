@@ -1,50 +1,30 @@
 #pragma once
 
-#include <sys/stat.h>
-
-#include <cstdlib>
 #include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <optional>
-#include <string>
 
+#include "base.h"
 #include "bytes.h"
+#include "dataheader.h"
 
 class FileHandler {
     /*
-    this class is the interface between the ui, the program logic and the files
-    two files are important: The appdata file and the encryption file
-    Data that should persist is saved into the app data file of the os
-    The actual file with the encrypted content is the encryption file.
+    this class handles the files
+    That means it writes and reads from a given enc file
     */
-   private:
-    std::string appDataDir;                      // stores the path to the appData directory
-    const std::string appDataName = "data.txt";  // stores the name of the app data file
-    std::string fileName;                        // stores the name of the encryption file
-    std::filesystem::path encryption_filepath;   // stores the path to the encryption file
-   public:
-    const static std::string extension;  // stores the used file extension
-   private:
-    void getAppDataDir();      // Get the path to the directory where the application can store data (app data dir)
-    void createAppDataDir();   // Create the application data directory if it doesn't exist
-    void createAppDataFile();  // creates the app data file if it does not exist
-    // sets a new app data entry with a name and a value (writes into app data file), returns a success bool
-    bool setAppSetting(const std::string setting_name, const std::string setting_value) const;
-    // removes a app data entry by its name, returns a success bool
-    bool removeAppSetting(const std::string setting_name) const;
-    bool isAppDataFile() const noexcept;  // checks if the app data file exists under the stored path
-    // gets the value of an given setting from the app data file. If it does not exist return an empty optional
-    std::optional<std::string> getAppSetting(const std::string setting_name) const;
-    std::filesystem::path getAppDataFilePath() const noexcept;  // gets the full path to the app data file
-    void resetAppData() const noexcept;                         // resets the app data file (if there were errors)
-
-   public:
-    // tries to get the encryption file path (if not encryption_filepath will be empty), creates app data file
-    FileHandler();
-    // sets a new filepath to an encryption file, but only if this file exists (returns success bool)
-    bool setEncryptionFilePath(const std::string path) noexcept;
-    std::filesystem::path getEncryptionFilePath() const noexcept;  // gets the path to the encryption file
-    Bytes getFirstBytes(const int num) const;                      // reads the first num Bytes from the encryption file
-    Bytes getAllBytes() const;                                     // reads all Bytes from the encryption file
+private:
+    std::filesystem::path filepath;  // stores the path to the encryption file
+public:
+    static const std::string extension;     // encryption files (.enc)
+public:
+    static ErrorStruct<bool> isValidPath(std::filesystem::path file, bool should_exist) noexcept;        // checks if the path is valid
+    static ErrorStruct<bool> createFile(std::filesystem::path file) noexcept;                                 // creates a file
+    FileHandler(std::filesystem::path file);  // sets the filepath
+    bool isDataHeader(FModes exp_file_mode) const noexcept;       // checks if the file has a valid data header
+    bool isEmtpy() const noexcept;            // checks if the file is empty
+    ErrorStruct<DataHeader> getDataHeader() const noexcept;         // reads the data header from the file
+    ErrorStruct<Bytes> getData() const noexcept;                    // reads the data from the file (without the data header)
+    Bytes getFirstBytes(const int num) const;  // reads the first num Bytes from the encryption file
+    Bytes getAllBytes() const;  // reads all Bytes from the given encryption file
+    ErrorStruct<bool> writeBytesIfEmpty(Bytes bytes) const noexcept;  // writes the given bytes to the file if it is empty
+    ErrorStruct<bool> writeBytes(Bytes bytes) const noexcept;         // writes the given bytes to the file
 };
