@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     for (auto& path : paths.returnValue()) {
         PLOG_DEBUG << path;
     }
-    //WORK
+    // WORK
 
     PLOG_INFO << "Application finished";
 }
