@@ -72,7 +72,7 @@ Bytes ChainHashModes::askForSaltNumber(const std::string msg, const unsigned cha
     std::string inp{};
     do {
         std::cout << msg << " (you do not have to remember this, maximum length = " << +max_len << " Bytes)" << blank;
-        getline(std::cin, inp);                // gets the user input
+        getline(std::cin, inp);           // gets the user input
     } while (!isValidNumber(inp, true));  // stops if the entered string is a valid number
     Bytes bytes = Bytes();
     if (inp.empty()) {                                   // user wants to generate it randomly
