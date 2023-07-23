@@ -12,6 +12,7 @@ for full documentation see the documentation of the API class in the documentati
 #include "dataheader.h"
 #include "error.h"
 #include "file_data.h"
+#include "filehandler.h"
 #include "logger.h"
 
 // struct that is returned by the API if you decode a file
@@ -201,33 +202,18 @@ class API {
     // stores the file content that was encrypted by the algorithm
     // only this file content is valid to write to a file
     Bytes encrypted_data;
-    // stores the path to the file from that the data was read
-    // or an different file if the user wants to write to a different file (setFile())
-    std::filesystem::path selected_file;
-    bool file_empty = false;  // selected file is empty?
+    // stores the handler to the working file
+    std::optional<FileHandler> selected_file;
 
     // utility functions
-    // checks if an file path is valid
-    ErrorStruct<bool> checkFilePath(const std::filesystem::path file_path, const bool should_exist = false) const noexcept;
-    // checks if the file data header is valid or the file is empty
-    // that means there has to be a valid header with the file mode provided from the api
-    // the return value is false if the file is empty
-    ErrorStruct<bool> checkFileData(const std::filesystem::path file_path) const noexcept;
-
-    // adds the extension to the file path if it is not already there
-    ErrorStruct<std::filesystem::path> addExtension(const std::filesystem::path file_path) const noexcept;
-
-    // gets the file content from the file
-    ErrorStruct<Bytes> getFileContent(const std::filesystem::path file_path) const noexcept;
+    // gets the file handler for the given file path
+    ErrorStruct<FileHandler> getFileHandler(const std::filesystem::path file_path) const noexcept;
 
     // does the most work for creating a new dataheader from DataHeaderSettingsIters
     DataHeaderHelperStruct createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) const noexcept;
 
     // does the most work for creating a new dataheader from DataHeaderSettingsTime
     DataHeaderHelperStruct createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept;
-
-    // writes the file content to the file without checking if the file is valid
-    ErrorStruct<bool> writeFile(const std::filesystem::path file_path) const noexcept;
 
    public:
     // constructs the api with the file mode that should be worked with
@@ -304,12 +290,6 @@ class API {
         PLOG_DEBUG << "API call made (getFileContent)";
         return this->current_state.getFileContent();
     }
-
-    // extract the data header from the file content
-    static ErrorStruct<DataHeader> getDataHeader(const Bytes file_content) noexcept;
-
-    // extract the content of the file without the data header
-    static ErrorStruct<Bytes> getData(const Bytes file_content) noexcept;
 
     // only call this function on non empty files
     // checks if a password (given from the user to decrypt) is valid for this file and returns its hash.
