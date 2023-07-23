@@ -89,22 +89,22 @@ FileHandler::FileHandler(std::filesystem::path file) {
     throw std::runtime_error("The given file path is invalid (file path: " + file.string() + ")");
 }
 
-bool FileHandler::isDataHeader(FModes exp_file_mode) const noexcept {
+ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) const noexcept {
     ErrorStruct<DataHeader> err = this->getDataHeader();
     if (!err.isSuccess()) {
         // the data header could not be read
         PLOG_ERROR << "The data header could not be read (isDataHeader) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
-        return false;
+        return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
     } else if (err.returnValue().getDataHeaderParts().file_mode == exp_file_mode) {
         // the data header was read successfully and the file mode is correct
-        return true;
+        return ErrorStruct<bool>{true};
     }
     PLOG_WARNING << "The data header was read successfully but the file mode is incorrect (isDataHeader) (file path: " << this->filepath << ", expected file mode: " << exp_file_mode
                  << ", actual file mode: " << err.returnValue().getDataHeaderParts().file_mode << ")";
-    return false;
+    return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnValue().getDataHeaderParts().file_mode)};
 }
 
-bool FileHandler::isEmtpy() const noexcept {
+bool FileHandler::isEmtpy() const {
     // checks if the file is empty
     try {
         // try to read the first byte
@@ -139,7 +139,7 @@ ErrorStruct<Bytes> FileHandler::getData() const noexcept {
 ErrorStruct<bool> FileHandler::writeBytes(Bytes bytes) const noexcept {
     // writes bytes to the file
     // overrides old content
-    PLOG_VERBOSE << "Writing to file (file_path: " << this->filepath << ")";
+    PLOG_VERBOSE << "Writing to file (file_path: " << this->filepath.c_str() << ")";
     // checks if the selected file exists
     ErrorStruct<bool> err_file = this->isValidPath(this->filepath, true);
     if (!err_file.isSuccess()) {
@@ -163,12 +163,19 @@ ErrorStruct<bool> FileHandler::writeBytes(Bytes bytes) const noexcept {
     return ErrorStruct<bool>{true};
 }
 
+std::filesystem::path FileHandler::getPath() const noexcept { return this->filepath; }
+
 ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes bytes) const noexcept {
     // writes bytes to the file if the file is empty
-    if (!this->isEmtpy()) {
-        // the file is not empty
-        PLOG_WARNING << "The file is not empty (writeBytesIfEmpty) (file_path: " << this->filepath << ")";
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
+    try{
+        if (!this->isEmtpy()) {
+            // the file is not empty
+            PLOG_WARNING << "The file is not empty (file_path: " << this->filepath.c_str() << ")";
+            return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
+        }
+    }catch(std::exception& e) {
+        PLOG_ERROR << "Some error occurred while checking the file data (" << e.what() << ")";
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, this->filepath.c_str(), e.what()};
     }
     // the file is empty
     return this->writeBytes(bytes);
