@@ -167,13 +167,13 @@ std::filesystem::path FileHandler::getPath() const noexcept { return this->filep
 
 ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes bytes) const noexcept {
     // writes bytes to the file if the file is empty
-    try{
+    try {
         if (!this->isEmtpy()) {
             // the file is not empty
             PLOG_WARNING << "The file is not empty (file_path: " << this->filepath.c_str() << ")";
             return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
         }
-    }catch(std::exception& e) {
+    } catch (std::exception& e) {
         PLOG_ERROR << "Some error occurred while checking the file data (" << e.what() << ")";
         return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, this->filepath.c_str(), e.what()};
     }
