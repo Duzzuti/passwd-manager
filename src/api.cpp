@@ -286,8 +286,7 @@ ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std:
         // checks if the file data mode matches with the file mode of the file is empty
         ErrorStruct<FileHandler> err2 = this->parent->getFileHandler(fp);
         if (err2.isSuccess()) {
-            if(err2.returnValue().isEmtpy() ||
-            err2.returnValue().isDataHeader(this->parent->file_data_struct.file_mode).isSuccess()){
+            if (err2.returnValue().isEmtpy() || err2.returnValue().isDataHeader(this->parent->file_data_struct.file_mode).isSuccess()) {
                 // dataheader is valid or file is empty
                 // we include the file to the relevant files
                 std::vector<std::string> tmp = ret.returnValue();
@@ -315,15 +314,15 @@ ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) n
     }
     // sets the file data
     ErrorStruct<DataHeader> err_dataheader = err.returnValue().getDataHeader();
-    if(!err_dataheader.isSuccess()){
+    if (!err_dataheader.isSuccess()) {
         // the data header could not be read
         PLOG_ERROR << "The data header could not be read (errorCode: " << +err_dataheader.errorCode << ", errorInfo: " << err_dataheader.errorInfo << ", what: " << err_dataheader.what << ")";
         return ErrorStruct<bool>{err_dataheader.success, err_dataheader.errorCode, err_dataheader.errorInfo, err_dataheader.what};
     }
     Bytes content;
-    try{
+    try {
         content = err.returnValue().getAllBytes();
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         // the data could not be read
         PLOG_ERROR << "The data could not be read (what: " << e.what() << ")";
         return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_READ, file_path.c_str(), e.what()};
@@ -358,9 +357,9 @@ ErrorStruct<bool> API::FILE_SELECTED::deleteFile() noexcept {
 ErrorStruct<Bytes> API::FILE_SELECTED::getFileContent() noexcept {
     // gets the content of the working file
     Bytes content;
-    try{
+    try {
         content = this->parent->selected_file.value().getAllBytes();
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         // the data could not be read
         PLOG_ERROR << "The data could not be read (what: " << e.what() << ")";
         return ErrorStruct<Bytes>{SuccessType::FAIL, ErrorCode::ERR_FILE_READ, this->parent->selected_file.value().getPath().c_str(), e.what()};
