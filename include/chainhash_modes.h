@@ -37,16 +37,16 @@ class ChainHashModes {
 // ChainHash struct holds all components that are needed to describe a chainhash
 struct ChainHash {
    private:
-    std::optional<CHModes> mode;                                         // the mode
+    std::optional<CHModes> mode;             // the mode
     std::optional<ChainHashData> datablock;  // the data corresponding to the chainhash
-    u_int64_t iters = 0;                                                   // the iters
-    bool val = false;                                                    // is this chainhash valid?
+    u_int64_t iters = 0;                     // the iters
+    bool val = false;                        // is this chainhash valid?
 
     // checks if the given chainhash is valid (with the iterations and datablock which contains data that is used by the chainhash)
     ErrorStruct<bool> isValid() noexcept {
         // checks if the chainhash is valid
         this->val = false;
-        if(!this->mode.has_value() || !this->datablock.has_value()){
+        if (!this->mode.has_value() || !this->datablock.has_value()) {
             PLOG_WARNING << "The chainhash is invalid (not all values are set)";
             return ErrorStruct<bool>{FAIL, ERR_CHAINHASH_MISSING_VALUES, ""};
         }
@@ -76,7 +76,7 @@ struct ChainHash {
 
    public:
     ChainHash() = default;
-    ChainHash(CHModes chainhash_mode, u_int64_t iters, ChainHashData chainhash_data){
+    ChainHash(CHModes chainhash_mode, u_int64_t iters, ChainHashData chainhash_data) {
         // constructor for a chainhash
         // this chainhash is validated
         this->setMode(chainhash_mode);
@@ -84,13 +84,13 @@ struct ChainHash {
         this->setChainHashData(chainhash_data);
     }
 
-    //setters
-    void setIters(const u_int64_t iters){
+    // setters
+    void setIters(const u_int64_t iters) {
         // sets the iters
         this->iters = iters;
         this->isValid();
     };
-    void setMode(const CHModes chainhash_mode){
+    void setMode(const CHModes chainhash_mode) {
         // sets the chainhash mode
         if (!ChainHashModes::isModeValid(chainhash_mode)) {
             PLOG_FATAL << "chainhash mode is not valid (" << +chainhash_mode << ")";
@@ -99,16 +99,16 @@ struct ChainHash {
         this->mode = chainhash_mode;
         this->isValid();
     };
-    void setChainHashData(const ChainHashData chainhash_data){
+    void setChainHashData(const ChainHashData chainhash_data) {
         // sets the chainhash data block
         this->datablock = chainhash_data;
         this->isValid();
     };
-    
-    //getters only work if the chainhash is valid
+
+    // getters only work if the chainhash is valid
     CHModes getMode() const {
         // returns the chainhash mode
-        if(!this->val){
+        if (!this->val) {
             PLOG_FATAL << "The chainhash is invalid (getMode)";
             throw std::runtime_error("The chainhash is invalid (getMode)");
         }
@@ -116,7 +116,7 @@ struct ChainHash {
     };
     ChainHashData getChainHashData() const {
         // returns the chainhash data block
-        if(!this->val){
+        if (!this->val) {
             PLOG_FATAL << "The chainhash is invalid (getChainHashData)";
             throw std::runtime_error("The chainhash is invalid (getChainHashData)");
         }
@@ -124,13 +124,13 @@ struct ChainHash {
     };
     u_int64_t getIters() const {
         // returns the iters
-        if(!this->val){
+        if (!this->val) {
             PLOG_FATAL << "The chainhash is invalid (getIters)";
             throw std::runtime_error("The chainhash is invalid (getIters)");
         }
         return this->iters;
     };
-    
+
     bool valid() const noexcept {
         // returns if the chainhash is valid
         return this->val;
@@ -141,16 +141,16 @@ struct ChainHash {
 // this chainhash does not contain iterations but a runtime to get the iterations
 struct ChainHashTimed {
    private:
-    std::optional<CHModes> mode;                                         // the mode
+    std::optional<CHModes> mode;             // the mode
     std::optional<ChainHashData> datablock;  // the data corresponding to the chainhash
-    u_int64_t run_time;                                                   // the time that this chainhash should run (in ms)
-    bool val = false;                                                    // is this chainhash valid?
+    u_int64_t run_time;                      // the time that this chainhash should run (in ms)
+    bool val = false;                        // is this chainhash valid?
 
     // checks if the given chainhash is valid (with the runtime and datablock which contains data that is used by the chainhash)
     ErrorStruct<bool> isValid() noexcept {
         // checks if the chainhash is valid
         this->val = false;
-        if(!this->mode.has_value() || !this->datablock.has_value()){
+        if (!this->mode.has_value() || !this->datablock.has_value()) {
             PLOG_WARNING << "The chainhash is invalid (not all values are set)";
             return ErrorStruct<bool>{FAIL, ERR_CHAINHASH_MISSING_VALUES, ""};
         }
@@ -180,7 +180,7 @@ struct ChainHashTimed {
 
    public:
     ChainHashTimed() = default;
-    ChainHashTimed(CHModes chainhash_mode, u_int64_t run_time_ms, ChainHashData chainhash_data){
+    ChainHashTimed(CHModes chainhash_mode, u_int64_t run_time_ms, ChainHashData chainhash_data) {
         // constructor for a chainhash
         // this chainhash is validated
         this->setMode(chainhash_mode);
@@ -188,13 +188,13 @@ struct ChainHashTimed {
         this->setChainHashData(chainhash_data);
     }
 
-    //setters
-    void setRunTime(const u_int64_t run_time_ms){
+    // setters
+    void setRunTime(const u_int64_t run_time_ms) {
         // sets the run time in ms
         this->run_time = run_time_ms;
         this->isValid();
     };
-    void setMode(const CHModes chainhash_mode){
+    void setMode(const CHModes chainhash_mode) {
         // sets the chainhash mode
         if (!ChainHashModes::isModeValid(chainhash_mode)) {
             PLOG_FATAL << "chainhash mode is not valid (" << +chainhash_mode << ")";
@@ -203,16 +203,16 @@ struct ChainHashTimed {
         this->mode = chainhash_mode;
         this->isValid();
     };
-    void setChainHashData(const ChainHashData chainhash_data){
+    void setChainHashData(const ChainHashData chainhash_data) {
         // sets the chainhash data block
         this->datablock = chainhash_data;
         this->isValid();
     };
-    
-    //getters only work if the chainhash is valid
+
+    // getters only work if the chainhash is valid
     CHModes getMode() const {
         // returns the chainhash mode
-        if(!this->val){
+        if (!this->val) {
             PLOG_FATAL << "The chainhash is invalid (getMode)";
             throw std::runtime_error("The chainhash is invalid (getMode)");
         }
@@ -220,7 +220,7 @@ struct ChainHashTimed {
     };
     ChainHashData getChainHashData() const {
         // returns the chainhash data block
-        if(!this->val){
+        if (!this->val) {
             PLOG_FATAL << "The chainhash is invalid (getChainHashData)";
             throw std::runtime_error("The chainhash is invalid (getChainHashData)");
         }
@@ -228,13 +228,13 @@ struct ChainHashTimed {
     };
     u_int64_t getRunTime() const {
         // returns the run time in ms
-        if(!this->val){
+        if (!this->val) {
             PLOG_FATAL << "The chainhash is invalid (getRunTime)";
             throw std::runtime_error("The chainhash is invalid (getRunTime)");
         }
         return this->run_time;
     };
-    
+
     bool valid() const noexcept {
         // returns if the chainhash is valid
         return this->val;
