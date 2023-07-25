@@ -19,3 +19,5 @@ std::string charVecToString(const std::vector<unsigned char> v) noexcept;
 Bytes stringToBytes(const std::string str) noexcept;
 // gets the byte length of a long number
 unsigned int getLongLen(const u_int64_t num) noexcept;
+// checks if a string is a valid number
+bool isValidNumber(const std::string number, const bool accept_blank = false, const u_int64_t lower_bound = 0, const u_int64_t upper_bound = -1) noexcept;

@@ -3,7 +3,6 @@ contains the implementations for the chainhashModes class
 */
 #include "chainhash_modes.h"
 
-#include "app.h"
 #include "chainhash_data.h"
 #include "logger.h"
 #include "pwfunc.h"
@@ -36,53 +35,6 @@ std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
             throw std::invalid_argument("chainhash mode does not exist");
     }
     return msg.str();
-}
-
-// WORK
-Bytes ChainHashModes::askForSaltString(const std::string msg, const unsigned char max_len) {
-    // asks the user for a string that is used as a salt and returns the string bytes
-    if (max_len < 1) {
-        // if max len is zero it means that this function is useless, throw an error to prohibit bugs
-        throw std::runtime_error("maximum length of the string that should be got from the user does not make sense");
-    }
-    std::string blank = " or leave this field blank to generate it randomly: ";
-    std::string inp{};
-    do {
-        std::cout << msg << " (you do not have to remember this, maximum length = " << +max_len << " Bytes)" << blank;
-        getline(std::cin, inp);        // gets the user input
-    } while (inp.length() > max_len);  // checks if the user input is not too long
-    Bytes bytes = Bytes();
-    if (inp.empty()) {                                   // user wants to generate it randomly if nothing was entered
-        bytes.setBytes(RNG::get_random_bytes(max_len));  // generate random bytes
-        return bytes;
-    }
-    // loops over the string and add each char as a byte to the Bytes object
-    for (size_t i = 0; i < inp.length(); i++) {
-        bytes.addByte(inp[i]);  // implicit char -> unsigned char
-    }
-    return bytes;
-}
-
-Bytes ChainHashModes::askForSaltNumber(const std::string msg, const unsigned char max_len) {
-    // asks the user for a number that is used as a salt and return the number bytes
-    if (max_len > 8 || max_len < 1) {
-        // if max len is zero or greater than 8 (u_int64_t) it means that this function is useless, throw an error to prohibit bugs
-        throw std::runtime_error("maximum length of the number from the user does not make sense");
-    }
-    std::string blank = " or leave this field blank to generate it randomly: ";
-    std::string inp{};
-    do {
-        std::cout << msg << " (you do not have to remember this, maximum length = " << +max_len << " Bytes)" << blank;
-        getline(std::cin, inp);                // gets the user input
-    } while (!App::isValidNumber(inp, true));  // stops if the entered string is a valid number
-    Bytes bytes = Bytes();
-    if (inp.empty()) {                                   // user wants to generate it randomly
-        bytes.setBytes(RNG::get_random_bytes(max_len));  // generate Bytes to represent a random number
-        return bytes;
-    }
-    u_int64_t inp_int = std::stoul(inp);
-    bytes.setBytes(LongToCharVec(inp_int));  // convert the long to a bytes object
-    return bytes;
 }
 
 bool ChainHashModes::isModeValid(const CHModes chainhash_mode) noexcept {
@@ -120,34 +72,6 @@ ErrorStruct<bool> ChainHashModes::isChainHashValid(const ChainHash chainh) noexc
     }
     es.success = SUCCESS;
     return es;
-}
-
-ChainHashData ChainHashModes::askForData(const CHModes chainhash_mode) {
-    // gets data from the user based on the mode
-    ChainHashData chd{Format(chainhash_mode)};
-    switch (chainhash_mode) {
-        case CHAINHASH_NORMAL:  // normal chainhash (no data needed)
-            break;
-        case CHAINHASH_CONSTANT_SALT:  // constant salt, we need a salt string
-            chd.addBytes(ChainHashModes::askForSaltString("Please enter the salt that should be mixed into the chainhash", 255));
-            break;
-        case CHAINHASH_COUNT_SALT:  // count salt, we need a start number for the count salt
-            chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the start number for the count salt"));
-            break;
-        case CHAINHASH_CONSTANT_COUNT_SALT:  // count salt and constant salt, we need a start number for the count salt and a salt string
-            chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the start number for the count salt"));
-            chd.addBytes(ChainHashModes::askForSaltString("Please enter the salt that should be mixed into the chainhash", 247));
-            break;
-        case CHAINHASH_QUADRATIC:  // quadratic salt, we need the start salt number and 3 numbers for a,b,c (a*a*salt + b*salt + c)
-            chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the start number for the count salt"));
-            chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the value of quadratic part a"));
-            chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the value of linear part b"));
-            chd.addBytes(ChainHashModes::askForSaltNumber("Please enter the value of constant part c"));
-            break;
-        default:  // invalid chainhash mode
-            throw std::invalid_argument("chainhash mode does not exist");
-    }
-    return chd;
 }
 
 ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const Bytes data, const u_int64_t timeout) {

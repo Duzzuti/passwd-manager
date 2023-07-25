@@ -1,260 +1,215 @@
 /*
-this file contains the implementations of the FileHandler class
+implements the FileHandler class
 */
+
 #include "filehandler.h"
 
-// set static extension var
-const std::string FileHandler::extension = ".enc";  // encryption files (.enc)
+#include <fstream>
 
-FileHandler::FileHandler() {
-    // constructs a file handler object by creating the app data file if it does not exist
-    this->createAppDataDir();
-    if (!this->isAppDataFile()) {
-        this->createAppDataFile();
+#include "logger.h"
+
+const std::string FileHandler::extension = ".enc";
+
+ErrorStruct<bool> FileHandler::isValidPath(std::filesystem::path file, bool should_exist) noexcept {
+    // checks if the given file path is valid (file_path has to be not empty and have the right extension)
+    // if should_exist is true, the file has to exist otherwise it has to not exist
+    ErrorStruct<bool> err;
+    err.success = SuccessType::FAIL;
+    err.errorInfo = file.c_str();
+    if (file.empty()) {
+        // the given path is empty
+        PLOG_ERROR << "The given path is empty (file path: " << file << ")";
+        err.errorCode = ErrorCode::ERR_EMPTY_FILEPATH;
+        return err;
     }
-    // filepath to the enc file is empty at default
-    this->encryption_filepath = "";
-    // get the app data setting for the enc file path
-    std::optional<std::string> encryption_filepath = getAppSetting("filePath");
-    if (encryption_filepath.has_value()) {
-        // file path is set
-        if (!std::filesystem::exists(encryption_filepath.value())) {
-            // but it does not exist on the pc, remove this setting
-            this->removeAppSetting("filePath");
-        } else {
-            // and it exists. Set this path
-            this->encryption_filepath = encryption_filepath.value();
+    if (file.extension() != FileHandler::extension) {
+        // the given path does not have the right extension
+        PLOG_ERROR << "The given path does not have the right extension (file path: " << file << ", file path extension: " << file.extension() << ")";
+        err.errorCode = ErrorCode::ERR_EXTENSION_INVALID;
+        return err;
+    }
+    if (should_exist) {
+        if (!std::filesystem::exists(file)) {
+            // the given path does not exist
+            PLOG_ERROR << "The given path does not exist (file path: " << file << ")";
+            err.errorCode = ErrorCode::ERR_FILE_NOT_FOUND;
+            return err;
+        }
+    } else {
+        if (std::filesystem::exists(file)) {
+            // the given path already exists
+            PLOG_ERROR << "The given path already exists (file path: " << file << ")";
+            err.errorCode = ErrorCode::ERR_FILE_EXISTS;
+            return err;
         }
     }
-    // if there was no valid enc file path found, it is empty
+    std::ifstream file_stream(file);  // create the file stream
+    if (!file_stream) {
+        // cannot open the file
+        PLOG_ERROR << "Cannot open the file (file path: " << file << ")";
+        err.errorCode = ErrorCode::ERR_FILE_NOT_OPEN;
+        return err;
+    }
+    // all checks passed
+    return ErrorStruct<bool>{true};
 }
 
-void FileHandler::getAppDataDir() {
-    // gets the app data directory depending on the os
-#if defined(_WIN32)
-    // Get the user's app data directory on Windows
-    char* appDataDirChar = nullptr;
-    size_t len = 0;
-    _dupenv_s(&appDataDirChar, &len, "APPDATA");
-    if (appDataDirChar != nullptr) {
-        this->appDataDir = appDataDirChar;  // WORK, should be tested if an extended path has to be added
-        free(appDataDirChar);
+ErrorStruct<bool> FileHandler::createFile(std::filesystem::path file) noexcept {
+    // creates a new .enc file at the given path and validates it
+    PLOG_VERBOSE << "Creating new file (file_path: " << file << ")";
+    ErrorStruct<bool> err;
+    err.success = SuccessType::FAIL;
+    // check if the file path is valid and the file does not yet exist
+    ErrorStruct<bool> err2 = FileHandler::isValidPath(file, false);
+    if (!err2.isSuccess()) {
+        // the file path is invalid
+        PLOG_ERROR << "The file path is invalid (createFile) (errorCode: " << +err2.errorCode << ", errorInfo: " << err2.errorInfo << ", what: " << err2.what << ")";
+        return err2;
     }
-#elif defined(__APPLE__)
-    // Get the user's home directory on macOS
-    char* homeDirChar = nullptr;
-    size_t len = 0;
-    _dupenv_s(&homeDirChar, &len, "HOME");
-    if (homeDirChar != nullptr) {
-        std::string homeDir = homeDirChar;
-        free(homeDirChar);
-        this->appDataDir = homeDir + "/Library/Application Support/Pman";
+    // create the file
+    std::ofstream file_stream{file};
+    if (!file_stream.is_open() || !file_stream) {
+        // the file could not be created
+        PLOG_ERROR << "The file could not be created (createFile)";
+        err.errorCode = ErrorCode::ERR_FILE_NOT_CREATED;
+        err.errorInfo = file.c_str();
+        return err;
     }
-#elif defined(__unix__)
-    // Get the user's home directory on Unix-based systems
-    char* homeDirChar = std::getenv("HOME");
-    if (homeDirChar != nullptr) {
-        std::string homeDir = homeDirChar;
-        this->appDataDir = homeDir + "/.pman";
-        free(homeDirChar);
-    }
-#else
-#error Unsupported platform
-#endif
+    file_stream.close();
+    return ErrorStruct<bool>{true};
 }
 
-void FileHandler::createAppDataDir() {
-    // creates the app data directory if it does not exist
-    this->getAppDataDir();  // gets the directory
-    std::string appDataDir = this->appDataDir;
-    if (!appDataDir.empty()) {  // not yet created?
-        struct stat info;
-        if (stat(appDataDir.c_str(), &info) != 0 || !(info.st_mode & S_IFDIR)) {
-            // The directory doesn't exist, so create it
-            mkdir(appDataDir.c_str(), 0700);
+FileHandler::FileHandler(std::filesystem::path file) {
+    // sets the filepath
+    if (FileHandler::isValidPath(file, true).isSuccess()) {
+        this->filepath = file;
+        return;
+    }
+    PLOG_FATAL << "The given file path is invalid (file path: " << file << ")";
+    throw std::runtime_error("The given file path is invalid (file path: " + file.string() + ")");
+}
+
+ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) const noexcept {
+    ErrorStruct<DataHeader> err = this->getDataHeader();
+    if (!err.isSuccess()) {
+        // the data header could not be read
+        PLOG_ERROR << "The data header could not be read (isDataHeader) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
+        return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
+    } else if (err.returnValue().getDataHeaderParts().file_mode == exp_file_mode) {
+        // the data header was read successfully and the file mode is correct
+        return ErrorStruct<bool>{true};
+    }
+    PLOG_WARNING << "The data header was read successfully but the file mode is incorrect (isDataHeader) (file path: " << this->filepath << ", expected file mode: " << exp_file_mode
+                 << ", actual file mode: " << err.returnValue().getDataHeaderParts().file_mode << ")";
+    return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnValue().getDataHeaderParts().file_mode)};
+}
+
+bool FileHandler::isEmtpy() const {
+    // checks if the file is empty
+    try {
+        // try to read the first byte
+        this->getFirstBytes(1);
+    } catch (std::length_error& e) {
+        // the file is empty
+        return true;
+    }
+    return false;
+}
+
+ErrorStruct<DataHeader> FileHandler::getDataHeader() const noexcept {
+    // reads the data header from the file
+    Bytes content = this->getAllBytes();
+    return DataHeader::setHeaderBytes(content);
+}
+
+ErrorStruct<Bytes> FileHandler::getData() const noexcept {
+    // reads the data from the file (without the data header)
+    Bytes content = this->getAllBytes();
+    ErrorStruct<DataHeader> err = DataHeader::setHeaderBytes(content);
+    if (!err.isSuccess()) {
+        // the data header could not be read
+        PLOG_ERROR << "The data header could not be read (getData) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
+        return ErrorStruct<Bytes>{err.success, err.errorCode, err.errorInfo, err.what};
+    }
+    // the data header was read successfully
+    // the remaining bytes are the data
+    return ErrorStruct<Bytes>{content};
+}
+
+ErrorStruct<bool> FileHandler::writeBytes(Bytes bytes) const noexcept {
+    // writes bytes to the file
+    // overrides old content
+    PLOG_VERBOSE << "Writing to file (file_path: " << this->filepath.c_str() << ")";
+    // checks if the selected file exists
+    ErrorStruct<bool> err_file = this->isValidPath(this->filepath, true);
+    if (!err_file.isSuccess()) {
+        PLOG_ERROR << "The provided file path is invalid (writeBytes) (errorCode: " << +err_file.errorCode << ", errorInfo: " << err_file.errorInfo << ", what: " << err_file.what << ")";
+        return err_file;
+    }
+    // file path is valid
+    std::ofstream file(this->filepath, std::ios::binary);
+    if (!file.is_open()) {
+        PLOG_FATAL << "The file could not be opened";
+        // should not happen because the file was checked before
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, this->filepath.c_str()};
+    }
+    // write the data
+    unsigned char* data = new unsigned char[bytes.getLen()];
+    bytes.getBytesArray(data);
+    file.write(reinterpret_cast<char*>(data), sizeof(reinterpret_cast<char*>(data)));
+    file.close();
+
+    delete[] data;
+    return ErrorStruct<bool>{true};
+}
+
+std::filesystem::path FileHandler::getPath() const noexcept { return this->filepath; }
+
+ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes bytes) const noexcept {
+    // writes bytes to the file if the file is empty
+    try {
+        if (!this->isEmtpy()) {
+            // the file is not empty
+            PLOG_WARNING << "The file is not empty (file_path: " << this->filepath.c_str() << ")";
+            return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
         }
+    } catch (std::exception& e) {
+        PLOG_ERROR << "Some error occurred while checking the file data (" << e.what() << ")";
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, this->filepath.c_str(), e.what()};
     }
+    // the file is empty
+    return this->writeBytes(bytes);
 }
 
-void FileHandler::createAppDataFile() {
-    // creates the app data file
-    std::filesystem::path appdatapath = this->getAppDataFilePath();  // gets the file path
-    if (!std::filesystem::exists(appdatapath)) {
-        std::ofstream(appdatapath.c_str());  // create the file if it does not exist
+Bytes FileHandler::getAllBytes() const {
+    // reads all Bytes from the file
+    std::ifstream file(this->filepath.c_str());  // create the file stream
+    if (!file) {
+        // the set encryption file does not exist on the system
+        throw std::runtime_error("file cannot be opened");
     }
-}
+    // get length of file:
+    file.seekg(0, file.end);  // jump to the end
+    int num = file.tellg();   // saves the position
+    file.close();
 
-std::filesystem::path FileHandler::getAppDataFilePath() const noexcept {
-    // gets the file path to the app data file by concatenating the dir path with the file name
-    return std::filesystem::path(this->appDataDir) / std::filesystem::path(this->appDataName);
-}
-
-void FileHandler::resetAppData() const noexcept {
-    // try to recover the filePath
-    std::optional<std::string> set = this->getAppSetting("filePath");
-    // clear the app data file
-    std::ofstream app_of(this->getAppDataFilePath().c_str());
-    if (set.has_value()) {
-        if (std::filesystem::exists(set.value().c_str())) {
-            // filePath does exist, save it again into app data
-            app_of << "filePath"
-                   << " " << set.value() << std::endl;
-            return;
-        }
+    // gets the Bytes
+    char buf[num];        // creates a buffer to hold the read bytes
+    file.read(buf, num);  // reads into the buffer
+    // transform the char array into an Bytes object
+    Bytes ret;
+    for (char c : buf) {
+        ret.addByte(static_cast<unsigned char>(c));  // cast from char to unsigned char
     }
-    // could not recover the filePath, the user has to be asked
-    // WORK
-}
-
-bool FileHandler::removeAppSetting(const std::string setting_name) const {
-    // remove a given setting from the app data
-    if (!this->isAppDataFile()) {
-        // could not found the app data file
-        throw std::runtime_error("App data file not found");
-    }
-    std::fstream file(this->getAppDataFilePath().c_str());  // create the file stream
-    std::stringstream file_content;                         // stores the data of the file
-    std::string line;
-    while (std::getline(file, line)) {
-        // reads the file line by line
-        std::istringstream iss(line);
-        std::string setting, value;
-        if (!(iss >> setting >> value)) {
-            // if the line does not contain two strings (setting, value pair)
-            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occurred, not in right format
-            std::cout << "Do you wanna reset the appData (y/n): ";
-            std::string tmp;
-            std::cin >> tmp;
-            if (tmp == "y") {
-                // reset the app data file to get the right format
-                this->resetAppData();
-            }
-            return false;  // cannot proceed due to incorrect file format
-        }
-        std::cout << setting << "|" << value << std::endl;  // DEBUGONLY
-        if (!(setting == setting_name)) {
-            // a setting found that is not equal to the setting that should be deleted (we will save it)
-            file_content << line << std::endl;
-        }
-    }
-    std::ofstream write_file;
-    // opens the file again in write mode
-    write_file.open(this->getAppDataFilePath().c_str(), std::ofstream::out | std::ofstream::trunc);
-    write_file << file_content.str();  // writes the file with the read content without the deleted setting
-    return true;
-}
-
-std::optional<std::string> FileHandler::getAppSetting(const std::string setting_name) const {
-    // gets the value for a given setting from the app data file
-    if (!this->isAppDataFile()) {
-        // could not found the app data file
-        throw std::runtime_error("App data file not found");
-    }
-    std::fstream file(this->getAppDataFilePath().c_str());  // create the file stream
-    std::string line;
-    while (std::getline(file, line)) {
-        // reads the file line by line
-        std::istringstream iss(line);
-        std::string setting, value;
-        if (!(iss >> setting >> value)) {
-            // if the line does not contain two strings (setting, value pair)
-            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occurred, not in right format
-            std::cout << "Do you wanna reset the appData (y/n): ";
-            std::string tmp;
-            std::cin >> tmp;
-            if (tmp == "y") {
-                // reset the app data file to get the right format
-                this->resetAppData();
-            }
-            return {};  // cannot proceed due to incorrect file format
-        }
-        std::cout << setting << "|" << value << std::endl;  // DEBUGONLY
-        if (setting == setting_name) {
-            // setting is set in the appdata, return the value
-            return value;
-        }
-    }
-    return {};  // setting is not set in the appdata file, return empty optional
-}
-
-bool FileHandler::isAppDataFile() const noexcept {
-    // checks if the app data file exists on the system
-    std::ifstream file(this->getAppDataFilePath().c_str());  // creates a stream
-    return (bool)file;                                       // convert the filestream to a bool, returns false if the file does not exist
-}
-
-bool FileHandler::setAppSetting(const std::string setting_name, const std::string setting_value) const {
-    /*
-    sets a new app setting with the provided name and value
-    APP SETTINGS
-    for docs look into docs/appdata.md
-    */
-    if (!this->isAppDataFile()) {
-        // could not found the app data file
-        throw std::runtime_error("App data file not found");
-    }
-    std::fstream file(this->getAppDataFilePath().c_str());  // create the file stream
-    std::stringstream file_content;                         // stores the data of the file
-    std::string line;
-    while (std::getline(file, line)) {
-        // reads the app data file line by line
-        std::istringstream iss(line);
-        std::string setting, value;
-        if (!(iss >> setting >> value)) {
-            // if the line does not contain two strings (setting, value pair)
-            std::cout << "The AppDataFile is not in the right format" << std::endl;  // error occurred, not in right format
-            std::cout << "Do you wanna reset the appData (y/n): ";
-            std::string tmp;
-            std::cin >> tmp;
-            if (tmp == "y") {
-                // reset the app data file to get the right format
-                this->resetAppData();
-            }
-            return false;  // cannot proceed due to incorrect file format
-        }
-        std::cout << setting << "|" << value << std::endl;  // DEBUGONLY
-        if (!(setting == setting_name)) {
-            // setting was not set previously, we have to save it, drop if it is the setting we wanna change
-            file_content << line << std::endl;
-        }
-    }
-    // add the new setting to the file content stream
-    file_content << setting_name << " " << setting_value << std::endl;
-
-    std::ofstream write_file;
-    // open the file again in write mode
-    write_file.open(this->getAppDataFilePath().c_str(), std::ofstream::out | std::ofstream::trunc);
-    write_file << file_content.str();  // writes the file again with the read content and the added setting
-    return true;
-}
-
-bool FileHandler::setEncryptionFilePath(const std::string path) noexcept {
-    // set a new encryption file path
-    std::filesystem::path fp{path};
-    bool exist = std::filesystem::exists(fp);  // checks whether the provided path exists
-    if (exist) {
-        // if it exists, change the path in the app data
-        // this->setAppSetting("filePath", path);
-        this->encryption_filepath = path;
-    }
-    return exist;  // return the success bool
-}
-
-std::filesystem::path FileHandler::getEncryptionFilePath() const noexcept {
-    // getter for the encryption filepath
-    return this->encryption_filepath;
+    return ret;
 }
 
 Bytes FileHandler::getFirstBytes(const int num) const {
     // reads the num first bytes of the encryption file
-    if (this->encryption_filepath.empty()) {
-        // no encryption file path set
-        throw std::runtime_error("Encrypted filepath is empty");
-    }
-    std::ifstream file(this->encryption_filepath.c_str());  // create the file stream
+    std::ifstream file(this->filepath.c_str());  // create the file stream
     if (!file) {
         // the set encryption file does not exist on the system
-        throw std::runtime_error("Encrypted file not found in filepath");
+        throw std::runtime_error("file cannot be opened");
     }
     // get length of file:
     file.seekg(0, file.end);    // jump to the end
@@ -267,28 +222,9 @@ Bytes FileHandler::getFirstBytes(const int num) const {
     char buf[num];        // creates a buffer to hold the read bytes
     file.read(buf, num);  // reads into the buffer
     // transform the char array into an Bytes object
-    Bytes ret = Bytes();
+    Bytes ret;
     for (char c : buf) {
         ret.addByte(static_cast<unsigned char>(c));  // cast from char to unsigned char
     }
     return ret;
-}
-
-Bytes FileHandler::getAllBytes() const {
-    // reads all Bytes from the file
-    if (this->encryption_filepath.empty()) {
-        // no encryption file path set
-        throw std::runtime_error("Encrypted filepath is empty");
-    }
-    std::ifstream file(this->encryption_filepath.c_str());  // create the file stream
-    if (!file) {
-        // the set encryption file does not exist on the system
-        throw std::runtime_error("Encrypted file not found in filepath");
-    }
-    // get length of file:
-    file.seekg(0, file.end);    // jump to the end
-    int length = file.tellg();  // saves the position
-    file.close();
-    // gets the Bytes
-    return this->getFirstBytes(length);
 }

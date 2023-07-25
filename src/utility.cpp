@@ -55,3 +55,21 @@ unsigned int getLongLen(const u_int64_t num) noexcept {
     }
     return ret;
 }
+
+bool isValidNumber(const std::string number, const bool accept_blank, const u_int64_t lower_bound, const u_int64_t upper_bound) noexcept {
+    if (number.empty()) {
+        // if the number string was empty return if blank is accepted
+        return accept_blank;
+    }
+    u_int64_t long_number;
+    try {
+        long_number = std::stoul(number);  // transform the number string to a number
+    } catch (std::exception) {
+        return false;  // number string could not be transformed into an u_int64_t
+    }
+    // checks the bounds of the number
+    if (lower_bound <= long_number && long_number <= upper_bound) {
+        return true;
+    }
+    return false;  // given number is not in the valid number bounds
+}

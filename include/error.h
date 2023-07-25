@@ -38,6 +38,7 @@ enum ErrorCode {
     ERR_FILE_NOT_CREATED,
     ERR_FILE_NOT_OPEN,
     ERR_FILE_NOT_EMPTY,
+    ERR_FILE_READ,
     ERR_NOT_ENOUGH_DATA,
     ERR_WRONG_WORKFLOW,
     ERR_API_NOT_INITIALIZED,
@@ -187,6 +188,9 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
         case ERR_FILE_NOT_EMPTY:
             if (err.errorInfo.empty()) return "File is not empty" + err_msg;
             return err.errorInfo + " file is not empty" + err_msg;
+
+        case ERR_FILE_READ:
+            return "File could not be read: " + err.errorInfo + err_msg;
 
         case ERR_NOT_ENOUGH_DATA:
             return "Not enough data to read information: " + err.errorInfo + err_msg;
