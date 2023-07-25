@@ -19,8 +19,35 @@ for full documentation see the documentation of the API class in the documentati
 struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
     // only contains value if no error occurred
+   private:
     std::optional<FileDataStruct> file_data;  // file data struct that contains the decrypted content
     std::optional<DataHeader> dh;             // data header of the file
+   public:
+    void setFileData(const FileDataStruct file_data) {
+        // sets the file data struct
+        this->file_data = file_data;
+    };
+    void setDataHeader(const DataHeader dh) {
+        // sets the data header
+        this->dh = dh;
+    };
+    FileDataStruct getFileData() {
+        // returns the file data struct
+        if(!this->errorStruct.isSuccess()){
+            PLOG_FATAL << "trying to get file data struct while error occurred";
+            throw std::logic_error("cannot get file data struct if error occurred");
+        }
+        return this->file_data.value();
+    };
+    DataHeader getDataHeader() {
+        // returns the data header
+        if(!this->errorStruct.isSuccess()){
+            PLOG_FATAL << "trying to get data header while error occurred";
+            throw std::logic_error("cannot get data header if error occurred");
+        }
+        return this->dh.value();
+    };
+
 };
 
 // helper struct that is returned internally the API if you create a data header
@@ -29,11 +56,11 @@ struct DataHeaderHelperStruct {
     DataHeaderHelperStruct(const ErrorStruct<DataHeader> errorStruct) : errorStruct(errorStruct){};
     Bytes Password_hash() {
         // returns the password hash if the chainhash was successful
-        if (this->errorStruct.isSuccess()) {
-            return this->password_hash;
-        } else {
+        if (!this->errorStruct.isSuccess()) {
+            PLOG_FATAL << "trying to get password hash from error struct that is not a success";
             throw std::logic_error("cannot get password hash from error struct that is not a success");
         }
+        return this->password_hash;
     };
     void Password_hash(const Bytes password_hash) {
         // sets the password hash
