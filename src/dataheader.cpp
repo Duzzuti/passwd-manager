@@ -22,8 +22,7 @@ DataHeader::DataHeader(const HModes hash_mode) {
 
 bool DataHeader::isComplete() const noexcept {
     // checks if the dataheader has everything set
-    if (!this->dh.chainhash1.valid() || !this->dh.chainhash2.valid() || 
-        this->dh.valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->dh.file_mode)) {
+    if (!this->dh.chainhash1.valid() || !this->dh.chainhash2.valid() || this->dh.valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->dh.file_mode)) {
         return false;
     }
     return true;
@@ -34,8 +33,8 @@ unsigned int DataHeader::getHeaderLength() const noexcept {
     if (this->header_bytes.getLen() > 0) {
         return this->header_bytes.getLen();  // header bytes are set, so we get this length
     }
-    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid()) {  // all data set to calculate the header length
-        return 22 + 2 * this->hash_size + this->dh.chainhash1_datablock_len + this->dh.chainhash2_datablock_len;           // dataheader.md
+    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid()) {                                             // all data set to calculate the header length
+        return 22 + 2 * this->hash_size + this->dh.chainhash1_datablock_len + this->dh.chainhash2_datablock_len;  // dataheader.md
     } else {
         return 0;  // not enough infos to get the header length
     }
@@ -145,19 +144,19 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
 
     Bytes dataheader = Bytes();
     Bytes tmp = Bytes();
-    dataheader.addByte(this->dh.file_mode);        // add file mode byte
-    dataheader.addByte(this->dh.hash_mode);        // add hash mode byte
+    dataheader.addByte(this->dh.file_mode);             // add file mode byte
+    dataheader.addByte(this->dh.hash_mode);             // add hash mode byte
     dataheader.addByte(this->dh.chainhash1.getMode());  // add first chainhash mode byte
     tmp.setBytes(LongToCharVec(this->dh.chainhash1.getIters()));
-    dataheader.addBytes(tmp);                                           // add iterations for the first chainhash
-    dataheader.addByte(this->dh.chainhash1_datablock_len);              // add datablock length byte
+    dataheader.addBytes(tmp);                                                    // add iterations for the first chainhash
+    dataheader.addByte(this->dh.chainhash1_datablock_len);                       // add datablock length byte
     dataheader.addBytes(this->dh.chainhash1.getChainHashData().getDataBlock());  // add first datablock
-    dataheader.addByte(this->dh.chainhash2.getMode());                       // add second chainhash mode
+    dataheader.addByte(this->dh.chainhash2.getMode());                           // add second chainhash mode
     tmp.setBytes(LongToCharVec(this->dh.chainhash2.getIters()));
-    dataheader.addBytes(tmp);                                           // add iterations for the second chainhash
-    dataheader.addByte(this->dh.chainhash2_datablock_len);              // add datablock length byte
+    dataheader.addBytes(tmp);                                                    // add iterations for the second chainhash
+    dataheader.addByte(this->dh.chainhash2_datablock_len);                       // add datablock length byte
     dataheader.addBytes(this->dh.chainhash2.getChainHashData().getDataBlock());  // add second datablock
-    dataheader.addBytes(this->dh.valid_passwordhash);                   // add password validator
+    dataheader.addBytes(this->dh.valid_passwordhash);                            // add password validator
     // generate the salt with random bytes
     this->dh.enc_salt = Bytes(this->hash_size);  // set the encrypted salt
     dataheader.addBytes(this->dh.enc_salt);      // add encrypted salt

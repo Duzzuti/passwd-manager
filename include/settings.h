@@ -37,7 +37,7 @@ const constexpr u_int64_t MIN_ITERATIONS = 1;
 // stores the minimum accepted iterations
 const constexpr u_int64_t MAX_ITERATIONS = 1000000000;
 // stores the maximum accepted runtime in ms for the chainhash
-const constexpr u_int64_t MAX_RUNTIME = 1000*60*60*24;  // 1 day
+const constexpr u_int64_t MAX_RUNTIME = 1000 * 60 * 60 * 24;  // 1 day
 
 //##################### TIMER #########################
 // stores the number of iteration that can passed from the chainhash before the timeout is checked
