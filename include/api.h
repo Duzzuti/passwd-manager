@@ -18,7 +18,7 @@ for full documentation see the documentation of the API class in the documentati
 // struct that is returned by the API if you decode a file
 struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
-    // only contains value if no error occurred
+                                    // only contains value if no error occurred
    private:
     std::optional<FileDataStruct> file_data;  // file data struct that contains the decrypted content
     std::optional<DataHeader> dh;             // data header of the file
@@ -33,7 +33,7 @@ struct WorkflowDecStruct {
     };
     FileDataStruct getFileData() {
         // returns the file data struct
-        if(!this->errorStruct.isSuccess()){
+        if (!this->errorStruct.isSuccess()) {
             PLOG_FATAL << "trying to get file data struct while error occurred";
             throw std::logic_error("cannot get file data struct if error occurred");
         }
@@ -41,13 +41,12 @@ struct WorkflowDecStruct {
     };
     DataHeader getDataHeader() {
         // returns the data header
-        if(!this->errorStruct.isSuccess()){
+        if (!this->errorStruct.isSuccess()) {
             PLOG_FATAL << "trying to get data header while error occurred";
             throw std::logic_error("cannot get data header if error occurred");
         }
         return this->dh.value();
     };
-
 };
 
 // helper struct that is returned internally the API if you create a data header
