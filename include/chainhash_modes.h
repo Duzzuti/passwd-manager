@@ -40,14 +40,9 @@ class ChainHashModes {
     */
    public:
     static std::string getInfo(const CHModes chainhash_mode);  // gets a string that contains information about this chainhash mode
-    // ask the user for a string with a given message and max length and returns the bytes of the string
-    static Bytes askForSaltString(const std::string msg, const unsigned char max_len);
-    // ask the user for a number with a given message and max byte len (8 for ul) and returns the bytes of the number
-    static Bytes askForSaltNumber(const std::string msg, const unsigned char max_len = 8);
     static bool isModeValid(const CHModes chainhash_mode) noexcept;  // checks if the given chain hash mode is valid
     // checks if the given chainhash is valid (with the iterations and datablock which contains data that is used by the chainhash)
     static ErrorStruct<bool> isChainHashValid(const ChainHash chainh) noexcept;
-    static ChainHashData askForData(const CHModes chainhash_mode);  // gets data from the user that is needed for this chainhash mode
     // two methods for actually performing the chainhash, one for Bytes input and one for string input
     // expensive methods, you can set an timeout (in ms). 0 means no timeout.
     static ErrorStruct<Bytes> performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const Bytes data, const u_int64_t timeout = 0);
