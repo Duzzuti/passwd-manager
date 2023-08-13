@@ -95,13 +95,13 @@ ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) const noexcept
         // the data header could not be read
         PLOG_ERROR << "The data header could not be read (isDataHeader) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
         return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
-    } else if (err.returnValue().getDataHeaderParts().file_mode == exp_file_mode) {
+    } else if (err.returnValue().getDataHeaderParts().getFileDataMode() == exp_file_mode) {
         // the data header was read successfully and the file mode is correct
         return ErrorStruct<bool>{true};
     }
     PLOG_WARNING << "The data header was read successfully but the file mode is incorrect (isDataHeader) (file path: " << this->filepath << ", expected file mode: " << exp_file_mode
-                 << ", actual file mode: " << err.returnValue().getDataHeaderParts().file_mode << ")";
-    return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnValue().getDataHeaderParts().file_mode)};
+                 << ", actual file mode: " << err.returnValue().getDataHeaderParts().getFileDataMode() << ")";
+    return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnValue().getDataHeaderParts().getFileDataMode())};
 }
 
 bool FileHandler::isEmtpy() const {

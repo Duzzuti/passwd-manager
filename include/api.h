@@ -332,11 +332,19 @@ class API {
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations or the time (the chainhash runs until the time is reached to get the iterations)
     ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept {
-        PLOG_DEBUG << "API call made (createDataHeader) with timeout: " << timeout << " and Iterations" << ds.chainhash1_iters << " and " << ds.chainhash2_iters;
+        if (!ds.isComplete()){
+            PLOG_ERROR << "API call made (createDataHeader) with incomplete DataHeaderSettingsIters";
+            return ErrorStruct<DataHeader>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsIters"};
+        }
+        PLOG_DEBUG << "API call made (createDataHeader) with timeout: " << timeout << " and Iterations: " << ds.getChainHash1Iters() << " and " << ds.getChainHash2Iters();
         return this->current_state.createDataHeader(password, ds, timeout);
     }
     ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
-        PLOG_DEBUG << "API call made (createDataHeader) with Time" << ds.chainhash1_time << " and " << ds.chainhash2_time;
+        if (!ds.isComplete()){
+            PLOG_ERROR << "API call made (createDataHeader) with incomplete DataHeaderSettingsTime";
+            return ErrorStruct<DataHeader>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsTime"};
+        }
+        PLOG_DEBUG << "API call made (createDataHeader) with Time: " << ds.getChainHash1Time() << " and " << ds.getChainHash2Time();
         return this->current_state.createDataHeader(password, ds);
     }
 

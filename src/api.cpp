@@ -23,13 +23,19 @@ ErrorStruct<FileHandler> API::getFileHandler(const std::filesystem::path file_pa
 
 DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
-    PLOG_VERBOSE << "Creating data header with iter settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1iters: " << ds.chainhash1_iters
-                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
+    if(!ds.isComplete()){
+        PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
+        ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        DataHeaderHelperStruct dhhs{err};
+        return dhhs;
+    }
+    PLOG_VERBOSE << "Creating data header with iter settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1iters: " << ds.getChainHash1Iters()
+                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2iters: " << ds.getChainHash2Iters() << ", timeout: " << timeout << ")";
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     DataHeaderHelperStruct dhhs{err};
-    if (ds.file_mode != this->file_data_struct.file_mode) {
+    if (ds.getFileDataMode() != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
-        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.file_mode << ", selected file file_mode: " << +this->file_data_struct.file_mode << ")";
+        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.file_mode << ")";
         dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
@@ -37,14 +43,14 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     DataHeaderParts dhp;
     try {
         // trying to get the chainhashes
-        ChainHashData chd1{Format{ds.chainhash1_mode}};
-        ChainHashData chd2{Format{ds.chainhash2_mode}};
+        ChainHashData chd1{Format{ds.getChainHash1Mode()}};
+        ChainHashData chd2{Format{ds.getChainHash2Mode()}};
         // setting random data for the chainhashes datablocks (salts that are used by the chainhash)
         chd1.generateRandomData();
         chd2.generateRandomData();
         // creating ChainHash structures
-        dhp.chainhash1 = ChainHash{ds.chainhash1_mode, ds.chainhash1_iters, chd1};
-        dhp.chainhash2 = ChainHash{ds.chainhash2_mode, ds.chainhash2_iters, chd2};
+        dhp.chainhash1 = ChainHash{ds.getChainHash1Mode(), ds.getChainHash1Iters(), chd1};
+        dhp.chainhash2 = ChainHash{ds.getChainHash2Mode(), ds.getChainHash2Iters(), chd2};
         dhp.chainhash1_datablock_len = chd1.getLen();
         dhp.chainhash2_datablock_len = chd2.getLen();
 
@@ -56,11 +62,10 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
         return dhhs;
     }
     // setting up the other parts
-    dhp.file_mode = ds.file_mode;
-    dhp.hash_mode = ds.hash_mode;
+    dhp.setFileDataMode(ds.getFileDataMode());
+    dhp.setHashMode(ds.getHashMode());
     // create a new shared hash ptr
-    std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.hash_mode));
-    dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
+    std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.getHashMode()));
 
     // setting up an timer to calculate the remaining time for the second chainhash
     Timer timer;
@@ -107,7 +112,7 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     }
 
     // setting the validation hash
-    dhp.valid_passwordhash = ch2_err.returnValue();
+    dhp.setValidPasswordHash(ch2_err.returnValue());
 
     // dataheader parts is now ready to create the dataheader object
     dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
@@ -118,14 +123,20 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
 DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     // sets up the return struct
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time
-                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
+    if(!ds.isComplete()){
+        PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
+        ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        DataHeaderHelperStruct dhhs{err};
+        return dhhs;
+    }
+    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1time: " << ds.getChainHash1Time()
+                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2time: " << ds.getChainHash2Time() << ")";
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", ""};
     DataHeaderHelperStruct dhhs{err};
 
-    if (ds.file_mode != this->file_data_struct.file_mode) {
+    if (ds.getFileDataMode() != this->file_data_struct.file_mode) {
         // the file mode does not match with the file data mode
-        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.file_mode << ", selected file file_mode: " << +this->file_data_struct.file_mode << ")";
+        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.file_mode << ")";
         dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
@@ -138,14 +149,14 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     ChainHashTimed ch2;
     try {
         // trying to get the chainhashes
-        chd1 = ChainHashData(Format{ds.chainhash1_mode});
-        chd2 = ChainHashData(Format{ds.chainhash2_mode});
+        chd1 = ChainHashData(Format{ds.getChainHash1Mode()});
+        chd2 = ChainHashData(Format{ds.getChainHash2Mode()});
         // setting random data for the chainhashes datablocks (salts that are used by the chainhash)
         chd1.generateRandomData();
         chd2.generateRandomData();
         // creating ChainHash structures
-        ch1 = ChainHashTimed{ds.chainhash1_mode, ds.chainhash1_time, chd1};
-        ch2 = ChainHashTimed{ds.chainhash2_mode, ds.chainhash2_time, chd2};
+        ch1 = ChainHashTimed{ds.getChainHash1Mode(), ds.getChainHash1Time(), chd1};
+        ch2 = ChainHashTimed{ds.getChainHash2Mode(), ds.getChainHash2Time(), chd2};
         dhp.chainhash1_datablock_len = chd1.getLen();
         dhp.chainhash2_datablock_len = chd2.getLen();
 
@@ -157,11 +168,10 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
         return dhhs;
     }
     // setting up the other parts
-    dhp.file_mode = ds.file_mode;
-    dhp.hash_mode = ds.hash_mode;
+    dhp.setFileDataMode(ds.getFileDataMode());
+    dhp.setHashMode(ds.getHashMode());
     // create new shared hash ptr
-    std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.hash_mode));
-    dhp.enc_salt = Bytes{hash->getHashSize()};  // generating random salt for encryption
+    std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.getHashMode()));
 
     // first chainhash (password -> passwordhash)
     ErrorStruct<ChainHashResult> ch1_err = ChainHashModes::performChainHash(ch1, hash, password);
@@ -395,7 +405,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
         // gets the header parts to work with (could throw)
         DataHeaderParts dhp = this->parent->dh.getDataHeaderParts();
         // gets the hash function (could throw)
-        hash = std::move(HashModes::getHash(dhp.hash_mode));
+        hash = std::move(HashModes::getHash(dhp.getHashMode()));
         // perform the first chain hash (password -> passwordhash)
         ErrorStruct<Bytes> err1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
         if (!err1.isSuccess()) {
@@ -412,7 +422,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
                        << ", err2.what: " << err2.what << ")";
             return err2;
         }
-        if (err2.returnValue() == dhp.valid_passwordhash) {
+        if (err2.returnValue() == dhp.getValidPasswordHash()) {
             // the password is valid (because the validation hashes match)
             // updating the state
             // setting the correct password hash and dataheader to the application
@@ -441,8 +451,13 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
-    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1iters: " << ds.chainhash1_iters
-                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
+    if(!ds.isComplete()){
+        PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
+        ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        return err;
+    }
+    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1iters: " << ds.getChainHash1Iters()
+                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2iters: " << ds.getChainHash2Iters() << ", timeout: " << timeout << ")";
     if (!this->parent->selected_file.value().isEmtpy()) {
         // file is not empty, createDataHeader is not possible
         PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file.value().getPath().c_str() << ")";
@@ -470,8 +485,13 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time
-                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
+    if(!ds.isComplete()){
+        PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
+        ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        return err;
+    }
+    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1time: " << ds.getChainHash1Time()
+                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2time: " << ds.getChainHash2Time() << ")";
     if (!this->parent->selected_file.value().isEmtpy()) {
         // file is not empty, createDataHeader is not possible
         PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file.value().getPath().c_str() << ")";
@@ -503,9 +523,9 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
     PLOG_VERBOSE << "Getting decrypted data";
     try {
         // get the hash object that corresponds to the hash mode
-        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode));
+        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->parent->dh.getDataHeaderParts().getHashMode()));
         // construct the blockchain
-        DecryptBlockChain dbc{std::move(hash), this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
+        DecryptBlockChain dbc{std::move(hash), this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
         dbc.addData(this->parent->encrypted_data);
         // get the decrypted data
@@ -537,9 +557,9 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
     }
     try {
         // get the hash ptr
-        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->parent->dh.getDataHeaderParts().hash_mode));
+        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->parent->dh.getDataHeaderParts().getHashMode()));
         // construct the blockchain
-        EncryptBlockChain ebc{std::move(hash), this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().enc_salt};
+        EncryptBlockChain ebc{std::move(hash), this->parent->correct_password_hash, this->parent->dh.getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
         ebc.addData(file_data.dec_data);
         // get the encrypted data
@@ -568,7 +588,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::changeSalt() noexcept {
     PLOG_VERBOSE << "Changing salt";
     DataHeaderParts dhp = this->parent->dh.getDataHeaderParts();
     // only changes salt
-    dhp.enc_salt = Bytes(dhp.enc_salt.getLen());
+    dhp.setEncSalt(Bytes(dhp.getEncSalt().getLen()));
     // dataheader parts is now ready to create the dataheader object
     ErrorStruct<DataHeader> err = DataHeader::setHeaderParts(dhp);
     if (err.isSuccess()) {
@@ -586,8 +606,13 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
-    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1iters: " << ds.chainhash1_iters
-                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2iters: " << ds.chainhash2_iters << ", timeout: " << timeout << ")";
+    if(!ds.isComplete()){
+        PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
+        ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        return err;
+    }
+    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1iters: " << ds.getChainHash1Iters()
+                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2iters: " << ds.getChainHash2Iters() << ", timeout: " << timeout << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
     if (!dhhs.errorStruct.isSuccess()) {
@@ -609,8 +634,13 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.file_mode << ", ch1mode: " << +ds.chainhash1_mode << ", ch1time: " << ds.chainhash1_time
-                 << ", ch2mode: " << +ds.chainhash2_mode << ", ch2time: " << ds.chainhash2_time << ")";
+    if(!ds.isComplete()){
+        PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
+        ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        return err;
+    }
+    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1time: " << ds.getChainHash1Time()
+                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2time: " << ds.getChainHash2Time() << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
     if (!dhhs.errorStruct.isSuccess()) {
