@@ -215,7 +215,7 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_API_STATE_INVALID:
             return "API is in the wrong state. Method failed: " + err.errorInfo + err_msg;
-        
+
         case ERR_DATAHEADERSETTINGS_INCOMPLETE:
             return "DataHeaderSettings are incomplete" + err_msg;
 

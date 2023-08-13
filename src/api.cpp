@@ -23,7 +23,7 @@ ErrorStruct<FileHandler> API::getFileHandler(const std::filesystem::path file_pa
 
 DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
-    if(!ds.isComplete()){
+    if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         DataHeaderHelperStruct dhhs{err};
@@ -123,7 +123,7 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
 DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     // sets up the return struct
-    if(!ds.isComplete()){
+    if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         DataHeaderHelperStruct dhhs{err};
@@ -451,7 +451,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
-    if(!ds.isComplete()){
+    if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
@@ -485,7 +485,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
-    if(!ds.isComplete()){
+    if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
@@ -606,7 +606,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
-    if(!ds.isComplete()){
+    if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
@@ -634,7 +634,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
-    if(!ds.isComplete()){
+    if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;

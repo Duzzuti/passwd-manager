@@ -17,18 +17,16 @@ DataHeader::DataHeader(const HModes hash_mode) {
 
 bool DataHeader::isComplete() const noexcept {
     // checks if the dataheader has everything set
-    if(this->dh.isComplete(this->hash_size))
-        return true;
+    if (this->dh.isComplete(this->hash_size)) return true;
     return false;
 }
 
 unsigned int DataHeader::getHeaderLength() const noexcept {
     // gets the header len, if there is no header set try to calculate the len, else return 0
-    if (this->header_bytes.getLen() > 0)
-        return this->header_bytes.getLen();  // header bytes are set, so we get this length
-    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                             // all data set to calculate the header length
+    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                      // header bytes are set, so we get this length
+    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                               // all data set to calculate the header length
         return 22 + 2 * this->hash_size + this->dh.chainhash1_datablock_len + this->dh.chainhash2_datablock_len;  // dataheader.md
-    return 0;  // not enough infos to get the header length
+    return 0;                                                                                                     // not enough infos to get the header length
 }
 
 int DataHeader::getHashSize() const noexcept {
@@ -123,8 +121,8 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
 
     Bytes dataheader = Bytes();
     Bytes tmp = Bytes();
-    dataheader.addByte(this->dh.getFileDataMode());             // add file mode byte
-    dataheader.addByte(this->dh.getHashMode());             // add hash mode byte
+    dataheader.addByte(this->dh.getFileDataMode());     // add file mode byte
+    dataheader.addByte(this->dh.getHashMode());         // add hash mode byte
     dataheader.addByte(this->dh.chainhash1.getMode());  // add first chainhash mode byte
     tmp.setBytes(LongToCharVec(this->dh.chainhash1.getIters()));
     dataheader.addBytes(tmp);                                                    // add iterations for the first chainhash
@@ -135,11 +133,11 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
     dataheader.addBytes(tmp);                                                    // add iterations for the second chainhash
     dataheader.addByte(this->dh.chainhash2_datablock_len);                       // add datablock length byte
     dataheader.addBytes(this->dh.chainhash2.getChainHashData().getDataBlock());  // add second datablock
-    dataheader.addBytes(this->dh.getValidPasswordHash());                            // add password validator
+    dataheader.addBytes(this->dh.getValidPasswordHash());                        // add password validator
     // generate the salt with random bytes
     this->dh.setEncSalt(Bytes(this->hash_size));  // set the random generated encrypted salt
-    dataheader.addBytes(this->dh.getEncSalt());      // add encrypted salt
-    if (dataheader.getLen() != len) {            // checks if the length is equal to the expected length
+    dataheader.addBytes(this->dh.getEncSalt());   // add encrypted salt
+    if (dataheader.getLen() != len) {             // checks if the length is equal to the expected length
         PLOG_FATAL << "calculated header has not the expected length (expected: " << +len << ", actual: " << +dataheader.getLen() << ")";
         throw std::logic_error("calculated header has not the expected length");
     }
@@ -574,8 +572,8 @@ ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) no
         dh.setChainHash1(dhp.chainhash1, dhp.chainhash1_datablock_len);  // setting the chainhash 1
         dh.setChainHash2(dhp.chainhash2, dhp.chainhash2_datablock_len);  // setting the chainhash 2
         dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());        // setting the password validator hash
-        if(dhp.isEncSaltSet())                                           // enc salt is not necessary
-            dh.setEncSalt(dhp.getEncSalt());                                 // setting the encrypted salt
+        if (dhp.isEncSaltSet())                                          // enc salt is not necessary
+            dh.setEncSalt(dhp.getEncSalt());                             // setting the encrypted salt
 
         // success
         err.setReturnValue(dh);
