@@ -219,7 +219,7 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_DATAHEADERSETTINGS_INCOMPLETE:
             return "DataHeaderSettings are incomplete" + err_msg;
-        
+
         case ERR_FILEDATASTRUCT_INCOMPLETE:
             return "FileDataStruct is incomplete" + err_msg;
 

@@ -546,7 +546,7 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
     // encrypts the data and returns the encrypted data
     // uses the password and data header that were passed to verifyPassword
     PLOG_VERBOSE << "Getting encrypted data";
-    if(!file_data.isComplete()){
+    if (!file_data.isComplete()) {
         PLOG_ERROR << "The given FileDataStruct is not complete";
         ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR_FILEDATASTRUCT_INCOMPLETE, ""};
         return err;
