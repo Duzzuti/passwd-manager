@@ -20,8 +20,6 @@ struct DataHeaderParts {
    public:
     ChainHash chainhash1;                    // chainhash data for the first chainhash (password -> passwordhash)
     ChainHash chainhash2;                    // chainhash data for the second chainhash (passwordhash -> validate password)
-    unsigned char chainhash1_datablock_len;  // the length of the first datablock
-    unsigned char chainhash2_datablock_len;  // the length of the second datablock
 
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set

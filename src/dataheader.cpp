@@ -25,7 +25,7 @@ unsigned int DataHeader::getHeaderLength() const noexcept {
     // gets the header len, if there is no header set try to calculate the len, else return 0
     if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                      // header bytes are set, so we get this length
     if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                               // all data set to calculate the header length
-        return 22 + 2 * this->hash_size + this->dh.chainhash1_datablock_len + this->dh.chainhash2_datablock_len;  // dataheader.md
+        return 22 + 2 * this->hash_size + this->dh.chainhash1.getChainHashData().getLen() + this->dh.chainhash2.getChainHashData().getLen();  // dataheader.md
     return 0;                                                                                                     // not enough infos to get the header length
 }
 
@@ -44,7 +44,6 @@ void DataHeader::setChainHash1(const ChainHash chainhash, const unsigned char le
     // set the information to the object
     this->dh.chainhash1.setMode(chainhash.getMode());
     this->dh.chainhash1.setChainHashData(chainhash.getChainHashData());
-    this->dh.chainhash1_datablock_len = len;
     this->dh.chainhash1.setIters(chainhash.getIters());
 }
 
@@ -58,7 +57,6 @@ void DataHeader::setChainHash2(const ChainHash chainhash, const unsigned char le
     // set the information to the object
     this->dh.chainhash2.setMode(chainhash.getMode());
     this->dh.chainhash2.setChainHashData(chainhash.getChainHashData());
-    this->dh.chainhash2_datablock_len = len;
     this->dh.chainhash2.setIters(chainhash.getIters());
 }
 
@@ -126,12 +124,12 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
     dataheader.addByte(this->dh.chainhash1.getMode());  // add first chainhash mode byte
     tmp.setBytes(LongToCharVec(this->dh.chainhash1.getIters()));
     dataheader.addBytes(tmp);                                                    // add iterations for the first chainhash
-    dataheader.addByte(this->dh.chainhash1_datablock_len);                       // add datablock length byte
+    dataheader.addByte(this->dh.chainhash1.getChainHashData().getLen());         // add datablock length byte
     dataheader.addBytes(this->dh.chainhash1.getChainHashData().getDataBlock());  // add first datablock
     dataheader.addByte(this->dh.chainhash2.getMode());                           // add second chainhash mode
     tmp.setBytes(LongToCharVec(this->dh.chainhash2.getIters()));
     dataheader.addBytes(tmp);                                                    // add iterations for the second chainhash
-    dataheader.addByte(this->dh.chainhash2_datablock_len);                       // add datablock length byte
+    dataheader.addByte(this->dh.chainhash2.getChainHashData().getLen());         // add datablock length byte
     dataheader.addBytes(this->dh.chainhash2.getChainHashData().getDataBlock());  // add second datablock
     dataheader.addBytes(this->dh.getValidPasswordHash());                        // add password validator
     // generate the salt with random bytes
@@ -569,8 +567,8 @@ ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) no
         // these methods throw exceptions if the data is invalid
         DataHeader dh{dhp.getHashMode()};                                // setting the hash mode
         dh.setFileDataMode(dhp.getFileDataMode());                       // setting the file data mode
-        dh.setChainHash1(dhp.chainhash1, dhp.chainhash1_datablock_len);  // setting the chainhash 1
-        dh.setChainHash2(dhp.chainhash2, dhp.chainhash2_datablock_len);  // setting the chainhash 2
+        dh.setChainHash1(dhp.chainhash1, dhp.chainhash1.getChainHashData().getLen());  // setting the chainhash 1
+        dh.setChainHash2(dhp.chainhash2, dhp.chainhash2.getChainHashData().getLen());  // setting the chainhash 2
         dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());        // setting the password validator hash
         if (dhp.isEncSaltSet())                                          // enc salt is not necessary
             dh.setEncSalt(dhp.getEncSalt());                             // setting the encrypted salt
