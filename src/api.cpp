@@ -210,7 +210,7 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     return dhhs;
 }
 
-API::API(const FModes file_mode) : current_state(INIT(this)), dh(DataHeader{HModes(STANDARD_HASHMODE)}) {
+API::API(const FModes file_mode) : current_state(std::make_unique<INIT>(this)), dh(DataHeader{HModes(STANDARD_HASHMODE)}) {
     // constructs the API in a given workflow mode and initializes the private variables
     PLOG_VERBOSE << "API object created (file_mode: " << +file_mode << ")";
     if (!FileModes::isModeValid(file_mode)) {
@@ -230,7 +230,7 @@ std::filesystem::path API::getCurrentDirPath() noexcept {
 
 ErrorStruct<std::filesystem::path> API::getEncDirPath() noexcept {
     // gets the path of the directory where the .enc files are stored at default
-    std::filesystem::path enc_path = "WORK";
+    std::filesystem::path enc_path = "data/enc";
     ErrorStruct<std::filesystem::path> err;
     err.setReturnValue(enc_path);
     err.success = SuccessType::FAIL;
@@ -343,7 +343,7 @@ ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) n
     PLOG_INFO << "File selected (selectFile) (file_path: " << file_path << ")";
     // set the selected file
     this->parent->selected_file = err.returnValue();
-    this->parent->current_state = FILE_SELECTED(this->parent);
+    this->parent->current_state = std::make_unique<FILE_SELECTED>(this->parent);
     return ErrorStruct<bool>{true};
 }
 
@@ -382,7 +382,7 @@ ErrorStruct<bool> API::FILE_SELECTED::unselectFile() noexcept {
     PLOG_VERBOSE << "Unselecting file (file_path: " << this->parent->selected_file.value().getPath() << ")";
     this->parent->selected_file = std::optional<FileHandler>();
     this->parent->encrypted_data = Bytes();
-    this->parent->current_state = INIT(this->parent);
+    this->parent->current_state = std::make_unique<INIT>(this->parent);
     return ErrorStruct<bool>{true};
 }
 
@@ -428,7 +428,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
             // setting the correct password hash and dataheader to the application
             PLOG_INFO << "The given password is valid (verifyPassword)";
             this->parent->correct_password_hash = err1.returnValue();
-            this->parent->current_state = PASSWORD_VERIFIED(this->parent);
+            this->parent->current_state = std::make_unique<PASSWORD_VERIFIED>(this->parent);
             return err1;
         }
         // the password is invalid
@@ -476,7 +476,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
-    this->parent->current_state = DECRYPTED(this->parent);
+    this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
     return dhhs.errorStruct;
 }
 
@@ -510,7 +510,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();
     this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
-    this->parent->current_state = DECRYPTED(this->parent);
+    this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
     return dhhs.errorStruct;
 }
 
@@ -531,7 +531,7 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
         FileDataStruct result{this->parent->file_data_struct.getFileMode(), decrypted};
         this->parent->file_data_struct = result;
         // changes the state
-        this->parent->current_state = DECRYPTED(this->parent);
+        this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
         return ErrorStruct<FileDataStruct>{result};
     } catch (const std::exception& e) {
         // something went wrong inside of one of these functions, read what message for more information
@@ -571,7 +571,7 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
         this->parent->file_data_struct = file_data;
         this->parent->encrypted_data = encrypted;
         // change the state
-        this->parent->current_state = ENCRYPTED(this->parent);
+        this->parent->current_state = std::make_unique<ENCRYPTED>(this->parent);
         // returns the result
         return ErrorStruct<Bytes>{encrypted};
     } catch (const std::exception& e) {
@@ -672,7 +672,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     full_data.addBytes(this->parent->encrypted_data);       // adds the encrypted data
     ErrorStruct<bool> err = err_file.returnValue().writeBytesIfEmpty(full_data);
     if (err.isSuccess()) {
-        this->parent->current_state = FINISHED(this->parent);
+        this->parent->current_state = std::make_unique<FINISHED>(this->parent);
     } else {
         PLOG_ERROR << "Some error occurred while writing to the file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
     }
@@ -688,7 +688,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     full_data.addBytes(this->parent->encrypted_data);       // adds the encrypted data
     ErrorStruct<bool> err = this->parent->selected_file.value().writeBytes(full_data);
     if (err.isSuccess()) {
-        this->parent->current_state = FINISHED(this->parent);
+        this->parent->current_state = std::make_unique<FINISHED>(this->parent);
     } else {
         PLOG_FATAL << "Some error occurred while writing to the selected file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
     }

@@ -88,7 +88,7 @@ class API {
             parent->encrypted_data = Bytes();
             parent->selected_file = std::filesystem::path();
             parent->file_data_struct = FileDataStruct{file_mode, Bytes()};
-            parent->current_state = INIT{parent};
+            parent->current_state = std::make_unique<INIT>(parent);
         }
         // this logout preserves the file mode
         void logout() noexcept {
@@ -97,7 +97,7 @@ class API {
             parent->encrypted_data = Bytes();
             parent->selected_file = std::filesystem::path();
             parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
-            parent->current_state = INIT{parent};
+            parent->current_state = std::make_unique<INIT>(parent);
         }
 
         // holds all non static functionality of the api
@@ -219,7 +219,7 @@ class API {
     };
 
     // the current state of the API (makes sure that the API is used correctly)
-    WorkflowState current_state;
+    std::unique_ptr<WorkflowState> current_state;
     // the file mode that should be used for the file is stored in the FileDataStruct
     FileDataStruct file_data_struct;  // the user can construct a file data object from this struct
     Bytes correct_password_hash;      // the correct password hash for the dataheader
@@ -277,44 +277,44 @@ class API {
     // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
     ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept {
         PLOG_DEBUG << "API call made (getRelevantFileNames) with dir: " << dir;
-        return this->current_state.getRelevantFileNames(dir);
+        return this->current_state->getRelevantFileNames(dir);
     }
 
     // creates a new .enc file at the given path (path contains the name of the file)
     ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept {
         PLOG_DEBUG << "API call made (createFile) with file_path: " << file_path;
-        return this->current_state.createFile(file_path);
+        return this->current_state->createFile(file_path);
     }
 
     // selects the file that should be worked with
     // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
     ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept {
         PLOG_DEBUG << "API call made (selectFile) with file_path: " << file_path;
-        return this->current_state.selectFile(file_path);
+        return this->current_state->selectFile(file_path);
     }
 
     // checks if the selected file is empty
     ErrorStruct<bool> isFileEmpty() const noexcept {
         PLOG_DEBUG << "API call made (isFileEmpty)";
-        return this->current_state.isFileEmpty();
+        return this->current_state->isFileEmpty();
     }
 
     // unselects the current file (it is no longer worked with this file)
     ErrorStruct<bool> unselectFile() noexcept {
         PLOG_DEBUG << "API call made (unselectFile)";
-        return this->current_state.unselectFile();
+        return this->current_state->unselectFile();
     }
 
     // deletes the selected .enc file
     ErrorStruct<bool> deleteFile() noexcept {
         PLOG_DEBUG << "API call made (deleteFile)";
-        return this->current_state.deleteFile();
+        return this->current_state->deleteFile();
     }
 
     // gets the content of the selected file
     ErrorStruct<Bytes> getFileContent() noexcept {
         PLOG_DEBUG << "API call made (getFileContent)";
-        return this->current_state.getFileContent();
+        return this->current_state->getFileContent();
     }
 
     // only call this function on non empty files
@@ -324,7 +324,7 @@ class API {
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
     ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept {
         PLOG_DEBUG << "API call made (verifyPassword) with timeout: " << timeout;
-        return this->current_state.verifyPassword(password, timeout);
+        return this->current_state->verifyPassword(password, timeout);
     }
 
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
@@ -337,7 +337,7 @@ class API {
             return ErrorStruct<DataHeader>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsIters"};
         }
         PLOG_DEBUG << "API call made (createDataHeader) with timeout: " << timeout << " and Iterations: " << ds.getChainHash1Iters() << " and " << ds.getChainHash2Iters();
-        return this->current_state.createDataHeader(password, ds, timeout);
+        return this->current_state->createDataHeader(password, ds, timeout);
     }
     ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
         if (!ds.isComplete()) {
@@ -345,14 +345,14 @@ class API {
             return ErrorStruct<DataHeader>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsTime"};
         }
         PLOG_DEBUG << "API call made (createDataHeader) with Time: " << ds.getChainHash1Time() << " and " << ds.getChainHash2Time();
-        return this->current_state.createDataHeader(password, ds);
+        return this->current_state->createDataHeader(password, ds);
     }
 
     // creates data header with the current settings and password, just changes the salt
     // this call is not expensive because it does not have to chainhash the password
     ErrorStruct<DataHeader> changeSalt() noexcept {
         PLOG_DEBUG << "API call made (changeSalt)";
-        return this->current_state.changeSalt();
+        return this->current_state->changeSalt();
     }
 
     // decrypts the data (requires successful verifyPassword run)
@@ -360,44 +360,44 @@ class API {
     // uses the password and data header from verifyPassword
     ErrorStruct<FileDataStruct> getDecryptedData() noexcept {
         PLOG_DEBUG << "API call made (getDecryptedData)";
-        return this->current_state.getDecryptedData();
+        return this->current_state->getDecryptedData();
     }
 
     // gets the file data struct
     // it stores the file mode as well as the decrypted file content
     ErrorStruct<FileDataStruct> getFileData() noexcept {
         PLOG_DEBUG << "API call made (getFileData)";
-        return this->current_state.getFileData();
+        return this->current_state->getFileData();
     }
 
     // encrypts the data (requires successful getDecryptedData or createDataHeader run) returns the encrypted data
     // uses the password and data header from verifyPassword or createDataHeader
     ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept {
         PLOG_DEBUG << "API call made (getEncryptedData)";
-        return this->current_state.getEncryptedData(file_data);
+        return this->current_state->getEncryptedData(file_data);
     }
 
     // writes encrypted data to a file adds the dataheader (requires successful getEncryptedData run)
     ErrorStruct<bool> writeToFile() noexcept {
         // writes to selected file
         PLOG_DEBUG << "API call made (writeToFile)";
-        return this->current_state.writeToFile();
+        return this->current_state->writeToFile();
     }
     ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept {
         // writes to file at file_path (has to be empty)
         PLOG_DEBUG << "API call made (writeToFile) with file_path: " << file_path;
-        return this->current_state.writeToFile(file_path);
+        return this->current_state->writeToFile(file_path);
     }
 
     // deletes saved data (password hash, data header, encrypted data)
     // after this call, the API object is in the same state as after the constructor call
     void logout(const FModes file_mode) noexcept {
         PLOG_DEBUG << "API call made (logout) with new file_mode" << +file_mode;
-        this->current_state.logout(file_mode);
+        this->current_state->logout(file_mode);
     }
     // this call preserves the file mode
     void logout() noexcept {
         PLOG_DEBUG << "API call made (logout)";
-        this->current_state.logout();
+        this->current_state->logout();
     }
 };

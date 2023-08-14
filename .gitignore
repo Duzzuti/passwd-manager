@@ -1,8 +1,9 @@
 #cmake
 build
 
-#private folders
+#test folders
 deleted
+data
 Todos.txt
 
 #vs code
