@@ -14,11 +14,12 @@ struct FileDataStruct {
     */
    private:
     std::optional<FModes> file_mode;
+
    public:
     Bytes dec_data;
 
     FileDataStruct() = default;
-    FileDataStruct(FModes file_mode, Bytes dec_data){
+    FileDataStruct(FModes file_mode, Bytes dec_data) {
         // constructs the FileDataStruct object
         this->setFileMode(file_mode);
         this->dec_data = dec_data;
@@ -48,13 +49,12 @@ struct FileDataStruct {
 
     bool isComplete() const noexcept {
         // checks if the FileDataStruct object is complete
-        if(!this->isFileModeSet()){
+        if (!this->isFileModeSet()) {
             PLOG_WARNING << "file mode is not completed";
             return false;
         }
         return true;
     }
-    
 };
 
 class FileData {
