@@ -143,10 +143,10 @@ struct ChainHash {
     friend std::ostream& operator<<(std::ostream& os, const ChainHash& ch) {
         // prints the chainhash parts
         return os << "[ChainHash] "
-            << "ch_mode: " << (ch.mode.has_value()? std::to_string(+ch.mode.value()) : "not set") << ", "
-            << "iters: " << std::to_string(ch.iters) << ", "
-            << "datablock: " << (ch.datablock.has_value()? (ch.datablock.value().isComplete()? toHex(ch.datablock.value().getDataBlock()) : "not completed") : "not set") << ", "
-            << "valid: " << ch.val;
+                  << "ch_mode: " << (ch.mode.has_value() ? std::to_string(+ch.mode.value()) : "not set") << ", "
+                  << "iters: " << std::to_string(ch.iters) << ", "
+                  << "datablock: " << (ch.datablock.has_value() ? (ch.datablock.value().isComplete() ? toHex(ch.datablock.value().getDataBlock()) : "not completed") : "not set") << ", "
+                  << "valid: " << ch.val;
     }
 };
 
@@ -259,10 +259,10 @@ struct ChainHashTimed {
     friend std::ostream& operator<<(std::ostream& os, const ChainHashTimed& ch) {
         // prints the chainhashtimed parts
         return os << "[ChainHashTimed] "
-            << "ch_mode: " << (ch.mode.has_value()? std::to_string(+ch.mode.value()) : "not set") << ", "
-            << "run_time: " << std::to_string(ch.run_time) << ", "
-            << "datablock: " << (ch.datablock.has_value()? (ch.datablock.value().isComplete()? toHex(ch.datablock.value().getDataBlock()) : "not completed") : "not set") << ", "
-            << "valid: " << ch.val;
+                  << "ch_mode: " << (ch.mode.has_value() ? std::to_string(+ch.mode.value()) : "not set") << ", "
+                  << "run_time: " << std::to_string(ch.run_time) << ", "
+                  << "datablock: " << (ch.datablock.has_value() ? (ch.datablock.value().isComplete() ? toHex(ch.datablock.value().getDataBlock()) : "not completed") : "not set") << ", "
+                  << "valid: " << ch.val;
     }
 };
 
