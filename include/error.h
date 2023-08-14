@@ -45,7 +45,8 @@ enum ErrorCode {
     ERR_WRONG_WORKFLOW,
     ERR_API_NOT_INITIALIZED,
     ERR_API_STATE_INVALID,
-    ERR_DATAHEADERSETTINGS_INCOMPLETE
+    ERR_DATAHEADERSETTINGS_INCOMPLETE,
+    ERR_FILEDATASTRUCT_INCOMPLETE
 };
 
 // used in a function that could fail, it returns a success type, a value and an error message
@@ -218,6 +219,9 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_DATAHEADERSETTINGS_INCOMPLETE:
             return "DataHeaderSettings are incomplete" + err_msg;
+        
+        case ERR_FILEDATASTRUCT_INCOMPLETE:
+            return "FileDataStruct is incomplete" + err_msg;
 
         case ERR:
             if (err.errorInfo.empty()) return "An error occurred" + err_msg;

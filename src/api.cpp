@@ -33,9 +33,9 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
                  << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2iters: " << ds.getChainHash2Iters() << ", timeout: " << timeout << ")";
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     DataHeaderHelperStruct dhhs{err};
-    if (ds.getFileDataMode() != this->file_data_struct.file_mode) {
+    if (ds.getFileDataMode() != this->file_data_struct.getFileMode()) {
         // the file mode does not match with the file data mode
-        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.file_mode << ")";
+        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.getFileMode() << ")";
         dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
@@ -134,9 +134,9 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", ""};
     DataHeaderHelperStruct dhhs{err};
 
-    if (ds.getFileDataMode() != this->file_data_struct.file_mode) {
+    if (ds.getFileDataMode() != this->file_data_struct.getFileMode()) {
         // the file mode does not match with the file data mode
-        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.file_mode << ")";
+        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.getFileMode() << ")";
         dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
@@ -296,7 +296,7 @@ ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std:
         // checks if the file data mode matches with the file mode of the file is empty
         ErrorStruct<FileHandler> err2 = this->parent->getFileHandler(fp);
         if (err2.isSuccess()) {
-            if (err2.returnValue().isEmtpy() || err2.returnValue().isDataHeader(this->parent->file_data_struct.file_mode).isSuccess()) {
+            if (err2.returnValue().isEmtpy() || err2.returnValue().isDataHeader(this->parent->file_data_struct.getFileMode()).isSuccess()) {
                 // dataheader is valid or file is empty
                 // we include the file to the relevant files
                 std::vector<std::string> tmp = ret.returnValue();
@@ -476,7 +476,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();
-    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
+    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
     this->parent->current_state = DECRYPTED(this->parent);
     return dhhs.errorStruct;
 }
@@ -511,7 +511,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = dhhs.errorStruct.returnValue();
-    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
+    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
     this->parent->current_state = DECRYPTED(this->parent);
     return dhhs.errorStruct;
 }
@@ -530,7 +530,7 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
         dbc.addData(this->parent->encrypted_data);
         // get the decrypted data
         Bytes decrypted = dbc.getResult();
-        FileDataStruct result{this->parent->file_data_struct.file_mode, decrypted};
+        FileDataStruct result{this->parent->file_data_struct.getFileMode(), decrypted};
         this->parent->file_data_struct = result;
         // changes the state
         this->parent->current_state = DECRYPTED(this->parent);
@@ -546,11 +546,16 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
     // encrypts the data and returns the encrypted data
     // uses the password and data header that were passed to verifyPassword
     PLOG_VERBOSE << "Getting encrypted data";
+    if(!file_data.isComplete()){
+        PLOG_ERROR << "The given FileDataStruct is not complete";
+        ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR_FILEDATASTRUCT_INCOMPLETE, ""};
+        return err;
+    }
     ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, ""};
-    if (file_data.file_mode != this->parent->file_data_struct.file_mode) {
+    if (file_data.getFileMode() != this->parent->file_data_struct.getFileMode()) {
         // the user wants to encrypt data with a different file mode
-        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (getEncryptedData) (provided file mode: " << +file_data.file_mode
-                   << ", selected file mode: " << +this->parent->file_data_struct.file_mode << ")";
+        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (getEncryptedData) (provided file mode: " << +file_data.getFileMode()
+                   << ", selected file mode: " << +this->parent->file_data_struct.getFileMode() << ")";
         err.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         err.errorInfo = " In getEncryptedData: The provided file mode does not match with the given file data mode";
         return err;

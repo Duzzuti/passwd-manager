@@ -96,7 +96,7 @@ class API {
             parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
             parent->encrypted_data = Bytes();
             parent->selected_file = std::filesystem::path();
-            parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.file_mode, Bytes()};
+            parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
             parent->current_state = INIT{parent};
         }
 
