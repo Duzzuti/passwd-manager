@@ -50,7 +50,7 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
         // creating ChainHash structures
         dhp.chainhash1 = ChainHash{ds.getChainHash1Mode(), ds.getChainHash1Iters(), chd1};
         dhp.chainhash2 = ChainHash{ds.getChainHash2Mode(), ds.getChainHash2Iters(), chd2};
-        if(dhp.chainhash1.getChainHashData().getLen() != chd1.getLen() || dhp.chainhash2.getChainHashData().getLen() != chd2.getLen()){
+        if (dhp.chainhash1.getChainHashData().getLen() != chd1.getLen() || dhp.chainhash2.getChainHashData().getLen() != chd2.getLen()) {
             throw std::logic_error("The chainhash data length does not match");
         }
 
@@ -156,7 +156,7 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
         // creating ChainHash structures
         ch1 = ChainHashTimed{ds.getChainHash1Mode(), ds.getChainHash1Time(), chd1};
         ch2 = ChainHashTimed{ds.getChainHash2Mode(), ds.getChainHash2Time(), chd2};
-       if(ch1.getChainHashData().getLen() != chd1.getLen() || ch2.getChainHashData().getLen() != chd2.getLen()){
+        if (ch1.getChainHashData().getLen() != chd1.getLen() || ch2.getChainHashData().getLen() != chd2.getLen()) {
             throw std::logic_error("The chainhash data length does not match");
         }
 

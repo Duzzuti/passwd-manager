@@ -18,8 +18,8 @@ struct DataHeaderParts {
     std::optional<Bytes> valid_passwordhash;  // saves the hash that should be the result of the second chainhash
     std::optional<Bytes> enc_salt;            // saves the encoded salt
    public:
-    ChainHash chainhash1;                    // chainhash data for the first chainhash (password -> passwordhash)
-    ChainHash chainhash2;                    // chainhash data for the second chainhash (passwordhash -> validate password)
+    ChainHash chainhash1;  // chainhash data for the first chainhash (password -> passwordhash)
+    ChainHash chainhash2;  // chainhash data for the second chainhash (passwordhash -> validate password)
 
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set

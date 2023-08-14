@@ -23,10 +23,10 @@ bool DataHeader::isComplete() const noexcept {
 
 unsigned int DataHeader::getHeaderLength() const noexcept {
     // gets the header len, if there is no header set try to calculate the len, else return 0
-    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                      // header bytes are set, so we get this length
-    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                               // all data set to calculate the header length
+    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                                                  // header bytes are set, so we get this length
+    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                                                           // all data set to calculate the header length
         return 22 + 2 * this->hash_size + this->dh.chainhash1.getChainHashData().getLen() + this->dh.chainhash2.getChainHashData().getLen();  // dataheader.md
-    return 0;                                                                                                     // not enough infos to get the header length
+    return 0;                                                                                                                                 // not enough infos to get the header length
 }
 
 int DataHeader::getHashSize() const noexcept {
@@ -565,13 +565,13 @@ ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) no
     ErrorStruct<DataHeader> err{FAIL, ERR, ""};
     try {
         // these methods throw exceptions if the data is invalid
-        DataHeader dh{dhp.getHashMode()};                                // setting the hash mode
-        dh.setFileDataMode(dhp.getFileDataMode());                       // setting the file data mode
+        DataHeader dh{dhp.getHashMode()};                                              // setting the hash mode
+        dh.setFileDataMode(dhp.getFileDataMode());                                     // setting the file data mode
         dh.setChainHash1(dhp.chainhash1, dhp.chainhash1.getChainHashData().getLen());  // setting the chainhash 1
         dh.setChainHash2(dhp.chainhash2, dhp.chainhash2.getChainHashData().getLen());  // setting the chainhash 2
-        dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());        // setting the password validator hash
-        if (dhp.isEncSaltSet())                                          // enc salt is not necessary
-            dh.setEncSalt(dhp.getEncSalt());                             // setting the encrypted salt
+        dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());                      // setting the password validator hash
+        if (dhp.isEncSaltSet())                                                        // enc salt is not necessary
+            dh.setEncSalt(dhp.getEncSalt());                                           // setting the encrypted salt
 
         // success
         err.setReturnValue(dh);
