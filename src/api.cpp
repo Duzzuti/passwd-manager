@@ -29,8 +29,7 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
         DataHeaderHelperStruct dhhs{err};
         return dhhs;
     }
-    PLOG_VERBOSE << "Creating data header with iter settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1iters: " << ds.getChainHash1Iters()
-                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2iters: " << ds.getChainHash2Iters() << ", timeout: " << timeout << ")";
+    PLOG_VERBOSE << "Creating data header with iter settings (" << ds << ", timeout: " << timeout << ")";
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     DataHeaderHelperStruct dhhs{err};
     if (ds.getFileDataMode() != this->file_data_struct.getFileMode()) {
@@ -129,8 +128,7 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
         DataHeaderHelperStruct dhhs{err};
         return dhhs;
     }
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1time: " << ds.getChainHash1Time()
-                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2time: " << ds.getChainHash2Time() << ")";
+    PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
     ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR, "", ""};
     DataHeaderHelperStruct dhhs{err};
 
@@ -456,8 +454,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
-    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1iters: " << ds.getChainHash1Iters()
-                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2iters: " << ds.getChainHash2Iters() << ", timeout: " << timeout << ")";
+    PLOG_VERBOSE << "Creating data header with iterations settings (" << ds << ", timeout: " << timeout << ")";
     if (!this->parent->selected_file.value().isEmtpy()) {
         // file is not empty, createDataHeader is not possible
         PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file.value().getPath().c_str() << ")";
@@ -490,8 +487,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1time: " << ds.getChainHash1Time()
-                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2time: " << ds.getChainHash2Time() << ")";
+    PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
     if (!this->parent->selected_file.value().isEmtpy()) {
         // file is not empty, createDataHeader is not possible
         PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file.value().getPath().c_str() << ")";
@@ -616,8 +612,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
-    PLOG_VERBOSE << "Creating data header with iterations settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1iters: " << ds.getChainHash1Iters()
-                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2iters: " << ds.getChainHash2Iters() << ", timeout: " << timeout << ")";
+    PLOG_VERBOSE << "Creating data header with iterations settings (" << ds << ", timeout: " << timeout << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
     if (!dhhs.errorStruct.isSuccess()) {
@@ -644,8 +639,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
-    PLOG_VERBOSE << "Creating data header with time settings (file_mode: " << +ds.getFileDataMode() << ", ch1mode: " << +ds.getChainHash1Mode() << ", ch1time: " << ds.getChainHash1Time()
-                 << ", ch2mode: " << +ds.getChainHash2Mode() << ", ch2time: " << ds.getChainHash2Time() << ")";
+    PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
     if (!dhhs.errorStruct.isSuccess()) {

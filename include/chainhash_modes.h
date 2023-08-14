@@ -48,23 +48,27 @@ struct ChainHash {
         this->val = false;
         if (!this->mode.has_value() || !this->datablock.has_value()) {
             PLOG_WARNING << "The chainhash is invalid (not all values are set)";
+            PLOG_DEBUG << *this;
             return ErrorStruct<bool>{FAIL, ERR_CHAINHASH_MISSING_VALUES, ""};
         }
         ErrorStruct<bool> es;
         es.success = FAIL;
         if (!(this->iters > 0 && this->iters <= MAX_ITERATIONS)) {
             PLOG_WARNING << "chainhash iterations are not valid (" << this->iters << ")";
+            PLOG_DEBUG << *this;
             es.errorCode = ERR_ITERATIONS_INVALID;
             return es;  // iteration number is not valid
         }
         if (!this->datablock.value().isCompletedFormat(Format(this->mode.value()))) {
             PLOG_WARNING << "chainhash datablock is not completed or has the wrong format";
+            PLOG_DEBUG << *this;
             // checks if the datablock is already completed
             es.errorCode = ERR_DATABLOCK_NOT_COMPLETED;
             return es;
         }
         if (this->datablock.value().getLen() > 255) {
             PLOG_WARNING << "chainhash datablock is too long (" << this->datablock.value().getLen() << ")";
+            PLOG_DEBUG << *this;
             es.errorCode = ERR_DATABLOCK_TOO_LONG;
             es.success = FAIL;
             return es;  // datablock is too long
@@ -135,6 +139,15 @@ struct ChainHash {
         // returns if the chainhash is valid
         return this->val;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const ChainHash& ch) {
+        // prints the chainhash parts
+        return os << "[ChainHash] "
+            << "ch_mode: " << (ch.mode.has_value()? std::to_string(+ch.mode.value()) : "not set") << ", "
+            << "iters: " << std::to_string(ch.iters) << ", "
+            << "datablock: " << (ch.datablock.has_value()? (ch.datablock.value().isComplete()? toHex(ch.datablock.value().getDataBlock()) : "not completed") : "not set") << ", "
+            << "valid: " << ch.val;
+    }
 };
 
 // ChainHashTimed struct holds all components that are needed to describe a chainhash
@@ -152,23 +165,27 @@ struct ChainHashTimed {
         this->val = false;
         if (!this->mode.has_value() || !this->datablock.has_value()) {
             PLOG_WARNING << "The chainhash is invalid (not all values are set)";
+            PLOG_DEBUG << *this;
             return ErrorStruct<bool>{FAIL, ERR_CHAINHASH_MISSING_VALUES, ""};
         }
         ErrorStruct<bool> es;
         es.success = FAIL;
         if (!(this->run_time > 0 && this->run_time <= MAX_RUNTIME)) {
             PLOG_WARNING << "chainhash run time is not valid (" << this->run_time << ")";
+            PLOG_DEBUG << *this;
             es.errorCode = ERR_RUNTIME_INVALID;
             return es;  // run time is not valid
         }
         if (!this->datablock.value().isCompletedFormat(Format(this->mode.value()))) {
             PLOG_WARNING << "chainhash datablock is not completed or has the wrong format";
+            PLOG_DEBUG << *this;
             // checks if the datablock is already completed
             es.errorCode = ERR_DATABLOCK_NOT_COMPLETED;
             return es;
         }
         if (this->datablock.value().getLen() > 255) {
             PLOG_WARNING << "chainhash datablock is too long (" << this->datablock.value().getLen() << ")";
+            PLOG_DEBUG << *this;
             es.errorCode = ERR_DATABLOCK_TOO_LONG;
             es.success = FAIL;
             return es;  // datablock is too long
@@ -238,6 +255,14 @@ struct ChainHashTimed {
     bool valid() const noexcept {
         // returns if the chainhash is valid
         return this->val;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const ChainHashTimed& ch) {
+        // prints the chainhashtimed parts
+        return os << "[ChainHashTimed] "
+            << "ch_mode: " << (ch.mode.has_value()? std::to_string(+ch.mode.value()) : "not set") << ", "
+            << "run_time: " << std::to_string(ch.run_time) << ", "
+            << "datablock: " << (ch.datablock.has_value()? (ch.datablock.value().isComplete()? toHex(ch.datablock.value().getDataBlock()) : "not completed") : "not set") << ", "
+            << "valid: " << ch.val;
     }
 };
 

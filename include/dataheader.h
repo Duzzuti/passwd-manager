@@ -123,16 +123,27 @@ struct DataHeaderParts {
     }
 
     bool isComplete(const unsigned char hash_size) const noexcept {
-        // checks if everything is set correctly has everything set
+        // checks if everything is set correctly
         try {
-            if (!this->chainhash1.valid() || !this->chainhash2.valid() || !this->isValidPasswordHashSet() || !this->isFileDataModeSet() || this->getHashSize() != hash_size) {
-                return false;
-            }
-            return true;
+            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->getHashSize() == hash_size)
+                return true;    // everything is set correctly
         } catch (std::exception& e) {
             PLOG_WARNING << "isComplete thrown: " << e.what();
-            return false;
         }
+        // something is not set correctly, log a debug message and return false
+        PLOG_DEBUG << "isComplete failed: \n" << *this;
+        return false;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const DataHeaderParts& dhp) {
+        // prints the dataheader parts
+        return os << "[DataHeaderParts] "
+            << "file_mode: " << (dhp.isFileDataModeSet()? std::to_string(+dhp.getFileDataMode()) : "not set") << ", "
+            << "hash_mode: " << (dhp.isHashModeSet()? std::to_string(+dhp.getHashMode()) : "not set") << ", "
+            << "valid_hash: " << (dhp.isValidPasswordHashSet()? toHex(dhp.getValidPasswordHash()) : "not set") << ", "
+            << "enc_salt: " << (dhp.isEncSaltSet()? toHex(dhp.getEncSalt()) : "not set") << ", "
+            << "chainhash1: " << dhp.chainhash1 << ", "
+            << "chainhash2: " << dhp.chainhash2;
     }
 };
 
@@ -282,10 +293,28 @@ struct DataHeaderSettingsIters {
 
     bool isComplete() const noexcept {
         // checks if everything is set correctly
-        if (!this->isFileDataModeSet() || !this->isHashModeSet() || !this->isChainHash1ModeSet() || !this->isChainHash2ModeSet() || !this->isChainHash1ItersSet() || !this->isChainHash2ItersSet())
-            return false;
-        return true;
+        try {
+            if (this->isFileDataModeSet() && this->isHashModeSet() && this->isChainHash1ModeSet() && this->isChainHash1ItersSet() && this->isChainHash2ModeSet() && this->isChainHash2ItersSet())
+                return true;    // everything is set correctly
+        } catch (std::exception& e) {
+            PLOG_WARNING << "isComplete thrown: " << e.what();
+        }
+        // something is not set correctly, log a debug message and return false
+        PLOG_DEBUG << "isComplete failed: \n" << *this;
+        return false;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const DataHeaderSettingsIters& ds) {
+        // prints the dataheader settings
+        return os << "[DataHeaderSettingsIters] "
+            << "file_mode: " << (ds.isFileDataModeSet()? std::to_string(+ds.getFileDataMode()) : "not set") << ", "
+            << "hash_mode: " << (ds.isHashModeSet()? std::to_string(+ds.getHashMode()) : "not set") << ", "
+            << "ch1_mode: " << (ds.isChainHash1ModeSet()? std::to_string(+ds.getChainHash1Mode()) : "not set") << ", "
+            << "ch1_iters: " << (ds.isChainHash1ItersSet()? std::to_string(ds.getChainHash1Iters()) : "not set") << ", "
+            << "ch2_mode: " << (ds.isChainHash2ModeSet()? std::to_string(+ds.getChainHash2Mode()) : "not set") << ", "
+            << "ch2_iters: " << (ds.isChainHash2ItersSet()? std::to_string(ds.getChainHash2Iters()) : "not set");
+    }
+
 };
 
 struct DataHeaderSettingsTime {
@@ -435,9 +464,26 @@ struct DataHeaderSettingsTime {
 
     bool isComplete() const noexcept {
         // checks if everything is set correctly
-        if (!this->isFileDataModeSet() || !this->isHashModeSet() || !this->isChainHash1ModeSet() || !this->isChainHash2ModeSet() || !this->isChainHash1TimeSet() || !this->isChainHash2TimeSet())
-            return false;
-        return true;
+        try {
+            if (this->isFileDataModeSet() && this->isHashModeSet() && this->isChainHash1ModeSet() && this->isChainHash1TimeSet() && this->isChainHash2ModeSet() && this->isChainHash2TimeSet())
+                return true;    // everything is set correctly
+        } catch (std::exception& e) {
+            PLOG_WARNING << "isComplete thrown: " << e.what();
+        }
+        // something is not set correctly, log a debug message and return false
+        PLOG_DEBUG << "isComplete failed: \n" << *this;
+        return false;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const DataHeaderSettingsTime& ds) {
+        // prints the dataheader settings
+        return os << "[DataHeaderSettingsTime] "
+            << "file_mode: " << (ds.isFileDataModeSet()? std::to_string(+ds.getFileDataMode()) : "not set") << ", "
+            << "hash_mode: " << (ds.isHashModeSet()? std::to_string(+ds.getHashMode()) : "not set") << ", "
+            << "ch1_mode: " << (ds.isChainHash1ModeSet()? std::to_string(+ds.getChainHash1Mode()) : "not set") << ", "
+            << "ch1_time: " << (ds.isChainHash1TimeSet()? std::to_string(ds.getChainHash1Time()) : "not set") << ", "
+            << "ch2_mode: " << (ds.isChainHash2ModeSet()? std::to_string(+ds.getChainHash2Mode()) : "not set") << ", "
+            << "ch2_time: " << (ds.isChainHash2TimeSet()? std::to_string(ds.getChainHash2Time()) : "not set");
     }
 };
 
