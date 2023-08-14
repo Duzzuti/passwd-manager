@@ -15,6 +15,7 @@ enum ErrorCode {
     ERR_ARGUMENT_INVALID,
     ERR_FILEMODE_INVALID,
     ERR_HASHMODE_INVALID,
+    ERR_CHAINHASH_MISSING_VALUES,
     ERR_CHAINHASH_MODE_INVALID,
     ERR_CHAINHASHMODE_FORMAT_INVALID,
     ERR_CHAINHASH_DATAPART_INVALID,
@@ -23,6 +24,7 @@ enum ErrorCode {
     ERR_CHAINHASH1_INVALID,
     ERR_CHAINHASH2_INVALID,
     ERR_ITERATIONS_INVALID,
+    ERR_RUNTIME_INVALID,
     ERR_DATABLOCK_NOT_COMPLETED,
     ERR_DATABLOCK_TOO_LONG,
     ERR_PASSWD_CHAR_INVALID,
@@ -42,7 +44,9 @@ enum ErrorCode {
     ERR_NOT_ENOUGH_DATA,
     ERR_WRONG_WORKFLOW,
     ERR_API_NOT_INITIALIZED,
-    ERR_API_STATE_INVALID
+    ERR_API_STATE_INVALID,
+    ERR_DATAHEADERSETTINGS_INCOMPLETE,
+    ERR_FILEDATASTRUCT_INCOMPLETE
 };
 
 // used in a function that could fail, it returns a success type, a value and an error message
@@ -112,6 +116,9 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
         case ERR_PASSWORD_INVALID:
             return "Password is invalid" + err_msg;
 
+        case ERR_CHAINHASH_MISSING_VALUES:
+            return "Chainhash has missing values" + err_msg;
+
         case ERR_CHAINHASH_MODE_INVALID:
             return "Chainhash mode is invalid" + err_msg;
 
@@ -138,6 +145,9 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_ITERATIONS_INVALID:
             return "Iterations number is invalid" + err_msg;
+
+        case ERR_RUNTIME_INVALID:
+            return "Runtime (in ms) is invalid" + err_msg;
 
         case ERR_LEN_INVALID:
             return "Invalid length from object: " + err.errorInfo + err_msg;
@@ -206,6 +216,12 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_API_STATE_INVALID:
             return "API is in the wrong state. Method failed: " + err.errorInfo + err_msg;
+
+        case ERR_DATAHEADERSETTINGS_INCOMPLETE:
+            return "DataHeaderSettings are incomplete" + err_msg;
+
+        case ERR_FILEDATASTRUCT_INCOMPLETE:
+            return "FileDataStruct is incomplete" + err_msg;
 
         case ERR:
             if (err.errorInfo.empty()) return "An error occurred" + err_msg;

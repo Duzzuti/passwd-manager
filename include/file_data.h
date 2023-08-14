@@ -1,16 +1,60 @@
 #pragma once
 
+#include <optional>
+
 #include "base.h"
 #include "bytes.h"
 #include "error.h"
+#include "file_modes.h"
 
 struct FileDataStruct {
     /*
     this struct is used to construct the FileData objects.
     These objects are used to store the data of the file in a way that the user can interact with it
     */
-    FModes file_mode;
+   private:
+    std::optional<FModes> file_mode;
+
+   public:
     Bytes dec_data;
+
+    FileDataStruct() = default;
+    FileDataStruct(FModes file_mode, Bytes dec_data) {
+        // constructs the FileDataStruct object
+        this->setFileMode(file_mode);
+        this->dec_data = dec_data;
+    }
+    bool isFileModeSet() const noexcept {
+        // checks if the file mode is set
+        return file_mode.has_value();
+    }
+    FModes getFileMode() const {
+        // gets the file mode
+        if (this->file_mode.has_value())
+            return this->file_mode.value();
+        else {
+            PLOG_ERROR << "file mode is not set";
+            throw std::runtime_error("file mode is not set");
+        }
+    }
+    void setFileMode(FModes file_mode) {
+        // sets the file data mode
+        if (FileModes::isModeValid(file_mode))
+            this->file_mode = file_mode;
+        else {
+            PLOG_ERROR << "the given file data mode is not valid: " << +file_mode;
+            throw std::invalid_argument("file mode is not valid");
+        }
+    }
+
+    bool isComplete() const noexcept {
+        // checks if the FileDataStruct object is complete
+        if (!this->isFileModeSet()) {
+            PLOG_WARNING << "file mode is not completed";
+            return false;
+        }
+        return true;
+    }
 };
 
 class FileData {

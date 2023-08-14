@@ -11,34 +11,22 @@ this file contains the implementations of Data header class
 DataHeader::DataHeader(const HModes hash_mode) {
     PLOG_VERBOSE << "new DataHeader created (hash mode: " << +hash_mode << ")";
     // initialize the hash mode
-    if (!HashModes::isModeValid(hash_mode)) {
-        PLOG_ERROR << "invalid hash mode passed to DataHeader constructor (hash_mode: " << +hash_mode << ")";
-        throw std::invalid_argument("invalid hash mode");
-    }
-    this->dh.hash_mode = hash_mode;
-    std::unique_ptr<Hash> hash = std::move(HashModes::getHash(hash_mode));
-    this->hash_size = hash->getHashSize();  // gets the hash size of the hash that corresponds to the given mode
+    this->dh.setHashMode(hash_mode);
+    this->hash_size = HashModes::getHash(hash_mode)->getHashSize();  // gets the hash size of the hash that corresponds to the given mode
 }
 
 bool DataHeader::isComplete() const noexcept {
     // checks if the dataheader has everything set
-    if (!ChainHashModes::isModeValid(this->dh.chainhash1.mode) || !ChainHashModes::isModeValid(this->dh.chainhash2.mode) || this->dh.valid_passwordhash.getLen() != this->hash_size ||
-        this->dh.valid_passwordhash.getLen() != this->hash_size || !FileModes::isModeValid(this->dh.file_mode)) {
-        return false;
-    }
-    return true;
+    if (this->dh.isComplete(this->hash_size)) return true;
+    return false;
 }
 
 unsigned int DataHeader::getHeaderLength() const noexcept {
     // gets the header len, if there is no header set try to calculate the len, else return 0
-    if (this->header_bytes.getLen() > 0) {
-        return this->header_bytes.getLen();  // header bytes are set, so we get this length
-    }
-    if (ChainHashModes::isModeValid(this->dh.chainhash1.mode) && ChainHashModes::isModeValid(this->dh.chainhash2.mode)) {  // all data set to calculate the header length
-        return 22 + 2 * this->hash_size + this->dh.chainhash1_datablock_len + this->dh.chainhash2_datablock_len;           // dataheader.md
-    } else {
-        return 0;  // not enough infos to get the header length
-    }
+    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                                                  // header bytes are set, so we get this length
+    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                                                           // all data set to calculate the header length
+        return 22 + 2 * this->hash_size + this->dh.chainhash1.getChainHashData().getLen() + this->dh.chainhash2.getChainHashData().getLen();  // dataheader.md
+    return 0;                                                                                                                                 // not enough infos to get the header length
 }
 
 int DataHeader::getHashSize() const noexcept {
@@ -48,70 +36,46 @@ int DataHeader::getHashSize() const noexcept {
 
 void DataHeader::setChainHash1(const ChainHash chainhash, const unsigned char len) {
     // sets the information about the first chainhash
-    PLOG_VERBOSE << "setting chainhash1 (mode: " << +chainhash.mode << ", len: " << +len << ", iters: " << chainhash.iters << ")";
-    if (len != chainhash.datablock.getLen()) {  // validates the datablock length
-        PLOG_ERROR << "length of the datablock does not match with the given length (len: " << +len << ", datablock len: " << +chainhash.datablock.getLen() << ")";
+    PLOG_VERBOSE << "setting chainhash1 (mode: " << +chainhash.getMode() << ", len: " << +len << ", iters: " << chainhash.getIters() << ")";
+    if (len != chainhash.getChainHashData().getLen()) {  // validates the datablock length
+        PLOG_ERROR << "length of the datablock does not match with the given length (len: " << +len << ", datablock len: " << +chainhash.getChainHashData().getLen() << ")";
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
-    ErrorStruct err = ChainHashModes::isChainHashValid(chainhash);  // validates the chainhash
-    if (!err.isSuccess()) {
-        PLOG_ERROR << "invalid chainhash passed to setChainHash1 (error msg: " << getErrorMessage(err) << ")";
-        throw std::invalid_argument(getErrorMessage(err));
-    }
     // set the information to the object
-    this->dh.chainhash1.mode = chainhash.mode;
-    this->dh.chainhash1.datablock = chainhash.datablock;
-    this->dh.chainhash1_datablock_len = len;
-    this->dh.chainhash1.iters = chainhash.iters;
+    this->dh.chainhash1.setMode(chainhash.getMode());
+    this->dh.chainhash1.setChainHashData(chainhash.getChainHashData());
+    this->dh.chainhash1.setIters(chainhash.getIters());
 }
 
 void DataHeader::setChainHash2(const ChainHash chainhash, const unsigned char len) {
     // sets the information about the second chainhash
-    PLOG_VERBOSE << "setting chainhash2 (mode: " << +chainhash.mode << ", len: " << +len << ", iters: " << chainhash.iters << ")";
-    if (len != chainhash.datablock.getLen()) {  // validates the datablock length
-        PLOG_ERROR << "length of the datablock does not match with the given length (len: " << +len << ", datablock len: " << +chainhash.datablock.getLen() << ")";
+    PLOG_VERBOSE << "setting chainhash2 (mode: " << +chainhash.getMode() << ", len: " << +len << ", iters: " << chainhash.getIters() << ")";
+    if (len != chainhash.getChainHashData().getLen()) {  // validates the datablock length
+        PLOG_ERROR << "length of the datablock does not match with the given length (len: " << +len << ", datablock len: " << +chainhash.getChainHashData().getLen() << ")";
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
-    ErrorStruct err = ChainHashModes::isChainHashValid(chainhash);  // validates the chainhash
-    if (!err.isSuccess()) {
-        PLOG_ERROR << "invalid chainhash passed to setChainHash2 (error msg: " << getErrorMessage(err) << ")";
-        throw std::invalid_argument(getErrorMessage(err));
-    }
     // set the information to the object
-    this->dh.chainhash2.mode = chainhash.mode;
-    this->dh.chainhash2.datablock = chainhash.datablock;
-    this->dh.chainhash2_datablock_len = len;
-    this->dh.chainhash2.iters = chainhash.iters;
+    this->dh.chainhash2.setMode(chainhash.getMode());
+    this->dh.chainhash2.setChainHashData(chainhash.getChainHashData());
+    this->dh.chainhash2.setIters(chainhash.getIters());
 }
 
 void DataHeader::setFileDataMode(const FModes file_mode) {
     // sets the file data mode
     PLOG_VERBOSE << "setting file mode: " << +file_mode;
-    if (!FileModes::isModeValid(file_mode)) {
-        PLOG_ERROR << "invalid file mode passed to setFileDataMode (file mode: " << +file_mode << ")";
-        throw std::invalid_argument("invalid file mode");
-    }
-    this->dh.file_mode = file_mode;
+    this->dh.setFileDataMode(file_mode);
 }
 
 void DataHeader::setValidPasswordHashBytes(const Bytes validBytes) {
     // set the passwordhash validator hash
     PLOG_VERBOSE << "setting password validator hash: " << toHex(validBytes);
-    if (validBytes.getLen() != this->hash_size) {  // check if the hash size is right
-        PLOG_ERROR << "length of the given valid hash does not match with the hash size (valid hash len: " << +validBytes.getLen() << ", hash size: " << +this->hash_size << ")";
-        throw std::length_error("Length of the given validBytes does not match with the hash size");
-    }
-    this->dh.valid_passwordhash = validBytes;
+    this->dh.setValidPasswordHash(validBytes);
 }
 
 void DataHeader::setEncSalt(const Bytes salt) {
     // sets the salt
     PLOG_VERBOSE << "setting salt: " << toHex(salt);
-    if (salt.getLen() != this->hash_size) {  // check if the hash size is right
-        PLOG_ERROR << "length of the given salt does not match with the hash size (salt len: " << +salt.getLen() << ", hash size: " << +this->hash_size << ")";
-        throw std::length_error("Length of the given salt does not match with the hash size");
-    }
-    this->dh.enc_salt = salt;
+    this->dh.setEncSalt(salt);
 }
 
 Bytes DataHeader::getHeaderBytes() const {
@@ -139,9 +103,9 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
     }
     if (verify_pwhash) {
         // verifies the given pwhash with the currently set validator
-        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->dh.hash_mode));  // gets the right hash function
+        std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->dh.getHashMode()));  // gets the right hash function
         // is the chainhash from the given hash equal to the validator
-        const bool isOkay = (this->dh.valid_passwordhash == ChainHashModes::performChainHash(this->dh.chainhash2, std::move(hash), passwordhash).returnValue());
+        const bool isOkay = (this->dh.getValidPasswordHash() == ChainHashModes::performChainHash(this->dh.chainhash2, std::move(hash), passwordhash).returnValue());
         if (!isOkay) {
             // given pwhash is not valid
             PLOG_ERROR << "provided passwordhash is not valid (against validator)";
@@ -155,23 +119,23 @@ void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwh
 
     Bytes dataheader = Bytes();
     Bytes tmp = Bytes();
-    dataheader.addByte(this->dh.file_mode);        // add file mode byte
-    dataheader.addByte(this->dh.hash_mode);        // add hash mode byte
-    dataheader.addByte(this->dh.chainhash1.mode);  // add first chainhash mode byte
-    tmp.setBytes(LongToCharVec(this->dh.chainhash1.iters));
-    dataheader.addBytes(tmp);                                           // add iterations for the first chainhash
-    dataheader.addByte(this->dh.chainhash1_datablock_len);              // add datablock length byte
-    dataheader.addBytes(this->dh.chainhash1.datablock.getDataBlock());  // add first datablock
-    dataheader.addByte(this->dh.chainhash2.mode);                       // add second chainhash mode
-    tmp.setBytes(LongToCharVec(this->dh.chainhash2.iters));
-    dataheader.addBytes(tmp);                                           // add iterations for the second chainhash
-    dataheader.addByte(this->dh.chainhash2_datablock_len);              // add datablock length byte
-    dataheader.addBytes(this->dh.chainhash2.datablock.getDataBlock());  // add second datablock
-    dataheader.addBytes(this->dh.valid_passwordhash);                   // add password validator
+    dataheader.addByte(this->dh.getFileDataMode());     // add file mode byte
+    dataheader.addByte(this->dh.getHashMode());         // add hash mode byte
+    dataheader.addByte(this->dh.chainhash1.getMode());  // add first chainhash mode byte
+    tmp.setBytes(LongToCharVec(this->dh.chainhash1.getIters()));
+    dataheader.addBytes(tmp);                                                    // add iterations for the first chainhash
+    dataheader.addByte(this->dh.chainhash1.getChainHashData().getLen());         // add datablock length byte
+    dataheader.addBytes(this->dh.chainhash1.getChainHashData().getDataBlock());  // add first datablock
+    dataheader.addByte(this->dh.chainhash2.getMode());                           // add second chainhash mode
+    tmp.setBytes(LongToCharVec(this->dh.chainhash2.getIters()));
+    dataheader.addBytes(tmp);                                                    // add iterations for the second chainhash
+    dataheader.addByte(this->dh.chainhash2.getChainHashData().getLen());         // add datablock length byte
+    dataheader.addBytes(this->dh.chainhash2.getChainHashData().getDataBlock());  // add second datablock
+    dataheader.addBytes(this->dh.getValidPasswordHash());                        // add password validator
     // generate the salt with random bytes
-    this->dh.enc_salt = Bytes(this->hash_size);  // set the encrypted salt
-    dataheader.addBytes(this->dh.enc_salt);      // add encrypted salt
-    if (dataheader.getLen() != len) {            // checks if the length is equal to the expected length
+    this->dh.setEncSalt(Bytes(this->hash_size));  // set the random generated encrypted salt
+    dataheader.addBytes(this->dh.getEncSalt());   // add encrypted salt
+    if (dataheader.getLen() != len) {             // checks if the length is equal to the expected length
         PLOG_FATAL << "calculated header has not the expected length (expected: " << +len << ", actual: " << +dataheader.getLen() << ")";
         throw std::logic_error("calculated header has not the expected length");
     }
@@ -601,12 +565,13 @@ ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts dhp) no
     ErrorStruct<DataHeader> err{FAIL, ERR, ""};
     try {
         // these methods throw exceptions if the data is invalid
-        DataHeader dh{dhp.hash_mode};                                    // setting the hash mode
-        dh.setFileDataMode(dhp.file_mode);                               // setting the file data mode
-        dh.setChainHash1(dhp.chainhash1, dhp.chainhash1_datablock_len);  // setting the chainhash 1
-        dh.setChainHash2(dhp.chainhash2, dhp.chainhash2_datablock_len);  // setting the chainhash 2
-        dh.setValidPasswordHashBytes(dhp.valid_passwordhash);            // setting the password validator hash
-        dh.setEncSalt(dhp.enc_salt);                                     // setting the encrypted salt
+        DataHeader dh{dhp.getHashMode()};                                              // setting the hash mode
+        dh.setFileDataMode(dhp.getFileDataMode());                                     // setting the file data mode
+        dh.setChainHash1(dhp.chainhash1, dhp.chainhash1.getChainHashData().getLen());  // setting the chainhash 1
+        dh.setChainHash2(dhp.chainhash2, dhp.chainhash2.getChainHashData().getLen());  // setting the chainhash 2
+        dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());                      // setting the password validator hash
+        if (dhp.isEncSaltSet())                                                        // enc salt is not necessary
+            dh.setEncSalt(dhp.getEncSalt());                                           // setting the encrypted salt
 
         // success
         err.setReturnValue(dh);
