@@ -35,6 +35,13 @@ ErrorStruct<bool> FileHandler::isValidPath(std::filesystem::path file, bool shou
             err.errorCode = ErrorCode::ERR_FILE_NOT_FOUND;
             return err;
         }
+        std::ifstream file_stream(file);  // create the file stream
+        if (!file_stream) {
+            // cannot open the file
+            PLOG_ERROR << "Cannot open the file (file path: " << file << ")";
+            err.errorCode = ErrorCode::ERR_FILE_NOT_OPEN;
+            return err;
+        }
     } else {
         if (std::filesystem::exists(file)) {
             // the given path already exists
@@ -42,13 +49,6 @@ ErrorStruct<bool> FileHandler::isValidPath(std::filesystem::path file, bool shou
             err.errorCode = ErrorCode::ERR_FILE_EXISTS;
             return err;
         }
-    }
-    std::ifstream file_stream(file);  // create the file stream
-    if (!file_stream) {
-        // cannot open the file
-        PLOG_ERROR << "Cannot open the file (file path: " << file << ")";
-        err.errorCode = ErrorCode::ERR_FILE_NOT_OPEN;
-        return err;
     }
     // all checks passed
     return ErrorStruct<bool>{true};
@@ -183,6 +183,7 @@ ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes bytes) const noexcept {
 
 Bytes FileHandler::getAllBytes() const {
     // reads all Bytes from the file
+    PLOG_VERBOSE << "Reading all Bytes from file (file_path: " << this->filepath.c_str() << ")";
     std::ifstream file(this->filepath.c_str());  // create the file stream
     if (!file) {
         // the set encryption file does not exist on the system
