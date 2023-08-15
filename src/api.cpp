@@ -377,7 +377,7 @@ ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) n
         PLOG_ERROR << "The file path is invalid (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
         return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
     }
-    if(err.returnValue().isEmtpy())
+    if (err.returnValue().isEmtpy())
         return this->parent->_select_empty_file(err.returnValue());
     else
         return this->parent->_select_non_empty_file(err.returnValue());

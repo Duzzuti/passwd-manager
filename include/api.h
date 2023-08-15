@@ -115,13 +115,17 @@ class API {
         };
 
         // gets if the selected file is empty
-        virtual ErrorStruct<bool> isFileEmpty() const noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "isFileEmpty is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
+        virtual ErrorStruct<bool> isFileEmpty() const noexcept {
+            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "isFileEmpty is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"};
+        };
 
         // deletes the given .enc file
         virtual ErrorStruct<bool> deleteFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
         // gets the content of the selected file
         // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
-        virtual ErrorStruct<Bytes> getFileContent() noexcept { return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getFileContent is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
+        virtual ErrorStruct<Bytes> getFileContent() noexcept {
+            return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getFileContent is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"};
+        };
         // unselects a file (this is not longer the working file)
         virtual ErrorStruct<bool> unselectFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
         // checks if a password (given from the user to decrypt) is valid for this file and returns its hash.
@@ -251,7 +255,7 @@ class API {
     DataHeaderHelperStruct _createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept;
 
     ErrorStruct<bool> _select_empty_file(const FileHandler file) noexcept;
-    
+
     ErrorStruct<bool> _select_non_empty_file(const FileHandler file) noexcept;
 
     ErrorStruct<bool> _deleteFile() noexcept;
