@@ -67,6 +67,20 @@ struct ErrorStruct {
 
     // getters and setters
     T returnValue() {
+        // returns by value
+        // you cannot access the return value if the function failed
+        if (!isSuccess()) {
+            PLOG_FATAL << "Cannot access the return value, because the struct is not successful";
+            throw std::logic_error("Cannot access the return value, because the struct is not successful");
+        }
+        if (!returnvalue.has_value()) {
+            PLOG_ERROR << "Return value is not set";
+            throw std::logic_error("Return value is not set");
+        }
+        return returnvalue.value();
+    };
+    T& returnRef(){
+        // returns by reference
         // you cannot access the return value if the function failed
         if (!isSuccess()) {
             PLOG_FATAL << "Cannot access the return value, because the struct is not successful";
