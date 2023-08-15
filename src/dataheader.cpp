@@ -83,7 +83,8 @@ Bytes DataHeader::getHeaderBytes() const {
     }
     if (this->getHeaderLength() != this->header_bytes.getLen()) {
         // current header has not the length that it should have (current header is out of date)
-        PLOG_ERROR << "the calculated header length is not equal to the set header length. Call calcHeaderBytes() first. (set: " << +this->header_bytes.getLen() << ", calculated: " << +this->getHeaderLength() << ")";
+        PLOG_ERROR << "the calculated header length is not equal to the set header length. Call calcHeaderBytes() first. (set: " << +this->header_bytes.getLen()
+                   << ", calculated: " << +this->getHeaderLength() << ")";
         throw std::logic_error("the calculated header length is not equal to the set header length. Call calcHeaderBytes() first");
     }
     return this->header_bytes;
@@ -91,7 +92,7 @@ Bytes DataHeader::getHeaderBytes() const {
 
 void DataHeader::calcHeaderBytes(const Bytes passwordhash) {
     // calculates the header
-    PLOG_VERBOSE << "calculating header bytes " << (passwordhash.isEmpty()? "without verifying" : "with verifying");
+    PLOG_VERBOSE << "calculating header bytes " << (passwordhash.isEmpty() ? "without verifying" : "with verifying");
     if (!this->isComplete()) {
         // header bytes cannot be calculated (data is missing)
         PLOG_ERROR << "not all required data is set to calculate the header bytes";
