@@ -155,11 +155,12 @@ ErrorStruct<bool> FileHandler::writeBytes(Bytes bytes) const noexcept {
     }
     // write the data
     unsigned char* data = new unsigned char[bytes.getLen()];
-    bytes.getBytesArray(data);
-    file.write(reinterpret_cast<char*>(data), sizeof(reinterpret_cast<char*>(data)));
+    bytes.getBytesArray(data, bytes.getLen());
+    file.write(reinterpret_cast<char*>(data), bytes.getLen());
     file.close();
 
     delete[] data;
+    PLOG_VERBOSE << "Successfully wrote " << bytes.getLen() << " bytes to file (file_path: " << this->filepath.c_str() << ")";
     return ErrorStruct<bool>{true};
 }
 
@@ -184,24 +185,22 @@ ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes bytes) const noexcept {
 Bytes FileHandler::getAllBytes() const {
     // reads all Bytes from the file
     PLOG_VERBOSE << "Reading all Bytes from file (file_path: " << this->filepath.c_str() << ")";
-    std::ifstream file(this->filepath.c_str());  // create the file stream
+    std::ifstream file(this->filepath.c_str(), std::ios::binary);  // create the file stream
     if (!file) {
         // the set encryption file does not exist on the system
         throw std::runtime_error("file cannot be opened");
     }
     // get length of file:
     file.seekg(0, file.end);  // jump to the end
-    int num = file.tellg();   // saves the position
-    file.close();
+    std::streampos file_size = file.tellg();   // saves the position
+    file.seekg(0, std::ios::beg);
 
     // gets the Bytes
-    char buf[num];        // creates a buffer to hold the read bytes
-    file.read(buf, num);  // reads into the buffer
-    // transform the char array into an Bytes object
+    std::vector<unsigned char> file_content(file_size);
+    file.read(reinterpret_cast<char*>(file_content.data()), file_size);
     Bytes ret;
-    for (char c : buf) {
-        ret.addByte(static_cast<unsigned char>(c));  // cast from char to unsigned char
-    }
+    ret.setBytes(file_content);
+    PLOG_VERBOSE << "lol" << toHex(ret);
     return ret;
 }
 
