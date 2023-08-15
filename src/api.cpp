@@ -116,6 +116,8 @@ DataHeaderHelperStruct API::_createDataHeaderIters(const std::string password, c
 
     // dataheader parts is now ready to create the dataheader object
     dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
+    if(dhhs.errorStruct.isSuccess())
+        dhhs.errorStruct.returnRef().calcHeaderBytes();
     dhhs.Password_hash(ch1_err.returnValue());  // adding the password hash to the dhhs struct
     return dhhs;
 }
@@ -206,6 +208,8 @@ DataHeaderHelperStruct API::_createDataHeaderTime(const std::string password, co
 
     // dataheader parts is now ready to create the dataheader object
     dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
+    if(dhhs.errorStruct.isSuccess())
+        dhhs.errorStruct.returnRef().calcHeaderBytes();
     dhhs.Password_hash(ch1_err.returnValue().result);  // adding the password hash to the dhhs struct
     return dhhs;
 }
@@ -230,7 +234,7 @@ ErrorStruct<bool> API::_select_non_empty_file(const FileHandler file) noexcept {
     }
     Bytes content;
     try {
-        content = file.getAllBytes();
+        content = file.getData().returnValue();
     } catch (std::exception& e) {
         // the data could not be read
         PLOG_ERROR << "The data could not be read (what: " << e.what() << ")";
@@ -495,7 +499,6 @@ ErrorStruct<DataHeader> API::EMPTY_FILE_SELECTED::createDataHeader(const std::st
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
-    PLOG_VERBOSE << "Creating data header with iterations settings (" << ds << ", timeout: " << timeout << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->_createDataHeaderIters(password, ds, timeout);
     if (!dhhs.errorStruct.isSuccess()) {
@@ -523,7 +526,6 @@ ErrorStruct<DataHeader> API::EMPTY_FILE_SELECTED::createDataHeader(const std::st
         ErrorStruct<DataHeader> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
-    PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
     // calculates the data header (its a refactored function that is used more than once)
     DataHeaderHelperStruct dhhs = this->parent->_createDataHeaderTime(password, ds);
     if (!dhhs.errorStruct.isSuccess()) {
@@ -624,6 +626,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::changeSalt() noexcept {
     ErrorStruct<DataHeader> err = DataHeader::setHeaderParts(dhp);
     if (err.isSuccess()) {
         this->parent->dh = err.returnValue();
+        this->parent->dh.calcHeaderBytes();
     } else {
         PLOG_ERROR << "The data header could not be created (changeSalt) (success: " << +err.success << ", errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what
                    << ")";
