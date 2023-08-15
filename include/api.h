@@ -115,15 +115,15 @@ class API {
         };
 
         // gets if the selected file is empty
-        virtual ErrorStruct<bool> isFileEmpty() const noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "isFileEmpty is only available in the FILE_SELECTED state"}; };
+        virtual ErrorStruct<bool> isFileEmpty() const noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "isFileEmpty is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
 
         // deletes the given .enc file
-        virtual ErrorStruct<bool> deleteFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED state"}; };
+        virtual ErrorStruct<bool> deleteFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
         // gets the content of the selected file
         // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
-        virtual ErrorStruct<Bytes> getFileContent() noexcept { return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getFileContent is only available in the FILE_SELECTED state"}; };
+        virtual ErrorStruct<Bytes> getFileContent() noexcept { return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getFileContent is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
         // unselects a file (this is not longer the working file)
-        virtual ErrorStruct<bool> unselectFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the FILE_SELECTED state"}; };
+        virtual ErrorStruct<bool> unselectFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
         // checks if a password (given from the user to decrypt) is valid for this file and returns its hash.
         // This call is expensive
         // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
@@ -136,10 +136,10 @@ class API {
         // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
         // you can specify the iterations or the time (the chainhash runs until the time is reached to get the iterations)
         virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept {
-            return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the FILE_SELECTED or DECRYPT state"};
+            return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the EMPTY_FILE_SELECTED or DECRYPT state"};
         };
         virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
-            return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the FILE_SELECTED or DECRYPTED state"};
+            return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the EMPTY_FILE_SELECTED or DECRYPTED state"};
         };
         // creates data header with the current settings and password, just changes the salt
         // this call is not expensive because it does not have to chainhash the password
@@ -186,6 +186,15 @@ class API {
         ErrorStruct<Bytes> getFileContent() noexcept override;
         ErrorStruct<bool> unselectFile() noexcept override;
         ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept override;
+    };
+
+    class EMPTY_FILE_SELECTED : public WorkflowState {
+       public:
+        EMPTY_FILE_SELECTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to EMPTY_FILE_SELECTED"; };
+        ErrorStruct<bool> isFileEmpty() const noexcept override;
+        ErrorStruct<bool> deleteFile() noexcept override;
+        ErrorStruct<Bytes> getFileContent() noexcept override;
+        ErrorStruct<bool> unselectFile() noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept override;
         ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept override;
     };
@@ -233,13 +242,21 @@ class API {
 
     // utility functions
     // gets the file handler for the given file path
-    ErrorStruct<FileHandler> getFileHandler(const std::filesystem::path file_path) const noexcept;
+    ErrorStruct<FileHandler> _getFileHandler(const std::filesystem::path file_path) const noexcept;
 
     // does the most work for creating a new dataheader from DataHeaderSettingsIters
-    DataHeaderHelperStruct createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) const noexcept;
+    DataHeaderHelperStruct _createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) const noexcept;
 
     // does the most work for creating a new dataheader from DataHeaderSettingsTime
-    DataHeaderHelperStruct createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept;
+    DataHeaderHelperStruct _createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept;
+
+    ErrorStruct<bool> _select_empty_file(const FileHandler file) noexcept;
+    
+    ErrorStruct<bool> _select_non_empty_file(const FileHandler file) noexcept;
+
+    ErrorStruct<bool> _deleteFile() noexcept;
+
+    ErrorStruct<bool> _unselectFile() noexcept;
 
    public:
     // constructs the api with the file mode that should be worked with

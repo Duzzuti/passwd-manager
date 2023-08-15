@@ -10,7 +10,7 @@ implementation of api.h
 #include "logger.h"
 #include "timer.h"
 
-ErrorStruct<FileHandler> API::getFileHandler(const std::filesystem::path file_path) const noexcept {
+ErrorStruct<FileHandler> API::_getFileHandler(const std::filesystem::path file_path) const noexcept {
     // checks if the given file path is valid and sets the file handler
     ErrorStruct<bool> err1 = FileHandler::isValidPath(file_path, true);
     if (!err1.isSuccess()) {
@@ -21,7 +21,7 @@ ErrorStruct<FileHandler> API::getFileHandler(const std::filesystem::path file_pa
     return ErrorStruct<FileHandler>{FileHandler(file_path)};
 }
 
-DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
+DataHeaderHelperStruct API::_createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
@@ -120,7 +120,7 @@ DataHeaderHelperStruct API::createDataHeaderIters(const std::string password, co
     return dhhs;
 }
 
-DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
+DataHeaderHelperStruct API::_createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept {
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     // sets up the return struct
     if (!ds.isComplete()) {
@@ -210,6 +210,61 @@ DataHeaderHelperStruct API::createDataHeaderTime(const std::string password, con
     return dhhs;
 }
 
+ErrorStruct<bool> API::_select_empty_file(const FileHandler file) noexcept {
+    // select an empty file (no need to set a dataheader etc)
+    this->encrypted_data = Bytes();
+    PLOG_INFO << "File selected (file_path: " << file.getPath() << ")";
+    // set the selected file
+    this->selected_file = file;
+    this->current_state = std::make_unique<EMPTY_FILE_SELECTED>(this);
+    return ErrorStruct<bool>{true};
+}
+
+ErrorStruct<bool> API::_select_non_empty_file(const FileHandler file) noexcept {
+    // sets the file data
+    ErrorStruct<DataHeader> err_dataheader = file.getDataHeader();
+    if (!err_dataheader.isSuccess()) {
+        // the data header could not be read
+        PLOG_ERROR << "The data header could not be read (errorCode: " << +err_dataheader.errorCode << ", errorInfo: " << err_dataheader.errorInfo << ", what: " << err_dataheader.what << ")";
+        return ErrorStruct<bool>{err_dataheader.success, err_dataheader.errorCode, err_dataheader.errorInfo, err_dataheader.what};
+    }
+    Bytes content;
+    try {
+        content = file.getAllBytes();
+    } catch (std::exception& e) {
+        // the data could not be read
+        PLOG_ERROR << "The data could not be read (what: " << e.what() << ")";
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_READ, file.getPath().c_str(), e.what()};
+    }
+    this->encrypted_data = content;
+    this->dh = err_dataheader.returnValue();
+
+    PLOG_INFO << "File selected (file_path: " << file.getPath() << ")";
+    // set the selected file
+    this->selected_file = file;
+    this->current_state = std::make_unique<FILE_SELECTED>(this);
+    return ErrorStruct<bool>{true};
+}
+
+ErrorStruct<bool> API::_deleteFile() noexcept {
+    // deletes the working file
+    if (!std::filesystem::remove(this->selected_file.value().getPath())) {
+        // the file could not be deleted
+        PLOG_ERROR << "The file could not be deleted (deleteFile)";
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_DELETED, this->selected_file.value().getPath().c_str()};
+    }
+    // reset the selected file
+    return this->current_state->unselectFile();
+}
+
+ErrorStruct<bool> API::_unselectFile() noexcept {
+    // unselects the working file
+    this->selected_file = std::optional<FileHandler>();
+    this->encrypted_data = Bytes();
+    this->current_state = std::make_unique<INIT>(this);
+    return ErrorStruct<bool>{true};
+}
+
 API::API(const FModes file_mode) : current_state(std::make_unique<INIT>(this)), dh(DataHeader{HModes(STANDARD_HASHMODE)}) {
     // constructs the API in a given workflow mode and initializes the private variables
     PLOG_VERBOSE << "API object created (file_mode: " << +file_mode << ")";
@@ -294,7 +349,7 @@ ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std:
         // build the complete file path
         std::filesystem::path fp = dir / err.returnValue()[i];
         // checks if the file data mode matches with the file mode of the file is empty
-        ErrorStruct<FileHandler> err2 = this->parent->getFileHandler(fp);
+        ErrorStruct<FileHandler> err2 = this->parent->_getFileHandler(fp);
         if (err2.isSuccess()) {
             if (err2.returnValue().isEmtpy() || err2.returnValue().isDataHeader(this->parent->file_data_struct.getFileMode()).isSuccess()) {
                 // dataheader is valid or file is empty
@@ -316,52 +371,36 @@ ErrorStruct<bool> API::INIT::createFile(const std::filesystem::path file_path) n
 ErrorStruct<bool> API::INIT::selectFile(const std::filesystem::path file_path) noexcept {
     // selects the given file as the working file
     PLOG_VERBOSE << "Selecting file (file_path: " << file_path << ")";
-    ErrorStruct<FileHandler> err = this->parent->getFileHandler(file_path);
+    ErrorStruct<FileHandler> err = this->parent->_getFileHandler(file_path);
     if (!err.isSuccess()) {
         // file path is invalid
         PLOG_ERROR << "The file path is invalid (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
         return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
     }
-    // sets the file data
-    ErrorStruct<DataHeader> err_dataheader = err.returnValue().getDataHeader();
-    if (!err_dataheader.isSuccess()) {
-        // the data header could not be read
-        PLOG_ERROR << "The data header could not be read (errorCode: " << +err_dataheader.errorCode << ", errorInfo: " << err_dataheader.errorInfo << ", what: " << err_dataheader.what << ")";
-        return ErrorStruct<bool>{err_dataheader.success, err_dataheader.errorCode, err_dataheader.errorInfo, err_dataheader.what};
-    }
-    Bytes content;
-    try {
-        content = err.returnValue().getAllBytes();
-    } catch (std::exception& e) {
-        // the data could not be read
-        PLOG_ERROR << "The data could not be read (what: " << e.what() << ")";
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_READ, file_path.c_str(), e.what()};
-    }
-    this->parent->encrypted_data = content;
-    this->parent->dh = err_dataheader.returnValue();
-
-    PLOG_INFO << "File selected (selectFile) (file_path: " << file_path << ")";
-    // set the selected file
-    this->parent->selected_file = err.returnValue();
-    this->parent->current_state = std::make_unique<FILE_SELECTED>(this->parent);
-    return ErrorStruct<bool>{true};
+    if(err.returnValue().isEmtpy())
+        return this->parent->_select_empty_file(err.returnValue());
+    else
+        return this->parent->_select_non_empty_file(err.returnValue());
 }
 
 ErrorStruct<bool> API::FILE_SELECTED::isFileEmpty() const noexcept {
-    // gets if the working file is empty
-    return ErrorStruct<bool>{this->parent->selected_file.value().isEmtpy()};
+    // file selected is always not empty
+    return ErrorStruct<bool>{false};
+}
+
+ErrorStruct<bool> API::EMPTY_FILE_SELECTED::isFileEmpty() const noexcept {
+    // empty file selected is always empty
+    return ErrorStruct<bool>{true};
 }
 
 ErrorStruct<bool> API::FILE_SELECTED::deleteFile() noexcept {
-    // deletes the working file
     PLOG_VERBOSE << "Deleting file (file_path: " << this->parent->selected_file.value().getPath() << ")";
-    if (!std::filesystem::remove(this->parent->selected_file.value().getPath())) {
-        // the file could not be deleted
-        PLOG_ERROR << "The file could not be deleted (deleteFile)";
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_DELETED, this->parent->selected_file.value().getPath().c_str()};
-    }
-    // reset the selected file
-    return this->unselectFile();
+    return this->parent->_deleteFile();
+}
+
+ErrorStruct<bool> API::EMPTY_FILE_SELECTED::deleteFile() noexcept {
+    PLOG_VERBOSE << "Deleting file (file_path: " << this->parent->selected_file.value().getPath() << ")";
+    return this->parent->_deleteFile();
 }
 
 ErrorStruct<Bytes> API::FILE_SELECTED::getFileContent() noexcept {
@@ -377,13 +416,19 @@ ErrorStruct<Bytes> API::FILE_SELECTED::getFileContent() noexcept {
     return ErrorStruct<Bytes>{content};
 }
 
+ErrorStruct<Bytes> API::EMPTY_FILE_SELECTED::getFileContent() noexcept {
+    // empty files have no content
+    return ErrorStruct<Bytes>{Bytes()};
+}
+
 ErrorStruct<bool> API::FILE_SELECTED::unselectFile() noexcept {
-    // unselects the working file
     PLOG_VERBOSE << "Unselecting file (file_path: " << this->parent->selected_file.value().getPath() << ")";
-    this->parent->selected_file = std::optional<FileHandler>();
-    this->parent->encrypted_data = Bytes();
-    this->parent->current_state = std::make_unique<INIT>(this->parent);
-    return ErrorStruct<bool>{true};
+    return this->parent->_unselectFile();
+}
+
+ErrorStruct<bool> API::EMPTY_FILE_SELECTED::unselectFile() noexcept {
+    PLOG_VERBOSE << "Unselecting file (file_path: " << this->parent->selected_file.value().getPath() << ")";
+    return this->parent->_unselectFile();
 }
 
 ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password, const u_int64_t timeout) noexcept {
@@ -393,12 +438,6 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
     // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
     PLOG_VERBOSE << "Verifying password (timeout: " << timeout << ")";
-    if (this->parent->selected_file.value().isEmtpy()) {
-        // file is empty, verifyPassword is not possible
-        PLOG_ERROR << "File is empty, verifyPassword is not possible (verifyPassword) (file_path: " << this->parent->selected_file.value().getPath().c_str() << ")";
-        return ErrorStruct<Bytes>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is empty in verifyPassword"};
-    }
-
     std::shared_ptr<Hash> hash = nullptr;
 
     try {
@@ -446,7 +485,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
     }
 }
 
-ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) noexcept {
+ErrorStruct<DataHeader> API::EMPTY_FILE_SELECTED::createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout) noexcept {
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
@@ -457,13 +496,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
         return err;
     }
     PLOG_VERBOSE << "Creating data header with iterations settings (" << ds << ", timeout: " << timeout << ")";
-    if (!this->parent->selected_file.value().isEmtpy()) {
-        // file is not empty, createDataHeader is not possible
-        PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file.value().getPath().c_str() << ")";
-        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader"};
-    }
     // calculates the data header (its a refactored function that is used more than once)
-    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
+    DataHeaderHelperStruct dhhs = this->parent->_createDataHeaderIters(password, ds, timeout);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
@@ -480,7 +514,7 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
     return dhhs.errorStruct;
 }
 
-ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
+ErrorStruct<DataHeader> API::EMPTY_FILE_SELECTED::createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
@@ -490,14 +524,8 @@ ErrorStruct<DataHeader> API::FILE_SELECTED::createDataHeader(const std::string p
         return err;
     }
     PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
-    if (!this->parent->selected_file.value().isEmtpy()) {
-        // file is not empty, createDataHeader is not possible
-        PLOG_ERROR << "File is not empty, createDataHeader is not possible (createDataHeader) (file_path: " << this->parent->selected_file.value().getPath().c_str() << ")";
-        return ErrorStruct<DataHeader>{SuccessType::FAIL, ErrorCode::ERR_API_STATE_INVALID, "file is not empty in createDataHeader"};
-    }
-
     // calculates the data header (its a refactored function that is used more than once)
-    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
+    DataHeaderHelperStruct dhhs = this->parent->_createDataHeaderTime(password, ds);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
@@ -616,7 +644,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     }
     PLOG_VERBOSE << "Creating data header with iterations settings (" << ds << ", timeout: " << timeout << ")";
     // calculates the data header (its a refactored function that is used more than once)
-    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderIters(password, ds, timeout);
+    DataHeaderHelperStruct dhhs = this->parent->_createDataHeaderIters(password, ds, timeout);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
@@ -643,7 +671,7 @@ ErrorStruct<DataHeader> API::DECRYPTED::createDataHeader(const std::string passw
     }
     PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
     // calculates the data header (its a refactored function that is used more than once)
-    DataHeaderHelperStruct dhhs = this->parent->createDataHeaderTime(password, ds);
+    DataHeaderHelperStruct dhhs = this->parent->_createDataHeaderTime(password, ds);
     if (!dhhs.errorStruct.isSuccess()) {
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
@@ -662,7 +690,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path file_p
     // writes encrypted data to a file adds the dataheader, uses the encrypted data from getEncryptedData
     PLOG_VERBOSE << "Writing to file (file_path: " << file_path << ")";
     // checks if the selected file exists
-    ErrorStruct<FileHandler> err_file = this->parent->getFileHandler(file_path);
+    ErrorStruct<FileHandler> err_file = this->parent->_getFileHandler(file_path);
     if (!err_file.isSuccess()) {
         PLOG_ERROR << "The provided file path is invalid (writeToFile) (errorCode: " << +err_file.errorCode << ", errorInfo: " << err_file.errorInfo << ", what: " << err_file.what << ")";
         return ErrorStruct<bool>{err_file.success, err_file.errorCode, err_file.errorInfo, err_file.what};
