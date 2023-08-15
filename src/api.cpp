@@ -116,8 +116,7 @@ DataHeaderHelperStruct API::_createDataHeaderIters(const std::string password, c
 
     // dataheader parts is now ready to create the dataheader object
     dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
-    if(dhhs.errorStruct.isSuccess())
-        dhhs.errorStruct.returnRef().calcHeaderBytes();
+    if (dhhs.errorStruct.isSuccess()) dhhs.errorStruct.returnRef().calcHeaderBytes();
     dhhs.Password_hash(ch1_err.returnValue());  // adding the password hash to the dhhs struct
     return dhhs;
 }
@@ -208,8 +207,7 @@ DataHeaderHelperStruct API::_createDataHeaderTime(const std::string password, co
 
     // dataheader parts is now ready to create the dataheader object
     dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
-    if(dhhs.errorStruct.isSuccess())
-        dhhs.errorStruct.returnRef().calcHeaderBytes();
+    if (dhhs.errorStruct.isSuccess()) dhhs.errorStruct.returnRef().calcHeaderBytes();
     dhhs.Password_hash(ch1_err.returnValue().result);  // adding the password hash to the dhhs struct
     return dhhs;
 }
