@@ -191,8 +191,8 @@ Bytes FileHandler::getAllBytes() const {
         throw std::runtime_error("file cannot be opened");
     }
     // get length of file:
-    file.seekg(0, file.end);  // jump to the end
-    std::streampos file_size = file.tellg();   // saves the position
+    file.seekg(0, file.end);                  // jump to the end
+    std::streampos file_size = file.tellg();  // saves the position
     file.seekg(0, std::ios::beg);
 
     // gets the Bytes
