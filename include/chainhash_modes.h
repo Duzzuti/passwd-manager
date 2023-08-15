@@ -96,7 +96,6 @@ struct ChainHash {
         this->datablock = chainhash_data;
     };
 
-
    public:
     ChainHash() = default;
     ChainHash(CHModes chainhash_mode, u_int64_t iters, ChainHashData chainhash_data) {
