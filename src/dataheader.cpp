@@ -42,9 +42,7 @@ void DataHeader::setChainHash1(const ChainHash chainhash, const unsigned char le
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
     // set the information to the object
-    this->dh.chainhash1.setMode(chainhash.getMode());
-    this->dh.chainhash1.setChainHashData(chainhash.getChainHashData());
-    this->dh.chainhash1.setIters(chainhash.getIters());
+    this->dh.chainhash1 = ChainHash(chainhash.getMode(), chainhash.getIters(), chainhash.getChainHashData());
 }
 
 void DataHeader::setChainHash2(const ChainHash chainhash, const unsigned char len) {
@@ -55,9 +53,7 @@ void DataHeader::setChainHash2(const ChainHash chainhash, const unsigned char le
         throw std::invalid_argument("length of the datablock does not match with the given length");
     }
     // set the information to the object
-    this->dh.chainhash2.setMode(chainhash.getMode());
-    this->dh.chainhash2.setChainHashData(chainhash.getChainHashData());
-    this->dh.chainhash2.setIters(chainhash.getIters());
+    this->dh.chainhash2 = ChainHash(chainhash.getMode(), chainhash.getIters(), chainhash.getChainHashData());
 }
 
 void DataHeader::setFileDataMode(const FModes file_mode) {
@@ -87,21 +83,21 @@ Bytes DataHeader::getHeaderBytes() const {
     }
     if (this->getHeaderLength() != this->header_bytes.getLen()) {
         // current header has not the length that it should have (current header is out of date)
-        PLOG_ERROR << "the calculated header length is not equal to the set header length. Call calcHeaderBytes() first";
+        PLOG_ERROR << "the calculated header length is not equal to the set header length. Call calcHeaderBytes() first. (set: " << +this->header_bytes.getLen() << ", calculated: " << +this->getHeaderLength() << ")";
         throw std::logic_error("the calculated header length is not equal to the set header length. Call calcHeaderBytes() first");
     }
     return this->header_bytes;
 }
 
-void DataHeader::calcHeaderBytes(const Bytes passwordhash, const bool verify_pwhash) {
+void DataHeader::calcHeaderBytes(const Bytes passwordhash) {
     // calculates the header
-    PLOG_VERBOSE << "calculating header bytes with verify_pwhash: " << verify_pwhash;
+    PLOG_VERBOSE << "calculating header bytes " << (passwordhash.isEmpty()? "without verifying" : "with verifying");
     if (!this->isComplete()) {
         // header bytes cannot be calculated (data is missing)
         PLOG_ERROR << "not all required data is set to calculate the header bytes";
         throw std::logic_error("not all required data is set to calculate the header bytes");
     }
-    if (verify_pwhash) {
+    if (!passwordhash.isEmpty()) {
         // verifies the given pwhash with the currently set validator
         std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->dh.getHashMode()));  // gets the right hash function
         // is the chainhash from the given hash equal to the validator
@@ -212,12 +208,16 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // setting the file data mode
     try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
         DataHeader dh = err.returnValue();
+        err.success = FAIL;
         dh.setFileDataMode(FModes(fmode));
         err.setReturnValue(dh);
     } catch (const std::invalid_argument& ex) {
         // the file mode is invalid
         PLOG_ERROR << "invalid file mode found in data (file_mode: " << +fmode << ") (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR_FILEMODE_INVALID;
         err.errorInfo = fmode;
         err.what = ex.what();
@@ -225,6 +225,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     } catch (const std::exception& ex) {
         // some other error occurred
         PLOG_ERROR << "An error occurred while setting the file mode (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR;
         err.errorInfo = "An error occurred while setting the file mode";
         err.what = ex.what();
@@ -303,9 +304,19 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         return err;
     }
     // chainhash 1 data block
+    int data_len = 0;
     for (NameLen nl : format1.getNameLenList()) {
         try {
-            tmp = fileBytes.popFirstBytes(nl.len).value();
+            if (nl.len != 0) {
+                // got a data part with set length
+                tmp = fileBytes.popFirstBytes(nl.len).value();
+                data_len += nl.len;
+            } else {
+                // got a data parCHModest with * length (use the remaining bytes)
+                tmp = fileBytes.popFirstBytes(255 - data_len).value();
+                chd1.addBytes(tmp);
+                break;
+            }
             chd1.addBytes(tmp);
         } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
@@ -346,18 +357,23 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     }
     // chainhash 1
     try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
         DataHeader dh = err.returnValue();
+        err.success = FAIL;
         dh.setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1}, ch1datablocklen);
         err.setReturnValue(dh);
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         PLOG_ERROR << "invalid chainhash 1 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR_CHAINHASH1_INVALID;
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
         // some other error occurred
         PLOG_ERROR << "An error occurred while setting the chainhash 1 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR;
         err.errorInfo = "An error occurred while setting the chainhash data block 1";
         err.what = ex.what();
@@ -436,9 +452,19 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         return err;
     }
     // chainhash 2 data block
+    data_len = 0;
     for (NameLen nl : format2.getNameLenList()) {
         try {
-            tmp = fileBytes.popFirstBytes(nl.len).value();
+            if (nl.len != 0) {
+                // got a data part with set length
+                tmp = fileBytes.popFirstBytes(nl.len).value();
+                data_len += nl.len;
+            } else {
+                // got a data parCHModest with * length (use the remaining bytes)
+                tmp = fileBytes.popFirstBytes(255 - data_len).value();
+                chd2.addBytes(tmp);
+                break;
+            }
             chd2.addBytes(tmp);
         } catch (const std::bad_optional_access& ex) {
             // popFirstBytes returned an empty optional
@@ -479,18 +505,23 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     }
     // chainhash 2
     try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
         DataHeader dh = err.returnValue();
+        err.success = FAIL;
         dh.setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2}, ch2datablocklen);
         err.setReturnValue(dh);
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         PLOG_ERROR << "invalid chainhash 2 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR_CHAINHASH2_INVALID;
         err.what = ex.what();
         return err;
     } catch (const std::exception& ex) {
         // some other error occurred
         PLOG_ERROR << "An error occurred while setting the chainhash 2 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR;
         err.errorInfo = "An error occurred while setting the chainhash data block 2";
         err.what = ex.what();
@@ -499,13 +530,17 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // password validator hash
     try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
         DataHeader dh = err.returnValue();
+        err.success = FAIL;
         tmp = fileBytes.popFirstBytes(dh.hash_size).value();
         dh.setValidPasswordHashBytes(tmp);
         err.setReturnValue(dh);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         PLOG_ERROR << "not enough data to read the password validator hash (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Password validator hash";
         err.what = ex.what();
@@ -514,6 +549,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         // password validator hash has the wrong len
         PLOG_ERROR << "length of the password validator hash does not match with the hash size (validator hash len: " << +tmp.getLen() << ", hash size: " << +err.returnValue().hash_size
                    << ") (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR_LEN_INVALID;
         err.errorInfo = toHex(tmp);
         err.what = ex.what();
@@ -521,6 +557,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     } catch (const std::exception& ex) {
         // some other error occurred
         PLOG_ERROR << "An error occurred while setting and reading the password validator hash (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR;
         err.errorInfo = "An error occurred while setting and reading the password validator hash";
         err.what = ex.what();
@@ -529,13 +566,17 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // encrypted salt
     try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
         DataHeader dh = err.returnValue();
+        err.success = FAIL;
         tmp = fileBytes.popFirstBytes(dh.hash_size).value();
         dh.setEncSalt(tmp);
         err.setReturnValue(dh);
     } catch (const std::bad_optional_access& ex) {
         // popFirstBytes returned an empty optional
         PLOG_ERROR << "not enough data to read the salt hash (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Password salt hash";
         err.what = ex.what();
@@ -544,6 +585,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         // salt hash has the wrong len
         PLOG_ERROR << "length of the salt hash does not match with the hash size (salt hash len: " << +tmp.getLen() << ", hash size: " << +err.returnValue().hash_size << ") (error msg: " << ex.what()
                    << ")";
+        err.success = FAIL;
         err.errorCode = ERR_LEN_INVALID;
         err.errorInfo = toHex(tmp);
         err.what = ex.what();
@@ -551,6 +593,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     } catch (const std::exception& ex) {
         // some other error occurred
         PLOG_ERROR << "An error occurred while setting and reading the salt hash (error msg: " << ex.what() << ")";
+        err.success = FAIL;
         err.errorCode = ERR;
         err.errorInfo = "An error occurred while setting and reading the salt hash";
         err.what = ex.what();
