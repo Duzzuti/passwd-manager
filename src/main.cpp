@@ -3,11 +3,11 @@
 #include "api.h"
 #include "logger.h"
 
-//temp
+// temp
 #include "password_data.h"
 #include "rng.h"
-#include "utility.h"
 #include "timer.h"
+#include "utility.h"
 
 int main(int argc, char* argv[]) {
     // for (int i = 0; i < argc; i++){
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     plog::init(plog::verbose, &consoleAppender).addAppender(&fileAppender);
 
     // test constants
-    //std::filesystem::path FILE =  charVecToString(RNG::get_random_bytes(5)) + ".enc";
+    // std::filesystem::path FILE =  charVecToString(RNG::get_random_bytes(5)) + ".enc";
     std::filesystem::path FILE = "qqY�7.enc";
     std::string PASS = "test";
     int sleepTime = 5;
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     }
     Timer timer;
     timer.start();
-    if(0){
+    if (0) {
         enum ACTION { ADD, SELECT, DELETE, UNSELECT, VERPASS, CREATEDH };
         ACTION ACT1 = ADD;
         ACTION ACT2 = CREATEDH;
@@ -154,21 +154,21 @@ int main(int argc, char* argv[]) {
         Bytes b;
         b.setBytes(std::vector<unsigned char>{0x00, 0x01, 0x02, 0x03, 0x04});
         fds.dec_data = b;
-        // change salt 
+        // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
         ErrorStruct<Bytes> enc_err = api.getEncryptedData(fds);
-        if(enc_err.isSuccess())
+        if (enc_err.isSuccess())
             PLOG_DEBUG << "Encrypted data successfully: " << toHex(enc_err.returnValue());
         else
             PLOG_ERROR << "Failed to encrypt data: " << getErrorMessage(enc_err);
-        
+
         ErrorStruct<bool> err_write = api.writeToFile();
-        if(err_write.isSuccess())
+        if (err_write.isSuccess())
             PLOG_DEBUG << "Wrote to file successfully";
         else
             PLOG_ERROR << "Failed to write to file: " << getErrorMessage(err_write);
-    }else{
+    } else {
         enum ACTION { ADD, SELECT, DELETE, UNSELECT, VERPASS, CREATEDH };
         ACTION ACT1 = SELECT;
         ACTION ACT2 = VERPASS;
@@ -263,7 +263,7 @@ int main(int argc, char* argv[]) {
 
         // DECRYPTED
         ErrorStruct<FileDataStruct> fds = api.getDecryptedData();
-        if(fds.isSuccess())
+        if (fds.isSuccess())
             PLOG_DEBUG << "Got decrypted data successfully: " << toHex(fds.returnValue().dec_data);
         else
             PLOG_ERROR << "Failed to get decrypted data: " << getErrorMessage(fds);
@@ -276,22 +276,22 @@ int main(int argc, char* argv[]) {
         Bytes b;
         b.setBytes(std::vector<unsigned char>{0x00, 0x01, 0x02, 0x03, 0x04});
         fds.returnRef().dec_data = b;
-        // change salt 
+        // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
         ErrorStruct<Bytes> enc_err = api.getEncryptedData(fds.returnRef());
-        if(enc_err.isSuccess())
+        if (enc_err.isSuccess())
             PLOG_DEBUG << "Encrypted data successfully: " << toHex(enc_err.returnValue());
         else
             PLOG_ERROR << "Failed to encrypt data: " << getErrorMessage(enc_err);
-        
+
         ErrorStruct<bool> err_write = api.writeToFile();
-        if(err_write.isSuccess())
+        if (err_write.isSuccess())
             PLOG_DEBUG << "Wrote to file successfully";
         else
             PLOG_ERROR << "Failed to write to file: " << getErrorMessage(err_write);
     }
     // WORK
     timer.stop();
-    PLOG_INFO << "Application finished in " << timer.getTime()/1000.0 << " seconds";
+    PLOG_INFO << "Application finished in " << timer.getTime() / 1000.0 << " seconds";
 }
