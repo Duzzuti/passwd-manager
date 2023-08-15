@@ -78,34 +78,50 @@ struct ChainHash {
         return es;
     }
 
-   public:
-    ChainHash() = default;
-    ChainHash(CHModes chainhash_mode, u_int64_t iters, ChainHashData chainhash_data) {
-        // constructor for a chainhash
-        // this chainhash is validated
-        this->setMode(chainhash_mode);
-        this->setIters(iters);
-        this->setChainHashData(chainhash_data);
-    }
-
     // setters
-    void setIters(const u_int64_t iters) {
+    void _setIters(const u_int64_t iters) {
         // sets the iters
         this->iters = iters;
-        this->isValid();
     };
-    void setMode(const CHModes chainhash_mode) {
+    void _setMode(const CHModes chainhash_mode) {
         // sets the chainhash mode
         if (!ChainHashModes::isModeValid(chainhash_mode)) {
             PLOG_FATAL << "chainhash mode is not valid (" << +chainhash_mode << ")";
             throw std::invalid_argument("chainhash mode does not exist");
         }
         this->mode = chainhash_mode;
+    };
+    void _setChainHashData(const ChainHashData chainhash_data) {
+        // sets the chainhash data block
+        this->datablock = chainhash_data;
+    };
+
+
+   public:
+    ChainHash() = default;
+    ChainHash(CHModes chainhash_mode, u_int64_t iters, ChainHashData chainhash_data) {
+        // constructor for a chainhash
+        // this chainhash is validated
+        this->_setMode(chainhash_mode);
+        this->_setIters(iters);
+        this->_setChainHashData(chainhash_data);
+        this->isValid();
+    }
+
+    // setters
+    void setIters(const u_int64_t iters) {
+        // sets the iters
+        this->_setIters(iters);
+        this->isValid();
+    };
+    void setMode(const CHModes chainhash_mode) {
+        // sets the chainhash mode
+        this->_setMode(chainhash_mode);
         this->isValid();
     };
     void setChainHashData(const ChainHashData chainhash_data) {
         // sets the chainhash data block
-        this->datablock = chainhash_data;
+        this->_setChainHashData(chainhash_data);
         this->isValid();
     };
 
