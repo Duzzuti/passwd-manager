@@ -79,7 +79,7 @@ struct ErrorStruct {
         }
         return returnvalue.value();
     };
-    T& returnRef(){
+    T& returnRef() {
         // returns by reference
         // you cannot access the return value if the function failed
         if (!isSuccess()) {
