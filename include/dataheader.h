@@ -515,7 +515,7 @@ class DataHeader {
     void setValidPasswordHashBytes(const Bytes validBytes);  // sets the passwordhashhash to validate the password hash
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
-    void calcHeaderBytes(const Bytes passwordhash, const bool verify_pwhash = true);
+    void calcHeaderBytes(const Bytes passwordhash = Bytes());
     Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overwrites this variable
 
     // creates a new DataHeader object with the given header bytes
