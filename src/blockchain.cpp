@@ -8,8 +8,7 @@ BlockChain::BlockChain(std::shared_ptr<Hash> hash, const Bytes passwordhash, con
 
 void BlockChain::addData(const Bytes data) noexcept {
     Bytes data_copy = data;
-    if(this->chain.size() == 0)
-        this->addBlock();
+    if (this->chain.size() == 0) this->addBlock();
     while (true) {
         // get the data that can be added on the last block to complete it
         // it is the minimum of the free space in the last block and the length of the data
@@ -19,7 +18,7 @@ void BlockChain::addData(const Bytes data) noexcept {
             break;
         }
         // add the data to the last block
-        
+
         PLOG_VERBOSE << "added new data to blockchain: " << toHex(data_part.value());
         this->chain.back()->addData(data_part.value());
         // add a new block if still data is left
