@@ -200,7 +200,6 @@ Bytes FileHandler::getAllBytes() const {
     file.read(reinterpret_cast<char*>(file_content.data()), file_size);
     Bytes ret;
     ret.setBytes(file_content);
-    PLOG_VERBOSE << "lol" << toHex(ret);
     return ret;
 }
 

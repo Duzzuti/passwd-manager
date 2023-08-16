@@ -275,7 +275,7 @@ int main(int argc, char* argv[]) {
 
         Bytes b;
         b.setBytes(std::vector<unsigned char>{0x00, 0x01, 0x02, 0x03, 0x04});
-        fds.returnRef().dec_data = b;
+        fds.returnRef().dec_data.addBytes(b);
         // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
