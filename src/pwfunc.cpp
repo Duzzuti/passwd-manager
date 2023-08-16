@@ -312,7 +312,7 @@ TimedResult PwFunc::chainhashWithQuadraticCountSaltTimed(const std::string passw
     timer.start();
     Bytes ret = this->hash->hash(password + std::to_string(a * salt_start * salt_start + b * salt_start + c));  // hashes the password with the a*start_salt^2 + b*start_salt + c added
     u_int64_t iterations = 1;
-    while(true) {
+    while (true) {
         // the salt will count up and its quadratic value is added to the current hash and is hashed again
         iterations++;
         salt_start++;
@@ -350,7 +350,7 @@ TimedResult PwFunc::chainhashWithConstantSaltTimed(const Bytes data, const u_int
     timer.start();
     Bytes ret = data;
     u_int64_t iterations = 0;
-    while (true){
+    while (true) {
         // the salt is added to the current hash and the result is hashed again
         iterations++;
         ret.addBytes(stringToBytes(salt));
