@@ -227,3 +227,200 @@ ErrorStruct<Bytes> PwFunc::chainhashWithQuadraticCountSalt(const Bytes data, con
     }
     return ErrorStruct<Bytes>{SUCCESS, NO_ERR, "", "", ret};
 }
+
+TimedResult PwFunc::chainhashTimed(const std::string password, const u_int64_t timeout) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = this->hash->hash(password);  // hashes the password
+    u_int64_t iterations = 1;
+    while (true) {
+        iterations++;
+        // the hash is hashed again
+        ret = this->hash->hash(ret);
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithConstantSaltTimed(const std::string password, const u_int64_t timeout, const std::string salt) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = this->hash->hash(password + salt);  // hashes the password with the salt added
+    u_int64_t iterations = 1;
+    while (true) {
+        // the salt is added to the current hash and the result is hashed again
+        iterations++;
+        ret.addBytes(stringToBytes(salt));
+        ret = this->hash->hash(ret);
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithCountSaltTimed(const std::string password, const u_int64_t timeout, u_int64_t salt_start) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = this->hash->hash(password + std::to_string(salt_start));  // hashes the password with the start salt added
+    u_int64_t iterations = 1;
+    while (true) {
+        // the salt will count up and gets added to the current hash and is hashed again
+        iterations++;
+        salt_start++;
+        ret.addBytes(stringToBytes(std::to_string(salt_start)));
+        ret = this->hash->hash(ret);
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithCountAndConstantSaltTimed(const std::string password, const u_int64_t timeout, u_int64_t salt_start, const std::string salt) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = this->hash->hash(password + salt + std::to_string(salt_start));  // the password is hashed with the salt and the count salt
+    u_int64_t iterations = 1;
+    while (true) {
+        // the count salt will increment. The constant salt gets added to the current hash as well as the count salt
+        // the result is hashed again
+        iterations++;
+        salt_start++;
+        ret.addBytes(stringToBytes(salt + std::to_string(salt_start)));
+        ret = this->hash->hash(ret);
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithQuadraticCountSaltTimed(const std::string password, const u_int64_t timeout, u_int64_t salt_start, const u_int64_t a, const u_int64_t b,
+                                                         const u_int64_t c) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = this->hash->hash(password + std::to_string(a * salt_start * salt_start + b * salt_start + c));  // hashes the password with the a*start_salt^2 + b*start_salt + c added
+    u_int64_t iterations = 1;
+    while(true) {
+        // the salt will count up and its quadratic value is added to the current hash and is hashed again
+        iterations++;
+        salt_start++;
+        ret.addBytes(stringToBytes(std::to_string(a * salt_start * salt_start + b * salt_start + c)));
+        ret = this->hash->hash(ret);
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashTimed(const Bytes data, const u_int64_t timeout) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = data;
+    u_int64_t iterations = 0;
+    while (true) {
+        // the hash is hashed again
+        iterations++;
+        ret = this->hash->hash(ret);
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithConstantSaltTimed(const Bytes data, const u_int64_t timeout, const std::string salt) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = data;
+    u_int64_t iterations = 0;
+    while (true){
+        // the salt is added to the current hash and the result is hashed again
+        iterations++;
+        ret.addBytes(stringToBytes(salt));
+        ret = this->hash->hash(ret);
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithCountSaltTimed(const Bytes data, const u_int64_t timeout, u_int64_t salt_start) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = data;
+    u_int64_t iterations = 0;
+    while (true) {
+        // the salt will count up and is added to the current hash and is hashed again
+        iterations++;
+        ret.addBytes(stringToBytes(std::to_string(salt_start)));
+        ret = this->hash->hash(ret);
+        salt_start++;
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithCountAndConstantSaltTimed(const Bytes data, const u_int64_t timeout, u_int64_t salt_start, const std::string salt) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = data;
+    u_int64_t iterations = 0;
+    while (true) {
+        // the count salt will increment. The constant salt gets added to the current hash as well as the count salt
+        // the result is hashed again
+        iterations++;
+        ret.addBytes(stringToBytes(salt + std::to_string(salt_start)));
+        ret = this->hash->hash(ret);
+        salt_start++;
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
+
+TimedResult PwFunc::chainhashWithQuadraticCountSaltTimed(const Bytes data, const u_int64_t timeout, u_int64_t salt_start, const u_int64_t a, const u_int64_t b, const u_int64_t c) const noexcept {
+    Timer timer;
+    timer.start();
+    Bytes ret = data;
+    u_int64_t iterations = 0;
+    while (true) {
+        // the salt will count up and its quadratic value is added to the current hash and is hashed again
+        iterations++;
+        ret.addBytes(stringToBytes(std::to_string(a * salt_start * salt_start + b * salt_start + c)));
+        ret = this->hash->hash(ret);
+        salt_start++;
+        if (iterations % TIMEOUT_ITERATIONS == 0) {
+            if (timeout <= timer.peekTime()) {
+                PLOG_DEBUG << "timeout reached (timeout: " << timeout << ", iterations: " << iterations << ")";
+                return TimedResult{iterations, ret};
+            }
+        }
+    }
+}
