@@ -86,8 +86,7 @@ ErrorStruct<bool> PasswordData::constructFileData(FileDataStruct& file_data) noe
             std::string data_str = charVecToString(data.value().getBytes());
             if (i == 0) {
                 site = data_str;
-                if(this->siteMap.count(site) == 0)
-                    this->siteMap[site] = std::vector<std::string>();
+                if (this->siteMap.count(site) == 0) this->siteMap[site] = std::vector<std::string>();
             } else {
                 this->siteMap[site].push_back(data_str);
             }
@@ -177,12 +176,12 @@ Bytes PasswordData::getBytes() const {
         Bytes siteB{};
         siteB.setBytes(std::vector<unsigned char>(item.first.begin(), item.first.end()));
         // check if the data has the right length (note that one site can have multiple data sets, but each data set has to have the same length (3))
-        if(item.second.size() % 3 != 0){
+        if (item.second.size() % 3 != 0) {
             PLOG_FATAL << "The password data is not in the right format in the site: " << item.first;
             throw std::runtime_error("The password data is not in the right format in the site: " + item.first);
         }
         int i = 0;
-        while (true){
+        while (true) {
             // iterate over all data sets of one site
             ret.addByte(siteB.getLen());
             ret.addBytes(siteB);
@@ -202,10 +201,9 @@ Bytes PasswordData::getBytes() const {
             ret.addByte(passwordB.getLen());
             ret.addBytes(passwordB);
 
-            if(i == item.second.size())
+            if (i == item.second.size())
                 // all data sets of one site are processed
                 break;
-
         }
     }
     return ret;
@@ -293,4 +291,3 @@ Bytes PasswordData::run(Bytes bytes) {
     }
     return this->getBytes();
 }
-
