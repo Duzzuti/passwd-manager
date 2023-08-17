@@ -69,7 +69,7 @@ class FileData {
     virtual ErrorStruct<bool> constructFileData(FileDataStruct& file_data) noexcept = 0;
 
     // returns a file data struct that contains the current data of the file
-    virtual FileDataStruct getFileData() const noexcept = 0;
+    virtual FileDataStruct getFileData() const = 0;
 
     // returns the file mode that corresponds to the file data object
     virtual FModes getFileMode() const noexcept = 0;

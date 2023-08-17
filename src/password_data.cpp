@@ -21,7 +21,7 @@ ErrorStruct<bool> PasswordData::constructFileData(FileDataStruct& file_data) noe
             // no more data sets
             break;
         }
-        std::string site;
+        std::string site = "";
         for (int i = 0; i < 4; i++) {
             // this loop represents one data set
             std::optional<Bytes> size;
@@ -86,13 +86,21 @@ ErrorStruct<bool> PasswordData::constructFileData(FileDataStruct& file_data) noe
             std::string data_str = charVecToString(data.value().getBytes());
             if (i == 0) {
                 site = data_str;
-                this->siteMap[site] = std::vector<std::string>();
+                if(this->siteMap.count(site) == 0)
+                    this->siteMap[site] = std::vector<std::string>();
             } else {
                 this->siteMap[site].push_back(data_str);
             }
         }
     }
     return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
+FileDataStruct PasswordData::getFileData() const {
+    // returns the file data struct
+    PLOG_VERBOSE << "Getting FileDataStruct object";
+    FileDataStruct file_data{FILEMODE_PASSWORD, this->getBytes()};
+    return file_data;
 }
 
 bool PasswordData::getData(Bytes bytes) noexcept {
@@ -162,46 +170,42 @@ void PasswordData::printHelp() const noexcept {
 }
 
 Bytes PasswordData::getBytes() const {
+    // returns the data in Bytes
     Bytes ret{};
     for (std::pair<std::string, std::vector<std::string>> item : this->siteMap) {
+        // iterate over all data sets
         Bytes siteB{};
         siteB.setBytes(std::vector<unsigned char>(item.first.begin(), item.first.end()));
-        ret.addByte(siteB.getLen());
-        ret.addBytes(siteB);
-
-        if (0 <= siteB.getLen() && siteB.getLen() <= 255) {
-            std::cout << "Error: Length is not valid (Site: " << item.first << ", length: " << siteB.getLen() << ")" << std::endl;
-            throw std::length_error("the length of the site is not valid");
+        // check if the data has the right length (note that one site can have multiple data sets, but each data set has to have the same length (3))
+        if(item.second.size() % 3 != 0){
+            PLOG_FATAL << "The password data is not in the right format in the site: " << item.first;
+            throw std::runtime_error("The password data is not in the right format in the site: " + item.first);
         }
+        int i = 0;
+        while (true){
+            // iterate over all data sets of one site
+            ret.addByte(siteB.getLen());
+            ret.addBytes(siteB);
 
-        Bytes userB{};
-        userB.setBytes(std::vector<unsigned char>(item.second[0].begin(), item.second[0].end()));
-        ret.addByte(userB.getLen());
-        ret.addBytes(userB);
+            Bytes userB{};
+            userB.setBytes(std::vector<unsigned char>(item.second[i++].begin(), item.second[0].end()));
+            ret.addByte(userB.getLen());
+            ret.addBytes(userB);
 
-        if (0 <= userB.getLen() && userB.getLen() <= 255) {
-            std::cout << "Error: Length is not valid (User: " << item.second[0] << ", length: " << userB.getLen() << ")" << std::endl;
-            throw std::length_error("the length of the user is not valid");
-        }
+            Bytes emailB{};
+            emailB.setBytes(std::vector<unsigned char>(item.second[i++].begin(), item.second[1].end()));
+            ret.addByte(emailB.getLen());
+            ret.addBytes(emailB);
 
-        Bytes emailB{};
-        emailB.setBytes(std::vector<unsigned char>(item.second[1].begin(), item.second[1].end()));
-        ret.addByte(emailB.getLen());
-        ret.addBytes(emailB);
+            Bytes passwordB{};
+            passwordB.setBytes(std::vector<unsigned char>(item.second[i++].begin(), item.second[2].end()));
+            ret.addByte(passwordB.getLen());
+            ret.addBytes(passwordB);
 
-        if (0 <= emailB.getLen() && emailB.getLen() <= 255) {
-            std::cout << "Error: Length is not valid (Email: " << item.second[1] << ", length: " << emailB.getLen() << ")" << std::endl;
-            throw std::length_error("the length of the email is not valid");
-        }
+            if(i == item.second.size())
+                // all data sets of one site are processed
+                break;
 
-        Bytes passwordB{};
-        passwordB.setBytes(std::vector<unsigned char>(item.second[2].begin(), item.second[2].end()));
-        ret.addByte(passwordB.getLen());
-        ret.addBytes(passwordB);
-
-        if (0 <= passwordB.getLen() && passwordB.getLen() <= 255) {
-            std::cout << "Error: Length is not valid (Password: " << item.second[2] << ", length: " << passwordB.getLen() << ")" << std::endl;
-            throw std::length_error("the length of the password is not valid");
         }
     }
     return ret;
@@ -290,4 +294,3 @@ Bytes PasswordData::run(Bytes bytes) {
     return this->getBytes();
 }
 
-std::string PasswordData::getError() const noexcept { return this->error; }

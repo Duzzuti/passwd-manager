@@ -6,6 +6,7 @@
 
 class PasswordData : public FileData {
    private:
+    // contains for each site sets of password data, one set contains a username, an email and a password. Multiple sets can be stored for one site
     std::unordered_map<std::string, std::vector<std::string>> siteMap;
     bool getData(const Bytes bytes) noexcept;
     void printHelp() const noexcept;
@@ -21,7 +22,7 @@ class PasswordData : public FileData {
     ErrorStruct<bool> constructFileData(FileDataStruct& file_data) noexcept override final;
 
     // returns a file data struct that contains the current data of the file
-    FileDataStruct getFileData() const noexcept override final;
+    FileDataStruct getFileData() const override final;
 
     // returns the file mode that corresponds to the file data object
     FModes getFileMode() const noexcept override final { return FILEMODE_PASSWORD; };
