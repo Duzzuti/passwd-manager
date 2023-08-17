@@ -66,7 +66,7 @@ class FileData {
    public:
     // checks if the decrypted data is valid for it's use case. Checks if the file mode is correct
     // formats the byte data into the right datatypes (like maps and lists)
-    virtual ErrorStruct<bool> constructFileData(FileDataStruct file_data) noexcept = 0;
+    virtual ErrorStruct<bool> constructFileData(FileDataStruct& file_data) noexcept = 0;
 
     // returns a file data struct that contains the current data of the file
     virtual FileDataStruct getFileData() const noexcept = 0;

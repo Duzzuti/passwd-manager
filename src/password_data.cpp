@@ -3,9 +3,98 @@
 #include <algorithm>
 #include <map>
 
-#include "iomanip"
+#include <iomanip>
 #include "settings.h"
 #include "utility.h"
+#include "logger.h"
+
+ErrorStruct<bool> PasswordData::constructFileData(FileDataStruct& file_data) noexcept {
+    // constructs the file data object with the file data struct
+    PLOG_VERBOSE << "Constructing PasswordData object";
+    if(file_data.getFileMode() != FILEMODE_PASSWORD) {
+        return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+file_data.getFileMode()), "The file mode is not FileMode::PASSWORD_DATA"};
+    }
+    this->siteMap.clear();
+    while (true){
+        // this loop iterates over the data sets
+        if(file_data.dec_data.getLen() == 0){
+            // no more data sets
+            break;
+        }
+        std::string site;
+        for(int i=0; i < 4; i++){
+            // this loop represents one data set
+            std::optional<Bytes> size;
+            try{
+                size = file_data.dec_data.popFirstBytes(1);
+            }catch(std::exception& e){
+                // should not happen
+                PLOG_FATAL << "Something went wrong while getting the size byte: " << e.what();
+                return ErrorStruct<bool>{FAIL, ERR_BUG, "Something went wrong while getting the size byte", e.what()};
+            }
+            if(!size.has_value()){
+                // some size byte is missing
+                std::string type;
+                switch(i){
+                    case 0:
+                        type = "site";
+                        break;
+                    case 1:
+                        type = "user";
+                        break;
+                    case 2:
+                        type = "email";
+                        break;
+                    case 3:
+                        type = "password";
+                        break;
+                }
+                PLOG_ERROR << "The file data is not in the right format. Missing size byte for the " << type << " data";
+                return ErrorStruct<bool>{FAIL, ERR_FILEDATA_INVALID, "The file data is not in the right format. Missing size byte for the " + type + " data"};
+            }
+            // the size byte is there
+            unsigned char size_val = size.value().getBytes()[0];
+            std::optional<Bytes> data;
+            try{
+                data = file_data.dec_data.popFirstBytes(size_val);
+            }catch(std::exception& e){
+                // should not happen
+                PLOG_FATAL << "Something went wrong while getting the data bytes: " << e.what();
+                return ErrorStruct<bool>{FAIL, ERR_BUG, "Something went wrong while getting the data bytes", e.what()};
+            }
+            if(!data.has_value()){
+                // some data is missing
+                std::string type;
+                switch(i){
+                    case 0:
+                        type = "site";
+                        break;
+                    case 1:
+                        type = "user";
+                        break;
+                    case 2:
+                        type = "email";
+                        break;
+                    case 3:
+                        type = "password";
+                        break;
+                }
+                PLOG_ERROR << "The file data is not in the right format. Missing data for the " << type << " data";
+                return ErrorStruct<bool>{FAIL, ERR_FILEDATA_INVALID, "The file data is not in the right format. Missing data for the " + type + " data"};
+            }
+            // the data is there
+            std::string data_str = charVecToString(data.value().getBytes());
+            if(i == 0){
+                site = data_str;
+                this->siteMap[site] = std::vector<std::string>();
+            } else {
+                this->siteMap[site].push_back(data_str);
+            }
+        }
+    }
+    return ErrorStruct<bool>{SUCCESS, NO_ERR, "", "", true};
+}
+
 
 bool PasswordData::getData(Bytes bytes) noexcept {
     // takes the bytes as an input and returns a bool that represents success of this function
