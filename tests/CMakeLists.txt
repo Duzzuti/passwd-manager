@@ -4,7 +4,7 @@ set_property(TEST APPEND PROPERTY ENVIRONMENT "CTEST_DIRECTORY=${PROJECT_SOURCE_
 set(TEST_INCLUDE_DIR ${TEST_DIR}/include)
 set(ATTACKER_DIR ${TEST_DIR}/Attacker)
 
-#find_package(GTest REQUIRED)
+find_package(GTest REQUIRED)
 find_package(OpenSSL REQUIRED)
 enable_testing()
 

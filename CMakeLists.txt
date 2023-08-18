@@ -45,6 +45,7 @@ get_cmake_property(_variableNames VARIABLES)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+set(BENCHMARK_DIR ${PROJECT_SOURCE_DIR}/benchmarks)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -60,6 +61,6 @@ else()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  add_subdirectory(${TEST_DIR})
+  #WORKadd_subdirectory(${TEST_DIR})
+  add_subdirectory(${BENCHMARK_DIR})
 endif()
-
