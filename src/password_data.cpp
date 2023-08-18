@@ -86,26 +86,26 @@ ErrorStruct<bool> PasswordData::constructFileData(FileDataStruct& file_data) noe
             std::string data_str = charVecToString(data.value().getBytes());
             if (i == 0) {
                 site = data_str;
-                if (this->siteMap.count(site) == 0) 
+                if (this->siteMap.count(site) == 0)
                     this->siteMap[site] = std::vector<PasswordSiteSet>();
                 else
                     this->siteMap[site].push_back(PasswordSiteSet{});
             } else {
                 switch (i) {
-                case 1:
-                    this->siteMap[site].back().setUsername(data_str);
-                    break;
-                
-                case 2:
-                    this->siteMap[site].back().setEmail(data_str);
-                    break;
+                    case 1:
+                        this->siteMap[site].back().setUsername(data_str);
+                        break;
 
-                case 3:
-                    this->siteMap[site].back().setPassword(data_str);
-                    break;
-                
-                default:
-                    return ErrorStruct<bool>{FAIL, ERR_BUG, "Something went wrong while getting the data bytes", "The index is not valid: " + std::to_string(i)};
+                    case 2:
+                        this->siteMap[site].back().setEmail(data_str);
+                        break;
+
+                    case 3:
+                        this->siteMap[site].back().setPassword(data_str);
+                        break;
+
+                    default:
+                        return ErrorStruct<bool>{FAIL, ERR_BUG, "Something went wrong while getting the data bytes", "The index is not valid: " + std::to_string(i)};
                 }
             }
         }
@@ -173,8 +173,8 @@ std::vector<PasswordSet> PasswordData::getSets(const std::string substring, cons
 
     if (substring.empty()) {
         // Put all password sets into a vector (no substring given)
-        for (std::pair<std::string, std::vector<PasswordSiteSet>> set : this->siteMap){
-            for(PasswordSiteSet siteSet : set.second){
+        for (std::pair<std::string, std::vector<PasswordSiteSet>> set : this->siteMap) {
+            for (PasswordSiteSet siteSet : set.second) {
                 passwordSets.push_back(PasswordSet{set.first, siteSet.getUsername(), siteSet.getEmail(), siteSet.getPassword()});
             }
         }
@@ -183,25 +183,22 @@ std::vector<PasswordSet> PasswordData::getSets(const std::string substring, cons
         for (std::pair<std::string, std::vector<PasswordSiteSet>> set : this->siteMap) {
             std::string first_ignore_case = set.first;
             std::transform(first_ignore_case.begin(), first_ignore_case.end(), first_ignore_case.begin(), [](unsigned char c) { return std::tolower(c); });
-            if (first_ignore_case.find(substring_ignore_case) != std::string::npos){
+            if (first_ignore_case.find(substring_ignore_case) != std::string::npos) {
                 // The substring is in the site name
-                for(PasswordSiteSet siteSet : set.second){
+                for (PasswordSiteSet siteSet : set.second) {
                     passwordSets.push_back(PasswordSet{set.first, siteSet.getUsername(), siteSet.getEmail(), siteSet.getPassword()});
                 }
             }
         }
     }
     // Sort password sets in alphabetical order
-    if(sorted)
-        std::sort(passwordSets.begin(), passwordSets.end(), [](const auto& a, const auto& b) { return a.site < b.site; });
+    if (sorted) std::sort(passwordSets.begin(), passwordSets.end(), [](const auto& a, const auto& b) { return a.site < b.site; });
     return passwordSets;
 }
 
 void PasswordData::addPw(const PasswordSet pwset) {
-    if(!pwset.isValid())
-        throw std::invalid_argument("The given password set is not valid (at least one datapoint is too long)");
-    if (this->siteMap.count(pwset.site) == 0)
-        this->siteMap[pwset.site] = std::vector<PasswordSiteSet>();
+    if (!pwset.isValid()) throw std::invalid_argument("The given password set is not valid (at least one datapoint is too long)");
+    if (this->siteMap.count(pwset.site) == 0) this->siteMap[pwset.site] = std::vector<PasswordSiteSet>();
     this->siteMap[pwset.site].push_back(PasswordSiteSet{pwset.username, pwset.email, pwset.password});
 }
 

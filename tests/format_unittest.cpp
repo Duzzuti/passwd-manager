@@ -1,6 +1,7 @@
 #include "format.h"
 
 #include <gtest/gtest.h>
+
 #include "settings.h"
 
 TEST(FormatClass, returnTypes) {

@@ -1,6 +1,7 @@
 #include "sha512.h"
 
 #include <gtest/gtest.h>
+
 #include "test_settings.cpp"
 #include "utility.h"
 

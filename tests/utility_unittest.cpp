@@ -1,6 +1,7 @@
 #include "utility.h"
 
 #include <gtest/gtest.h>
+
 #include "rng.h"
 
 // testing the utility functions

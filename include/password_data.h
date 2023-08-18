@@ -11,19 +11,19 @@ struct PasswordSet {
     std::string password;
 
     bool isValid() const noexcept {
-        if (site.size() > 255){
+        if (site.size() > 255) {
             PLOG_WARNING << "The site is too long, len: " << site.size();
             return false;
         }
-        if (username.size() > 255){
+        if (username.size() > 255) {
             PLOG_WARNING << "The username is too long, len: " << username.size();
             return false;
         }
-        if (email.size() > 255){
+        if (email.size() > 255) {
             PLOG_WARNING << "The email is too long, len: " << email.size();
             return false;
         }
-        if (password.size() > 255){
+        if (password.size() > 255) {
             PLOG_WARNING << "The password is too long, len: " << password.size();
             return false;
         }
@@ -36,6 +36,7 @@ struct PasswordSiteSet {
     std::string username;
     std::string email;
     std::string password;
+
    public:
     PasswordSiteSet() = default;
     PasswordSiteSet(const std::string username, const std::string email, const std::string password) {
@@ -43,9 +44,9 @@ struct PasswordSiteSet {
         this->setEmail(email);
         this->setPassword(password);
     };
-    
+
     void setUsername(const std::string username) {
-        if (username.size() > 255){
+        if (username.size() > 255) {
             PLOG_FATAL << "The username is too long, len: " << username.size();
             throw std::invalid_argument("The username is too long");
         }
@@ -53,7 +54,7 @@ struct PasswordSiteSet {
     };
 
     void setEmail(const std::string email) {
-        if (email.size() > 255){
+        if (email.size() > 255) {
             PLOG_FATAL << "The email is too long, len: " << email.size();
             throw std::invalid_argument("The email is too long");
         }
@@ -61,24 +62,18 @@ struct PasswordSiteSet {
     };
 
     void setPassword(const std::string password) {
-        if (password.size() > 255){
+        if (password.size() > 255) {
             PLOG_FATAL << "The password is too long, len: " << password.size();
             throw std::invalid_argument("The password is too long");
         }
         this->password = password;
     };
 
-    std::string getUsername() const noexcept {
-        return this->username;
-    };
+    std::string getUsername() const noexcept { return this->username; };
 
-    std::string getEmail() const noexcept {
-        return this->email;
-    };
+    std::string getEmail() const noexcept { return this->email; };
 
-    std::string getPassword() const noexcept {
-        return this->password;
-    };
+    std::string getPassword() const noexcept { return this->password; };
 };
 
 class PasswordData : public FileData {

@@ -1,6 +1,7 @@
 #include "pwfunc.h"
 
 #include <gtest/gtest.h>
+
 #include "rng.h"
 #include "settings.h"
 #include "sha256.h"
