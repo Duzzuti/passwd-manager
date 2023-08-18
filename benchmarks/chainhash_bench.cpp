@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
+
 #include <atomic>
-#include <thread>
 #include <fstream>
+#include <thread>
 
 #include "bench_utils.h"
-#include "timer.h"
 #include "chainhash_modes.h"
 #include "hash_modes.h"
+#include "timer.h"
 
 const constexpr u_int64_t i1[] = {1000, 100000, 1000000};
 const constexpr u_int64_t RUN_ITERS = 3;
@@ -18,7 +19,7 @@ std::atomic<u_int64_t> _memory_min(0);
 std::atomic<u_int64_t> _memory_avg(0);
 std::atomic<u_int64_t> _memory_base(0);
 
-void MemoryThread(){
+void MemoryThread() {
     // this thread will measure the memory usage
     u_int64_t memory;
     u_int64_t memory_max = 0;
@@ -27,14 +28,14 @@ void MemoryThread(){
     u_int64_t memory_sum = 0;
     u_int64_t memory_count = 0;
     _memory_base = getPhysicalMem();
-    while(!_terminateMeasurementThread){
+    while (!_terminateMeasurementThread) {
         memory = getPhysicalMem();
         memory_sum += memory;
         memory_count++;
-        if(memory_max < memory || memory_max == 0){
+        if (memory_max < memory || memory_max == 0) {
             memory_max = memory;
         }
-        if(memory_min > memory || memory_min == 0){
+        if (memory_min > memory || memory_min == 0) {
             memory_min = memory;
         }
         memory_avg = memory_sum / memory_count;
@@ -45,14 +46,14 @@ void MemoryThread(){
     _memory_avg = memory_avg;
 }
 
-void filing(u_int64_t avg, u_int64_t slowest, u_int64_t memory_max, u_int64_t memory_min, u_int64_t memory_avg, u_int64_t memory_base){
+void filing(u_int64_t avg, u_int64_t slowest, u_int64_t memory_max, u_int64_t memory_min, u_int64_t memory_avg, u_int64_t memory_base) {
     std::ofstream file;
     file.open("chainhash_bench.csv", std::ios::app);
     file << avg << "," << slowest << "," << memory_max << "," << memory_min << "," << memory_avg << "," << memory_base << "\n";
     file.close();
 }
 
-TEST(ChainHash, chainhash){
+TEST(ChainHash, chainhash) {
     // setup the chainhashes
     std::shared_ptr<Hash> hash = HashModes::getHash(HASHMODE_SHA256);
     std::string data_str = "test";
@@ -69,7 +70,7 @@ TEST(ChainHash, chainhash){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(int i = 0; i < RUN_ITERS; i++){
+    for (int i = 0; i < RUN_ITERS; i++) {
         ChainHashModes::performChainHash(c1, std::move(hash), data);
         timer.recordTime();
     }
@@ -78,7 +79,6 @@ TEST(ChainHash, chainhash){
     memoryThread.join();
     filing(timer.getAverageTime(), timer.getSlowest(), _memory_max, _memory_min, _memory_avg, _memory_base);
 
-
     ChainHashModes::performChainHash(c1, std::move(hash), data_str);
 
     ChainHashModes::performChainHash(c2, std::move(hash), data);
@@ -86,5 +86,4 @@ TEST(ChainHash, chainhash){
 
     ChainHashModes::performChainHash(c3, std::move(hash), data);
     ChainHashModes::performChainHash(c3, std::move(hash), data_str);
-    
 }
