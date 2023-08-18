@@ -18,7 +18,7 @@ jobs:
         run: sudo apt-get install -y clang-format
 
       - name: Run Clang-Format
-        run: clang-format -i src/*.cpp include/*.h tests/*/*.cpp tests/*/*.h tests/*.cpp --style file:.clang-format
+        run: clang-format -i src/*.cpp include/*.h tests/*/*.cpp tests/*/*.h tests/*.cpp benchmarks/*.h benchmarks/*.cpp --style file:.clang-format
 
       - name: Check for modifications
         id: check_modifications
