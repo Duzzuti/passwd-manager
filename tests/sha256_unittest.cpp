@@ -1,6 +1,6 @@
 #include "sha256.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "test_settings.cpp"
 #include "utility.h"
 

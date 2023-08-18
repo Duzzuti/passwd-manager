@@ -1,6 +1,6 @@
 #include "timer.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 TEST(TimerClass, returnTypes) {
     // test that the return types are correct

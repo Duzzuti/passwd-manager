@@ -1,4 +1,4 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 int main(int argc, char** argv) {
     // the main function that is running the tests

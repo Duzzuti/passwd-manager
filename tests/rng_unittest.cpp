@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "test_settings.cpp"
 
 // stores one data set of entropy data

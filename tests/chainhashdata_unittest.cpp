@@ -1,5 +1,5 @@
 #include "chainhash_data.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 TEST(ChainHashDataClass, returnTypes) {
     // testing the return types of the ChainHashData class

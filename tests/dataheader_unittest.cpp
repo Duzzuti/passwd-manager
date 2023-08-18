@@ -1,7 +1,7 @@
 #include "dataheader.h"
 
 #include "chainhash_data.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "rng.h"
 #include "settings.h"
 #include "test_settings.cpp"

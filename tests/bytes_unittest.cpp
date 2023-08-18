@@ -1,6 +1,6 @@
 #include "bytes.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "rng.h"
 
 TEST(BytesClass, generatingBytes) {
