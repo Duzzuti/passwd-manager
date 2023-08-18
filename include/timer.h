@@ -32,6 +32,7 @@ class Timer {
     u_int64_t recordTime();      // save the time needed since the last start() or recordTime() call
     u_int64_t peekTime();        // returns the time needed since the last start() or recordTime() call
     u_int64_t getAverageTime();  // returns the average time per record and stop (getTime() / getLaps())
+    u_int64_t getSlowest();      // returns the slowest time per record and stop (max(laps))
     u_int64_t getTime();         // returns the timedelta between the start and stop call
     size_t getLaps();            // returns the number of recordTime() and stop() calls (the total number of measurements you made)/ returns the number of laps (record and stop calls)
 };

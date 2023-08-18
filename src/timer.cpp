@@ -55,6 +55,22 @@ u_int64_t Timer::getAverageTime() {
     }
 }
 
+u_int64_t Timer::getSlowest() {
+    // returns the slowest time per record and stop (max(laps))
+    this->require_stopped();  // it has been stopped
+    if (this->laps.empty()) {
+        return 0;
+    } else {
+        u_int64_t max = 0;
+        for (auto lap : this->laps) {
+            if (lap > max) {
+                max = lap;
+            }
+        }
+        return max;
+    }
+}
+
 u_int64_t Timer::getTime() {
     // returns the timedelta between the start and stop call
     this->require_stopped();  // it has been stopped
