@@ -86,9 +86,27 @@ ErrorStruct<bool> PasswordData::constructFileData(FileDataStruct& file_data) noe
             std::string data_str = charVecToString(data.value().getBytes());
             if (i == 0) {
                 site = data_str;
-                if (this->siteMap.count(site) == 0) this->siteMap[site] = std::vector<std::string>();
+                if (this->siteMap.count(site) == 0) 
+                    this->siteMap[site] = std::vector<PasswordSiteSet>();
+                else
+                    this->siteMap[site].push_back(PasswordSiteSet{});
             } else {
-                this->siteMap[site].push_back(data_str);
+                switch (i) {
+                case 1:
+                    this->siteMap[site].back().setUsername(data_str);
+                    break;
+                
+                case 2:
+                    this->siteMap[site].back().setEmail(data_str);
+                    break;
+
+                case 3:
+                    this->siteMap[site].back().setPassword(data_str);
+                    break;
+                
+                default:
+                    return ErrorStruct<bool>{FAIL, ERR_BUG, "Something went wrong while getting the data bytes", "The index is not valid: " + std::to_string(i)};
+                }
             }
         }
     }
@@ -102,76 +120,10 @@ FileDataStruct PasswordData::getFileData() const {
     return file_data;
 }
 
-bool PasswordData::getData(Bytes bytes) noexcept {
-    // takes the bytes as an input and returns a bool that represents success of this function
-    // the actual data gets stored in the siteMap
-    while (true) {
-        std::optional<Bytes> siteLenB = bytes.popFirstBytes(1);
-        if (!siteLenB.has_value()) {
-            break;
-        }
-        unsigned char siteLen = siteLenB.value().getBytes()[0];
-        std::optional<Bytes> site = bytes.popFirstBytes(siteLen);
-        std::optional<Bytes> userLenB = bytes.popFirstBytes(1);
-
-        std::string site_str = charVecToString(site.value().getBytes());
-        if (site_str[0] == '-') {
-            this->error = "The site " + site_str + " starts with the illegal char '-'";
-            return false;
-        }
-        if (!userLenB.has_value()) {
-            this->siteMap.clear();
-            this->error = "The dataset with the site name " + site_str + " contains no userLen byte";
-            return false;
-        }
-        unsigned char userLen = userLenB.value().getBytes()[0];
-        std::optional<Bytes> user = bytes.popFirstBytes(userLen);
-        std::optional<Bytes> emailLenB = bytes.popFirstBytes(1);
-        if (!emailLenB.has_value()) {
-            this->siteMap.clear();
-            this->error = "The dataset with the site name " + site_str + " contains no emailLen byte";
-            return false;
-        }
-        unsigned char emailLen = emailLenB.value().getBytes()[0];
-        std::optional<Bytes> email = bytes.popFirstBytes(emailLen);
-        std::optional<Bytes> passwordLenB = bytes.popFirstBytes(1);
-        if (!passwordLenB.has_value()) {
-            this->siteMap.clear();
-            this->error = "The dataset with the site name " + site_str + " contains no passwordLen byte";
-            return false;
-        }
-        unsigned char passwordLen = passwordLenB.value().getBytes()[0];
-        std::optional<Bytes> password = bytes.popFirstBytes(passwordLen);
-        if (!password.has_value()) {
-            this->siteMap.clear();
-            this->error = "The dataset with the site name " + site_str + " contains not the full password";
-            return false;
-        }
-        if (!(siteLen == site.value().getLen() && userLen == user.value().getLen() && emailLen == email.value().getLen() && passwordLen == password.value().getLen())) {
-            this->siteMap.clear();
-            this->error = "The dataset with the site name " + site_str + " has not matching datablock lengths";
-            return false;
-        }
-        if (siteMap.count(site_str) > 0) {
-            this->siteMap.clear();
-            this->error = "The site name " + site_str + " has multiple occurrences";
-            return false;
-        }
-        std::vector<std::string> dataV = {charVecToString(user.value().getBytes()), charVecToString(email.value().getBytes()), charVecToString(password.value().getBytes())};
-        this->siteMap[site_str] = dataV;
-    }
-    return true;
-}
-
-void PasswordData::printHelp() const noexcept {
-    std::cout << std::endl;
-    std::cout << "[HELP]" << std::endl;
-}
-
 Bytes PasswordData::getBytes() const {
     // returns the data in Bytes
     Bytes ret{};
-    for (std::pair<std::string, std::vector<std::string>> item : this->siteMap) {
+    for (std::pair<std::string, std::vector<PasswordSiteSet>> item : this->siteMap) {
         // iterate over all data sets
         Bytes siteB{};
         siteB.setBytes(std::vector<unsigned char>(item.first.begin(), item.first.end()));
@@ -187,19 +139,21 @@ Bytes PasswordData::getBytes() const {
             ret.addBytes(siteB);
 
             Bytes userB{};
-            userB.setBytes(std::vector<unsigned char>(item.second[i++].begin(), item.second[0].end()));
+            userB.setBytes(std::vector<unsigned char>(item.second[i].getUsername().begin(), item.second[i].getUsername().begin()));
             ret.addByte(userB.getLen());
             ret.addBytes(userB);
 
             Bytes emailB{};
-            emailB.setBytes(std::vector<unsigned char>(item.second[i++].begin(), item.second[1].end()));
+            emailB.setBytes(std::vector<unsigned char>(item.second[i].getEmail().begin(), item.second[i].getEmail().begin()));
             ret.addByte(emailB.getLen());
             ret.addBytes(emailB);
 
             Bytes passwordB{};
-            passwordB.setBytes(std::vector<unsigned char>(item.second[i++].begin(), item.second[2].end()));
+            passwordB.setBytes(std::vector<unsigned char>(item.second[i].getPassword().begin(), item.second[i].getPassword().begin()));
             ret.addByte(passwordB.getLen());
             ret.addBytes(passwordB);
+
+            i++;
 
             if (i == item.second.size())
                 // all data sets of one site are processed
@@ -209,85 +163,52 @@ Bytes PasswordData::getBytes() const {
     return ret;
 }
 
-void PasswordData::showSets(const std::string substring) const noexcept {
+std::vector<PasswordSet> PasswordData::getSets(const std::string substring, const bool sorted) const noexcept {
+    // returns a list of password sets that contain the substring
+    // turn substring to lowercase
     std::string substring_ignore_case = substring;
     std::transform(substring_ignore_case.begin(), substring_ignore_case.end(), substring_ignore_case.begin(), [](unsigned char c) { return std::tolower(c); });
 
-    // Put all password sets that contain the substring into a vector
-    std::vector<std::pair<std::string, std::vector<std::string>>> passwordSets;
+    std::vector<PasswordSet> passwordSets;
+
     if (substring.empty()) {
-        for (auto& set : this->siteMap) passwordSets.emplace_back(set);
+        // Put all password sets into a vector (no substring given)
+        for (std::pair<std::string, std::vector<PasswordSiteSet>> set : this->siteMap){
+            for(PasswordSiteSet siteSet : set.second){
+                passwordSets.push_back(PasswordSet{set.first, siteSet.getUsername(), siteSet.getEmail(), siteSet.getPassword()});
+            }
+        }
     } else {
-        for (auto& set : this->siteMap) {
+        // Put all password sets that contain the substring into a vector
+        for (std::pair<std::string, std::vector<PasswordSiteSet>> set : this->siteMap) {
             std::string first_ignore_case = set.first;
             std::transform(first_ignore_case.begin(), first_ignore_case.end(), first_ignore_case.begin(), [](unsigned char c) { return std::tolower(c); });
-            if (first_ignore_case.find(substring_ignore_case) != std::string::npos) passwordSets.emplace_back(set);
-        }
-    }
-
-    // Sort password sets in alphabetical order
-    std::sort(passwordSets.begin(), passwordSets.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
-
-    // Output password sets in a table-like manner
-    const int divider = 25;
-    std::cout << std::left << std::setw(divider) << "Website" << std::left << std::setw(divider) << "Username" << std::left << std::setw(divider) << "Email" << std::left << std::setw(divider)
-              << "Password" << '\n';
-    for (const auto& set : passwordSets) {
-        std::cout << std::left << std::setw(divider) << set.first << std::left << std::setw(divider) << set.second[0] << std::left << std::setw(divider) << set.second[1] << std::left
-                  << std::setw(divider) << set.second[2] << '\n';
-    }
-}
-
-void PasswordData::addPw(const std::string input) const noexcept {
-    // WORK
-}
-
-void PasswordData::remPw(const std::string input) const noexcept {
-    // WORK
-}
-
-void PasswordData::editPw(const std::string input) const noexcept {
-    // WORK
-}
-
-Bytes PasswordData::run(Bytes bytes) {
-    std::cout << std::endl << std::endl;
-    std::cout << "Performing Password data operations..." << std::endl;
-    // takes the plain data Bytes and does some user actions with it
-    if (!this->getData(bytes)) {
-        std::cout << "The decoded file data is not in the right format" << std::endl;
-        std::cout << "[ERROR] " << this->getError() << std::endl;
-        return bytes;
-    }
-    while (true) {
-        std::string inp;
-        std::cout << "Enter an action ('-h'-get help, '-q'-quit, '-a'-add password, '-r'-remove password, '-e'-edit password, a sitename (substring) to get data for that site): ";
-        getline(std::cin, inp);
-        if (inp.empty()) {
-            std::cout << "You missed some keys, but you got this. Try again" << std::endl;
-            continue;
-        }
-        if (inp[0] == '-') {
-            if (inp.length() >= 2) {
-                if (inp[1] == 'q') {
-                    break;
-                } else if (inp[1] == 'h') {
-                    this->printHelp();
-                } else if (inp[1] == 'a') {
-                    this->addPw(inp);
-                } else if (inp[1] == 'r') {
-                    this->remPw(inp);
-                } else if (inp[1] == 'e') {
-                    this->editPw(inp);
-                } else {
-                    std::cout << "invalid option '" << inp[1] << "'. Enter -h to get help" << std::endl;
+            if (first_ignore_case.find(substring_ignore_case) != std::string::npos){
+                // The substring is in the site name
+                for(PasswordSiteSet siteSet : set.second){
+                    passwordSets.push_back(PasswordSet{set.first, siteSet.getUsername(), siteSet.getEmail(), siteSet.getPassword()});
                 }
-            } else {
-                std::cout << "please enter a option after '-'. Enter -h to get help" << std::endl;
             }
-        } else {
-            this->showSets(inp);
         }
     }
-    return this->getBytes();
+    // Sort password sets in alphabetical order
+    if(sorted)
+        std::sort(passwordSets.begin(), passwordSets.end(), [](const auto& a, const auto& b) { return a.site < b.site; });
+    return passwordSets;
+}
+
+void PasswordData::addPw(const PasswordSet pwset) {
+    if(!pwset.isValid())
+        throw std::invalid_argument("The given password set is not valid (at least one datapoint is too long)");
+    if (this->siteMap.count(pwset.site) == 0)
+        this->siteMap[pwset.site] = std::vector<PasswordSiteSet>();
+    this->siteMap[pwset.site].push_back(PasswordSiteSet{pwset.username, pwset.email, pwset.password});
+}
+
+void PasswordData::remPw(const PasswordSet pwset) const noexcept {
+    // WORK
+}
+
+void PasswordData::editPw(const PasswordSet pwset) const noexcept {
+    // WORK
 }
