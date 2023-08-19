@@ -2,6 +2,21 @@
 #include "stdlib.h"
 #include "string.h"
 
+#include <sys/resource.h>
+#include <iostream>
+
+// Function to get current memory usage (RSS) in bytes
+u_int64_t getMemoryUsage() {
+    struct rusage usage;
+    if (getrusage(RUSAGE_SELF, &usage) != 0) {
+        // Error handling if getrusage fails
+        return -1;
+    }
+
+    // RSS value is in kilobytes, convert to bytes
+    return static_cast<u_int64_t>(usage.ru_maxrss) * 1024;
+}
+
 /*
 this code was taken from:
 https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
