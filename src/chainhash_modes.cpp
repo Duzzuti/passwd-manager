@@ -37,6 +37,24 @@ std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
     return msg.str();
 }
 
+std::string ChainHashModes::getShortInfo(const CHModes chainhash_mode) {
+    switch (chainhash_mode) {
+        case CHAINHASH_NORMAL:  // normal chainhash
+            return "normal";
+        case CHAINHASH_CONSTANT_SALT:  // constant salt
+            return "constant";
+        case CHAINHASH_COUNT_SALT:  // count salt
+            return "count";
+        case CHAINHASH_CONSTANT_COUNT_SALT:  // count salt and constant salt
+            return "constant+count";
+        case CHAINHASH_QUADRATIC:  // quadratic salt
+            return "quadratic";
+        default:  // invalid chainhash mode
+            PLOG_FATAL << "invalid chainhash mode provided (" << +chainhash_mode << ")";
+            throw std::invalid_argument("chainhash mode does not exist");
+    }
+}
+
 bool ChainHashModes::isModeValid(const CHModes chainhash_mode) noexcept {
     // checks whether the chainhash mode is in the range of valid modes
     return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);

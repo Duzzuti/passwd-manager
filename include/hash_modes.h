@@ -18,5 +18,5 @@ class HashModes {
     // gets the hash sub class (e.g sha256) to perform a hash (strategy pattern)
     static std::unique_ptr<Hash> getHash(const HModes hash_mode);
     // gets some information about that hash mode (info about the hash function)
-    static std::string getInfo(const HModes hash_mode);
+    static std::string getInfo(const HModes hash_mode, const bool only_name);
 };

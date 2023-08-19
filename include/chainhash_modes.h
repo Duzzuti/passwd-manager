@@ -23,6 +23,7 @@ class ChainHashModes {
     */
    public:
     static std::string getInfo(const CHModes chainhash_mode);        // gets a string that contains information about this chainhash mode
+    static std::string getShortInfo(const CHModes chainhash_mode);   // gets a short string that contains information about this chainhash mode
     static bool isModeValid(const CHModes chainhash_mode) noexcept;  // checks if the given chain hash mode is valid
     // two methods for actually performing the chainhash, one for Bytes input and one for string input
     // expensive methods, you can set an timeout (in ms). 0 means no timeout.

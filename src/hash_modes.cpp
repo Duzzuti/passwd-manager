@@ -30,21 +30,22 @@ std::unique_ptr<Hash> HashModes::getHash(const HModes hash_mode) {
     }
 }
 
-std::string HashModes::getInfo(const HModes hash_mode) {
+std::string HashModes::getInfo(const HModes hash_mode, const bool only_name) {
     // gets some information about this hash mode (hash function)
     std::stringstream msg{};
     // start with a base string
-    msg << "The hash mode " << +hash_mode << " corresponds to hash function: ";
+    if(!only_name)
+        msg << "The hash mode " << +hash_mode << " corresponds to hash function: ";
     // add the information based on the mode
     switch (hash_mode) {
         case HASHMODE_SHA256:  // sha256
-            msg << "Sha256";
+            msg << "SHA256";
             break;
         case HASHMODE_SHA384:  // sha384
-            msg << "Sha384";
+            msg << "SHA384";
             break;
         case HASHMODE_SHA512:  // sha512
-            msg << "Sha512";
+            msg << "SHA512";
             break;
         default:  // hash mode is out of range
             PLOG_ERROR << "invalid hash mode passed to getInfo (hash mode: " << +hash_mode << ")";
