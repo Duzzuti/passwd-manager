@@ -1,9 +1,10 @@
+#include <sys/resource.h>
+
+#include <iostream>
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-
-#include <sys/resource.h>
-#include <iostream>
 
 // Function to get current memory usage (RSS) in bytes
 u_int64_t getMemoryUsage() {

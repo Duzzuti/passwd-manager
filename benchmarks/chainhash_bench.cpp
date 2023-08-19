@@ -12,7 +12,7 @@
 const constexpr u_int8_t iters_indices = 3;
 const constexpr u_int64_t iterations[] = {10000, 100000, 1000000};
 // const constexpr u_int8_t RUN_ITERS[] = {3,3,3};
-const constexpr u_int8_t RUN_ITERS[] = {5,5,5};
+const constexpr u_int8_t RUN_ITERS[] = {5, 5, 5};
 // const constexpr u_int8_t RUN_ITERS[] = {10,5,3};
 
 // flag that indicates whether the measurement thread should terminate
@@ -66,24 +66,19 @@ TEST(ChainHash, normal) {
     std::string chainhash_info = ChainHashModes::getShortInfo(CHModes(ichash));
     ChainHashData chd1{Format{CHModes(ichash)}};
     chd1.generateRandomData();
-    std::vector<ChainHash> chainhashes = {
-        ChainHash{CHModes(ichash), iterations[0], chd1},
-        ChainHash{CHModes(ichash), iterations[1], chd1},
-        ChainHash{CHModes(ichash), iterations[2], chd1}
-    };
+    std::vector<ChainHash> chainhashes = {ChainHash{CHModes(ichash), iterations[0], chd1}, ChainHash{CHModes(ichash), iterations[1], chd1}, ChainHash{CHModes(ichash), iterations[2], chd1}};
     // the benchmark starts here
     // run the chainhashes
-    for(u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++){
+    for (u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++) {
         std::shared_ptr<Hash> hash = HashModes::getHash(HModes(ihash));
         std::string hash_info = HashModes::getInfo(HModes(ihash), true);
-        for(u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++){
+        for (u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++) {
             ChainHash ch = chainhashes[iters_ind];
             u_int8_t run_iters = RUN_ITERS[iters_ind];
             Timer timer;
-            if(_memory_base == 0){
+            if (_memory_base == 0) {
                 _memory_base = getPhysicalMem();
-                for (int i = 0; i < run_iters; i++)
-                    ChainHashModes::performChainHash(ch, hash, data_str);
+                for (int i = 0; i < run_iters; i++) ChainHashModes::performChainHash(ch, hash, data_str);
             }
             std::thread memoryThread(MemoryThread);
             timer.start();
@@ -107,24 +102,19 @@ TEST(ChainHash, constant) {
     std::string chainhash_info = ChainHashModes::getShortInfo(CHModes(ichash));
     ChainHashData chd1{Format{CHModes(ichash)}};
     chd1.generateRandomData();
-    std::vector<ChainHash> chainhashes = {
-        ChainHash{CHModes(ichash), iterations[0], chd1},
-        ChainHash{CHModes(ichash), iterations[1], chd1},
-        ChainHash{CHModes(ichash), iterations[2], chd1}
-    };
+    std::vector<ChainHash> chainhashes = {ChainHash{CHModes(ichash), iterations[0], chd1}, ChainHash{CHModes(ichash), iterations[1], chd1}, ChainHash{CHModes(ichash), iterations[2], chd1}};
     // the benchmark starts here
     // run the chainhashes
-    for(u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++){
+    for (u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++) {
         std::shared_ptr<Hash> hash = HashModes::getHash(HModes(ihash));
         std::string hash_info = HashModes::getInfo(HModes(ihash), true);
-        for(u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++){
+        for (u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++) {
             ChainHash ch = chainhashes[iters_ind];
             u_int8_t run_iters = RUN_ITERS[iters_ind];
             Timer timer;
-            if(_memory_base == 0){
+            if (_memory_base == 0) {
                 _memory_base = getPhysicalMem();
-                for (int i = 0; i < run_iters; i++)
-                    ChainHashModes::performChainHash(ch, hash, data_str);
+                for (int i = 0; i < run_iters; i++) ChainHashModes::performChainHash(ch, hash, data_str);
             }
             std::thread memoryThread(MemoryThread);
             timer.start();
@@ -148,24 +138,19 @@ TEST(ChainHash, count) {
     std::string chainhash_info = ChainHashModes::getShortInfo(CHModes(ichash));
     ChainHashData chd1{Format{CHModes(ichash)}};
     chd1.generateRandomData();
-    std::vector<ChainHash> chainhashes = {
-        ChainHash{CHModes(ichash), iterations[0], chd1},
-        ChainHash{CHModes(ichash), iterations[1], chd1},
-        ChainHash{CHModes(ichash), iterations[2], chd1}
-    };
+    std::vector<ChainHash> chainhashes = {ChainHash{CHModes(ichash), iterations[0], chd1}, ChainHash{CHModes(ichash), iterations[1], chd1}, ChainHash{CHModes(ichash), iterations[2], chd1}};
     // the benchmark starts here
     // run the chainhashes
-    for(u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++){
+    for (u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++) {
         std::shared_ptr<Hash> hash = HashModes::getHash(HModes(ihash));
         std::string hash_info = HashModes::getInfo(HModes(ihash), true);
-        for(u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++){
+        for (u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++) {
             ChainHash ch = chainhashes[iters_ind];
             u_int8_t run_iters = RUN_ITERS[iters_ind];
             Timer timer;
-            if(_memory_base == 0){
+            if (_memory_base == 0) {
                 _memory_base = getPhysicalMem();
-                for (int i = 0; i < run_iters; i++)
-                    ChainHashModes::performChainHash(ch, hash, data_str);
+                for (int i = 0; i < run_iters; i++) ChainHashModes::performChainHash(ch, hash, data_str);
             }
             std::thread memoryThread(MemoryThread);
             timer.start();
@@ -189,24 +174,19 @@ TEST(ChainHash, constant_count) {
     std::string chainhash_info = ChainHashModes::getShortInfo(CHModes(ichash));
     ChainHashData chd1{Format{CHModes(ichash)}};
     chd1.generateRandomData();
-    std::vector<ChainHash> chainhashes = {
-        ChainHash{CHModes(ichash), iterations[0], chd1},
-        ChainHash{CHModes(ichash), iterations[1], chd1},
-        ChainHash{CHModes(ichash), iterations[2], chd1}
-    };
+    std::vector<ChainHash> chainhashes = {ChainHash{CHModes(ichash), iterations[0], chd1}, ChainHash{CHModes(ichash), iterations[1], chd1}, ChainHash{CHModes(ichash), iterations[2], chd1}};
     // the benchmark starts here
     // run the chainhashes
-    for(u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++){
+    for (u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++) {
         std::shared_ptr<Hash> hash = HashModes::getHash(HModes(ihash));
         std::string hash_info = HashModes::getInfo(HModes(ihash), true);
-        for(u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++){
+        for (u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++) {
             ChainHash ch = chainhashes[iters_ind];
             u_int8_t run_iters = RUN_ITERS[iters_ind];
             Timer timer;
-            if(_memory_base == 0){
+            if (_memory_base == 0) {
                 _memory_base = getPhysicalMem();
-                for (int i = 0; i < run_iters; i++)
-                    ChainHashModes::performChainHash(ch, hash, data_str);
+                for (int i = 0; i < run_iters; i++) ChainHashModes::performChainHash(ch, hash, data_str);
             }
             std::thread memoryThread(MemoryThread);
             timer.start();
@@ -230,24 +210,19 @@ TEST(ChainHash, quadratic) {
     std::string chainhash_info = ChainHashModes::getShortInfo(CHModes(ichash));
     ChainHashData chd1{Format{CHModes(ichash)}};
     chd1.generateRandomData();
-    std::vector<ChainHash> chainhashes = {
-        ChainHash{CHModes(ichash), iterations[0], chd1},
-        ChainHash{CHModes(ichash), iterations[1], chd1},
-        ChainHash{CHModes(ichash), iterations[2], chd1}
-    };
+    std::vector<ChainHash> chainhashes = {ChainHash{CHModes(ichash), iterations[0], chd1}, ChainHash{CHModes(ichash), iterations[1], chd1}, ChainHash{CHModes(ichash), iterations[2], chd1}};
     // the benchmark starts here
     // run the chainhashes
-    for(u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++){
+    for (u_int8_t ihash = 1; ihash <= MAX_HASHMODE_NUMBER; ihash++) {
         std::shared_ptr<Hash> hash = HashModes::getHash(HModes(ihash));
         std::string hash_info = HashModes::getInfo(HModes(ihash), true);
-        for(u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++){
+        for (u_int64_t iters_ind = 0; iters_ind < iters_indices; iters_ind++) {
             ChainHash ch = chainhashes[iters_ind];
             u_int8_t run_iters = RUN_ITERS[iters_ind];
             Timer timer;
-            if(_memory_base == 0){
+            if (_memory_base == 0) {
                 _memory_base = getPhysicalMem();
-                for (int i = 0; i < run_iters; i++)
-                    ChainHashModes::performChainHash(ch, hash, data_str);
+                for (int i = 0; i < run_iters; i++) ChainHashModes::performChainHash(ch, hash, data_str);
             }
             std::thread memoryThread(MemoryThread);
             timer.start();
