@@ -34,8 +34,7 @@ std::string HashModes::getInfo(const HModes hash_mode, const bool only_name) {
     // gets some information about this hash mode (hash function)
     std::stringstream msg{};
     // start with a base string
-    if(!only_name)
-        msg << "The hash mode " << +hash_mode << " corresponds to hash function: ";
+    if (!only_name) msg << "The hash mode " << +hash_mode << " corresponds to hash function: ";
     // add the information based on the mode
     switch (hash_mode) {
         case HASHMODE_SHA256:  // sha256
