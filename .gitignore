@@ -9,6 +9,7 @@ Todos.txt
 #vs code
 settings.json
 tasks.json
+.vscode
 
 # Prerequisites
 *.d
