@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <thread>
 #include <fstream>
+#include <thread>
 
 #include "bench_utils.h"
 #include "blockchain_decrypt.h"
@@ -65,11 +65,10 @@ TEST(BlockChain, encrypt_sha256) {
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         EncryptBlockChain ebc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -87,11 +86,10 @@ TEST(BlockChain, encrypt_sha384) {
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         EncryptBlockChain ebc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -109,11 +107,10 @@ TEST(BlockChain, encrypt_sha512) {
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         EncryptBlockChain ebc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -131,11 +128,10 @@ TEST(BlockChain, decrypt_sha256) {
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         dbc.addData(data);
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -153,11 +149,10 @@ TEST(BlockChain, decrypt_sha384) {
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         dbc.addData(data);
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -165,7 +160,7 @@ TEST(BlockChain, decrypt_sha384) {
     filing("decrypt_sha384", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BlockChain, decrypt_sha512){
+TEST(BlockChain, decrypt_sha512) {
     HModes hmode = HModes::HASHMODE_SHA512;
     std::shared_ptr<Hash> hash = std::move(HashModes::getHash(hmode));
     Bytes pwhash{hash->getHashSize()};
@@ -175,11 +170,10 @@ TEST(BlockChain, decrypt_sha512){
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         dbc.addData(data);
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -187,7 +181,7 @@ TEST(BlockChain, decrypt_sha512){
     filing("decrypt_sha512", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BlockChain, codec_sha256){
+TEST(BlockChain, codec_sha256) {
     HModes hmode = HModes::HASHMODE_SHA256;
     std::shared_ptr<Hash> hash = std::move(HashModes::getHash(hmode));
     Bytes pwhash{hash->getHashSize()};
@@ -197,14 +191,13 @@ TEST(BlockChain, codec_sha256){
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         EncryptBlockChain ebc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
         dbc.addData(ebc.getResult());
         Bytes res = dbc.getResult();
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -212,7 +205,7 @@ TEST(BlockChain, codec_sha256){
     filing("codec_sha256", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BlockChain, codec_sha384){
+TEST(BlockChain, codec_sha384) {
     HModes hmode = HModes::HASHMODE_SHA384;
     std::shared_ptr<Hash> hash = std::move(HashModes::getHash(hmode));
     Bytes pwhash{hash->getHashSize()};
@@ -222,14 +215,13 @@ TEST(BlockChain, codec_sha384){
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         EncryptBlockChain ebc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
         dbc.addData(ebc.getResult());
         Bytes res = dbc.getResult();
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -237,7 +229,7 @@ TEST(BlockChain, codec_sha384){
     filing("codec_sha384", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BlockChain, codec_sha512){
+TEST(BlockChain, codec_sha512) {
     HModes hmode = HModes::HASHMODE_SHA512;
     std::shared_ptr<Hash> hash = std::move(HashModes::getHash(hmode));
     Bytes pwhash{hash->getHashSize()};
@@ -247,14 +239,13 @@ TEST(BlockChain, codec_sha512){
 
     std::thread memory_thread(MemoryThread);
     timer.start();
-    for(int i = 0; i < ITERS; i++) {
+    for (int i = 0; i < ITERS; i++) {
         EncryptBlockChain ebc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
         dbc.addData(ebc.getResult());
         Bytes res = dbc.getResult();
-        if (i != ITERS - 1) 
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     _terminateMeasurementThread = true;
