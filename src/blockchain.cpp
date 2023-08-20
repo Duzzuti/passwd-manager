@@ -12,7 +12,7 @@ void BlockChain::addData(const Bytes data) noexcept {
     while (true) {
         // get the data that can be added on the last block to complete it
         // it is the minimum of the free space in the last block and the length of the data
-        std::optional<Bytes> data_part = data_copy.popFirstBytes(std::min<unsigned char>(this->getFreeSpaceInLastBlock(), data_copy.getLen()));
+        std::optional<Bytes> data_part = data_copy.popFirstBytes(std::min<int>(this->getFreeSpaceInLastBlock(), data_copy.getLen()));
         if (!data_part.has_value()) {
             // there is no data left to add
             break;
