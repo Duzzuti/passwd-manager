@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <fstream>
 
 #include "bytes.h"
@@ -16,197 +17,183 @@ void filing(std::string op, u_int64_t iters, u_int64_t avg, u_int64_t slowest) {
     file.close();
 }
 
-TEST(Bytes, addByte){
+TEST(Bytes, addByte) {
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         Bytes b;
-        for(int i = 0; i < NUM_BYTES; i++){
+        for (int i = 0; i < NUM_BYTES; i++) {
             b.addByte(0xad);
         }
-        if(i != ITERS-1)
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     filing("addByte", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, addBytes){
+TEST(Bytes, addBytes) {
     Bytes b;
     Bytes c;
-    for(int i = 0; i < NUM_BYTES; i++){
+    for (int i = 0; i < NUM_BYTES; i++) {
         b.addByte(0xad);
         c.addByte(0xad);
     }
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         b.addBytes(c);
-        if(i != ITERS-1)
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     filing("addBytes", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, constructor){
+TEST(Bytes, constructor) {
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         Bytes b(NUM_BYTES2);
-        if(i != ITERS-1)
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     filing("constructor", NUM_BYTES2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, getByteArray){
+TEST(Bytes, getByteArray) {
     Bytes b(NUM_BYTES2);
     Bytes c(NUM_BYTES2);
     b.addBytes(c);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
-        unsigned char* array = new unsigned char[NUM_BYTES2*2];
-        b.getBytesArray(array, NUM_BYTES2*2);
-        if(i != ITERS-1)
-            timer.recordTime();
+    for (int i = 0; i < ITERS; i++) {
+        unsigned char* array = new unsigned char[NUM_BYTES2 * 2];
+        b.getBytesArray(array, NUM_BYTES2 * 2);
+        if (i != ITERS - 1) timer.recordTime();
         delete[] array;
     }
     timer.stop();
-    filing("getByteArray", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("getByteArray", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, getFirstBytes){
+TEST(Bytes, getFirstBytes) {
     Bytes b(NUM_BYTES2);
     Bytes c(NUM_BYTES2);
     b.addBytes(c);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
-        b.getFirstBytes(NUM_BYTES2*2-1);
-        if(i != ITERS-1)
-            timer.recordTime();
+    for (int i = 0; i < ITERS; i++) {
+        b.getFirstBytes(NUM_BYTES2 * 2 - 1);
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("getFirstBytes", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("getFirstBytes", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, popFirstBytes){
+TEST(Bytes, popFirstBytes) {
     Bytes b(NUM_BYTES2);
     Bytes c(NUM_BYTES2);
     b.addBytes(c);
     Bytes d = b;
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
-        d.popFirstBytes(NUM_BYTES2*2-1);
-        if(i != ITERS-1)
-            timer.recordTime();
+    for (int i = 0; i < ITERS; i++) {
+        d.popFirstBytes(NUM_BYTES2 * 2 - 1);
+        if (i != ITERS - 1) timer.recordTime();
         d = b;
     }
     timer.stop();
-    filing("popFirstBytes", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("popFirstBytes", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, getFirstBytesFillup){
+TEST(Bytes, getFirstBytesFillup) {
     Bytes b(NUM_BYTES2);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
-        b.getFirstBytesFilledUp(NUM_BYTES2*2, 0xad);
-        if(i != ITERS-1)
-            timer.recordTime();
+    for (int i = 0; i < ITERS; i++) {
+        b.getFirstBytesFilledUp(NUM_BYTES2 * 2, 0xad);
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("getFirstBytesFillup", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("getFirstBytesFillup", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, popFirstBytesFillup){
+TEST(Bytes, popFirstBytesFillup) {
     Bytes b(NUM_BYTES2);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
-        b.popFirstBytesFilledUp(NUM_BYTES2*2, 0xad);
-        if(i != ITERS-1)
-            timer.recordTime();
+    for (int i = 0; i < ITERS; i++) {
+        b.popFirstBytesFilledUp(NUM_BYTES2 * 2, 0xad);
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("popFirstBytesFillup", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("popFirstBytesFillup", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, equal){
+TEST(Bytes, equal) {
     Bytes b(NUM_BYTES2);
     Bytes d(NUM_BYTES2);
     b.addBytes(d);
     Bytes c = b;
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
-        if(b == c)
-            b.addByte(0xad);
-        if(i != ITERS-1)
-            timer.recordTime();
+    for (int i = 0; i < ITERS; i++) {
+        if (b == c) b.addByte(0xad);
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("equal", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("equal", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, plus){
+TEST(Bytes, plus) {
     Bytes a(NUM_BYTES3);
     Bytes b(NUM_BYTES3);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         a = a + b;
-        if(i != ITERS-1)
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     filing("plus", NUM_BYTES3, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, minus){
+TEST(Bytes, minus) {
     Bytes a(NUM_BYTES3);
     Bytes b(NUM_BYTES3);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         a = a - b;
-        if(i != ITERS-1)
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     filing("minus", NUM_BYTES3, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, toHex){
+TEST(Bytes, toHex) {
     Bytes b(NUM_BYTES2);
     Bytes c(NUM_BYTES2);
     b.addBytes(c);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         toHex(b);
-        if(i != ITERS-1)
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("toHex", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("toHex", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Bytes, toLong){
+TEST(Bytes, toLong) {
     Bytes b(NUM_BYTES2);
     Bytes c(NUM_BYTES2);
     b.addBytes(c);
     Timer timer;
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         toLong(b);
-        if(i != ITERS-1)
-            timer.recordTime();
+        if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("toLong", NUM_BYTES2*2, timer.getAverageTime(), timer.getSlowest());
+    filing("toLong", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
