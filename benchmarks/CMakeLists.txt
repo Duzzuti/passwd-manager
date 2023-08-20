@@ -15,4 +15,16 @@ target_link_libraries(pman_bench_chainhash gtest_main)
 target_link_libraries(pman_bench_chainhash ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_bench_chainhash PUBLIC ${INCLUDE_DIR})
 
+add_executable(pman_bench_bytes main_bench.cpp bytes_bench.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/rng.cpp)
+target_link_libraries(pman_bench_bytes gtest_main)
+target_link_libraries(pman_bench_bytes ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(pman_bench_bytes PUBLIC ${INCLUDE_DIR})
+
+add_executable(pman_bench_rng main_bench.cpp rng_bench.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/rng.cpp)
+target_link_libraries(pman_bench_rng gtest_main)
+target_link_libraries(pman_bench_rng ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(pman_bench_rng PUBLIC ${INCLUDE_DIR})
+
 add_test(BENCH_Chainhash pman_bench_chainhash)
+add_test(BENCH_Bytes pman_bench_bytes)
+add_test(BENCH_RNG pman_bench_rng)
