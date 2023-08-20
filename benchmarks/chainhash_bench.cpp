@@ -84,8 +84,7 @@ TEST(ChainHash, normal) {
             timer.start();
             for (int i = 0; i < run_iters; i++) {
                 ChainHashModes::performChainHash(ch, hash, data_str);
-                if(i != run_iters-1)
-                    timer.recordTime();
+                if (i != run_iters - 1) timer.recordTime();
             }
             timer.stop();
             _terminateMeasurementThread = true;
@@ -121,8 +120,7 @@ TEST(ChainHash, constant) {
             timer.start();
             for (int i = 0; i < run_iters; i++) {
                 ChainHashModes::performChainHash(ch, hash, data_str);
-                if(i != run_iters-1)
-                    timer.recordTime();
+                if (i != run_iters - 1) timer.recordTime();
             }
             timer.stop();
             _terminateMeasurementThread = true;
@@ -158,8 +156,7 @@ TEST(ChainHash, count) {
             timer.start();
             for (int i = 0; i < run_iters; i++) {
                 ChainHashModes::performChainHash(ch, hash, data_str);
-                if(i != run_iters-1)
-                    timer.recordTime();
+                if (i != run_iters - 1) timer.recordTime();
             }
             timer.stop();
             _terminateMeasurementThread = true;
@@ -195,8 +192,7 @@ TEST(ChainHash, constant_count) {
             timer.start();
             for (int i = 0; i < run_iters; i++) {
                 ChainHashModes::performChainHash(ch, hash, data_str);
-                if(i != run_iters-1)
-                    timer.recordTime();
+                if (i != run_iters - 1) timer.recordTime();
             }
             timer.stop();
             _terminateMeasurementThread = true;
@@ -232,8 +228,7 @@ TEST(ChainHash, quadratic) {
             timer.start();
             for (int i = 0; i < run_iters; i++) {
                 ChainHashModes::performChainHash(ch, hash, data_str);
-                if(i != run_iters-1)
-                    timer.recordTime();
+                if (i != run_iters - 1) timer.recordTime();
             }
             timer.stop();
             _terminateMeasurementThread = true;
