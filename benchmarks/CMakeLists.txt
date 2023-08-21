@@ -33,7 +33,16 @@ target_link_libraries(pman_bench_blockchain gtest_main)
 target_link_libraries(pman_bench_blockchain ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_bench_blockchain PUBLIC ${INCLUDE_DIR})
 
+add_executable(pman_bench_dataheader main_bench.cpp dataheader_bench.cpp 
+    ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/format.cpp ${SRC_DIR}/dataheader.cpp
+    ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp
+    ${SRC_DIR}/file_modes.cpp)
+target_link_libraries(pman_bench_dataheader gtest_main)
+target_link_libraries(pman_bench_dataheader ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(pman_bench_dataheader PUBLIC ${INCLUDE_DIR})
+
 add_test(BENCH_Chainhash pman_bench_chainhash)
 add_test(BENCH_Bytes pman_bench_bytes)
 add_test(BENCH_RNG pman_bench_rng)
 add_test(BENCH_Blockchain pman_bench_blockchain)
+add_test(BENCH_Dataheader pman_bench_dataheader)
