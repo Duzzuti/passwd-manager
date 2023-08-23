@@ -15,7 +15,7 @@ void filing(std::string op, u_int64_t iters, u_int64_t avg, u_int64_t slowest) {
     file.close();
 }
 
-TEST(DataHeader, calcHeaderBytes_sha256){
+TEST(DataHeader, calcHeaderBytes_sha256) {
     Timer timer;
     ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
     ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
@@ -27,14 +27,14 @@ TEST(DataHeader, calcHeaderBytes_sha256){
     header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
     header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         header.calcHeaderBytes();
     }
     timer.stop();
     filing("calcHeaderBytes_sha256", ITERS, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(DataHeader, setHeaderBytes_sha256){
+TEST(DataHeader, setHeaderBytes_sha256) {
     Timer timer;
     ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
     ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
@@ -48,16 +48,15 @@ TEST(DataHeader, setHeaderBytes_sha256){
     header.calcHeaderBytes();
     Bytes headerBytes = header.getHeaderBytes();
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         DataHeader header{HASHMODE_SHA256};
         header.setHeaderBytes(headerBytes);
     }
     timer.stop();
     filing("setHeaderBytes_sha256", ITERS, timer.getAverageTime(), timer.getSlowest());
-
 }
 
-TEST(DataHeader, calcHeaderBytes_sha384){
+TEST(DataHeader, calcHeaderBytes_sha384) {
     Timer timer;
     ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
     ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
@@ -69,14 +68,14 @@ TEST(DataHeader, calcHeaderBytes_sha384){
     header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
     header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         header.calcHeaderBytes();
     }
     timer.stop();
     filing("calcHeaderBytes_sha384", ITERS, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(DataHeader, setHeaderBytes_sha384){
+TEST(DataHeader, setHeaderBytes_sha384) {
     Timer timer;
     ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
     ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
@@ -90,16 +89,15 @@ TEST(DataHeader, setHeaderBytes_sha384){
     header.calcHeaderBytes();
     Bytes headerBytes = header.getHeaderBytes();
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         DataHeader header{HASHMODE_SHA384};
         header.setHeaderBytes(headerBytes);
     }
     timer.stop();
     filing("setHeaderBytes_sha384", ITERS, timer.getAverageTime(), timer.getSlowest());
-
 }
 
-TEST(DataHeader, calcHeaderBytes_sha512){
+TEST(DataHeader, calcHeaderBytes_sha512) {
     Timer timer;
     ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
     ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
@@ -111,14 +109,14 @@ TEST(DataHeader, calcHeaderBytes_sha512){
     header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
     header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         header.calcHeaderBytes();
     }
     timer.stop();
     filing("calcHeaderBytes_sha512", ITERS, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(DataHeader, setHeaderBytes_sha512){
+TEST(DataHeader, setHeaderBytes_sha512) {
     Timer timer;
     ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
     ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
@@ -132,11 +130,10 @@ TEST(DataHeader, setHeaderBytes_sha512){
     header.calcHeaderBytes();
     Bytes headerBytes = header.getHeaderBytes();
     timer.start();
-    for(int i = 0; i < ITERS; i++){
+    for (int i = 0; i < ITERS; i++) {
         DataHeader header{HASHMODE_SHA512};
         header.setHeaderBytes(headerBytes);
     }
     timer.stop();
     filing("setHeaderBytes_sha512", ITERS, timer.getAverageTime(), timer.getSlowest());
-
 }
