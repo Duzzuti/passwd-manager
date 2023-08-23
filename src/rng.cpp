@@ -18,6 +18,25 @@ std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
     }
 }
 
+std::vector<unsigned char> RNG::get_random_bytes_large(const u_int64_t num){
+    unsigned char* rand_bytes = new unsigned char[num];  // creates a new buffer with the given length
+    std::vector<unsigned char> ret{};
+    if (RAND_bytes(rand_bytes, sizeof(unsigned char)*num) == 1) {  // generates the random bytes
+        for (int i = 0; i < sizeof(unsigned char)*num; i++) {
+            ret.push_back(rand_bytes[i]);  // turns the buffer into a vector
+        }
+        delete[] rand_bytes;
+        return ret;
+    } else {
+        // some error in openssl occurred (maybe the given entropy was too low)
+        if (rand_bytes != nullptr) {
+            delete[] rand_bytes;
+        }
+        PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
+        throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
+    }
+}
+
 unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned char upper, const unsigned int buffer_size) {
     // gets a random byte in a given range
     // it will get some random bytes, turn them into a long
