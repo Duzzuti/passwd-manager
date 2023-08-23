@@ -18,11 +18,11 @@ std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
     }
 }
 
-std::vector<unsigned char> RNG::get_random_bytes_large(const u_int64_t num){
+std::vector<unsigned char> RNG::get_random_bytes_large(const u_int64_t num) {
     unsigned char* rand_bytes = new unsigned char[num];  // creates a new buffer with the given length
     std::vector<unsigned char> ret{};
-    if (RAND_bytes(rand_bytes, sizeof(unsigned char)*num) == 1) {  // generates the random bytes
-        for (int i = 0; i < sizeof(unsigned char)*num; i++) {
+    if (RAND_bytes(rand_bytes, sizeof(unsigned char) * num) == 1) {  // generates the random bytes
+        for (int i = 0; i < sizeof(unsigned char) * num; i++) {
             ret.push_back(rand_bytes[i]);  // turns the buffer into a vector
         }
         delete[] rand_bytes;
