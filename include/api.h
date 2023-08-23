@@ -86,7 +86,7 @@ class API {
             parent->correct_password_hash = Bytes();
             parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
             parent->encrypted_data = Bytes();
-            parent->selected_file = std::filesystem::path();
+            parent->selected_file = {};
             parent->file_data_struct = FileDataStruct{file_mode, Bytes()};
             parent->current_state = std::make_unique<INIT>(parent);
         }
@@ -95,7 +95,7 @@ class API {
             parent->correct_password_hash = Bytes();
             parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
             parent->encrypted_data = Bytes();
-            parent->selected_file = std::filesystem::path();
+            parent->selected_file = {};
             parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
             parent->current_state = std::make_unique<INIT>(parent);
         }
