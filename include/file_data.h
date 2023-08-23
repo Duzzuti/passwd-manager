@@ -2,7 +2,6 @@
 
 #include <optional>
 
-#include "base.h"
 #include "bytes.h"
 #include "error.h"
 #include "file_modes.h"

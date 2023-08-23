@@ -3,11 +3,9 @@
 #include <optional>
 
 #include "bytes.h"
-#include "chainhash_data.h"
 #include "chainhash_modes.h"
 #include "file_modes.h"
 #include "hash_modes.h"
-#include "settings.h"
 
 struct DataHeaderParts {
     // holds the variables used for the dataheader

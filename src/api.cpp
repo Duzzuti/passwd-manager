@@ -7,7 +7,6 @@ implementation of api.h
 #include "blockchain_decrypt.h"
 #include "blockchain_encrypt.h"
 #include "file_modes.h"
-#include "logger.h"
 #include "timer.h"
 
 ErrorStruct<FileHandler> API::_getFileHandler(const std::filesystem::path file_path) const noexcept {

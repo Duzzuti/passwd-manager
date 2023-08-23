@@ -3,11 +3,9 @@ contains the implementations for the chainhashModes class
 */
 #include "chainhash_modes.h"
 
-#include "chainhash_data.h"
 #include "logger.h"
 #include "pwfunc.h"
 #include "rng.h"
-#include "settings.h"
 #include "utility.h"
 
 std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {

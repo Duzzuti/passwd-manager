@@ -3,7 +3,6 @@
 #include <filesystem>
 
 #include "base.h"
-#include "bytes.h"
 #include "dataheader.h"
 
 class FileHandler {
