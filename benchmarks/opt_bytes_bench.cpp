@@ -32,7 +32,7 @@ TEST(BytesOPT, addByte) {
 }
 
 TEST(BytesOPT, addBytes) {
-    BytesOpt b(NUM_BYTES*(ITERS+1));
+    BytesOpt b(NUM_BYTES * (ITERS + 1));
     BytesOpt c(NUM_BYTES);
     for (int i = 0; i < NUM_BYTES; i++) {
         b.addByte(0xad);
@@ -61,7 +61,7 @@ TEST(BytesOPT, constructor) {
 }
 
 TEST(BytesOPT, getByteArray) {
-    BytesOpt b(NUM_BYTES2*2);
+    BytesOpt b(NUM_BYTES2 * 2);
     b.fillrandom();
     Timer timer;
     timer.start();
@@ -76,9 +76,9 @@ TEST(BytesOPT, getByteArray) {
 }
 
 TEST(BytesOPT, equal) {
-    BytesOpt b(NUM_BYTES2*2+ITERS);
-    b.addrandom(NUM_BYTES2*2);
-    BytesOpt c(NUM_BYTES2*2);
+    BytesOpt b(NUM_BYTES2 * 2 + ITERS);
+    b.addrandom(NUM_BYTES2 * 2);
+    BytesOpt c(NUM_BYTES2 * 2);
     c = b;
     Timer timer;
     timer.start();
@@ -121,7 +121,7 @@ TEST(BytesOPT, minus) {
 }
 
 TEST(BytesOPT, toHex) {
-    BytesOpt b(NUM_BYTES2*2);
+    BytesOpt b(NUM_BYTES2 * 2);
     b.fillrandom();
     Timer timer;
     timer.start();
@@ -134,7 +134,7 @@ TEST(BytesOPT, toHex) {
 }
 
 TEST(BytesOPT, toLong) {
-    BytesOpt b(NUM_BYTES2*2);
+    BytesOpt b(NUM_BYTES2 * 2);
     b.fillrandom();
     Timer timer;
     timer.start();
