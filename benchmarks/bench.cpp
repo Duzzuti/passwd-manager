@@ -4,18 +4,18 @@
 #include <thread>
 
 #include "api.h"
-#include "timer.h"
-#include "rng.h"
-#include "utility.h"
 #include "bench_utils.h"
+#include "rng.h"
+#include "timer.h"
+#include "utility.h"
 
 const constexpr u_int64_t CITERS = 1000000;
 const constexpr u_int64_t CITERS_SMALL = 1;
-const constexpr u_int64_t DATA_SIZE_SMALL = 1024*1024; //1MB
+const constexpr u_int64_t DATA_SIZE_SMALL = 1024 * 1024;  // 1MB
 const constexpr u_int64_t DATA_SIZE_SMALL_MB = 1;
-const constexpr u_int64_t DATA_SIZE_MEDIUM = 1024*1024*50; //50MB
+const constexpr u_int64_t DATA_SIZE_MEDIUM = 1024 * 1024 * 50;  // 50MB
 const constexpr u_int64_t DATA_SIZE_MEDIUM_MB = 50;
-const constexpr u_int64_t DATA_SIZE_LARGE = 1024*1024*1024; //1GB
+const constexpr u_int64_t DATA_SIZE_LARGE = 1024 * 1024 * 1024;  // 1GB
 const constexpr u_int64_t DATA_SIZE_LARGE_MB = 1024;
 const constexpr u_int64_t ITERS = 10;
 std::string password = "password";
@@ -63,7 +63,7 @@ void filing(std::string op, u_int64_t iters, u_int64_t size, u_int64_t avg, u_in
     file.close();
 }
 
-TEST(Benchmark, small_sha256){
+TEST(Benchmark, small_sha256) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA256);
@@ -76,7 +76,7 @@ TEST(Benchmark, small_sha256){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -87,7 +87,7 @@ TEST(Benchmark, small_sha256){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -97,7 +97,7 @@ TEST(Benchmark, small_sha256){
     filing("small_sha256", CITERS, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, small_sha384){
+TEST(Benchmark, small_sha384) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA384);
@@ -110,7 +110,7 @@ TEST(Benchmark, small_sha384){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -121,7 +121,7 @@ TEST(Benchmark, small_sha384){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -131,7 +131,7 @@ TEST(Benchmark, small_sha384){
     filing("small_sha384", CITERS, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, small_sha512){
+TEST(Benchmark, small_sha512) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA512);
@@ -144,7 +144,7 @@ TEST(Benchmark, small_sha512){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -155,7 +155,7 @@ TEST(Benchmark, small_sha512){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -165,7 +165,7 @@ TEST(Benchmark, small_sha512){
     filing("small_sha512", CITERS, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, medium_sha256){
+TEST(Benchmark, medium_sha256) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA256);
@@ -178,7 +178,7 @@ TEST(Benchmark, medium_sha256){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -189,7 +189,7 @@ TEST(Benchmark, medium_sha256){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -199,7 +199,7 @@ TEST(Benchmark, medium_sha256){
     filing("medium_sha256", CITERS, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, medium_sha384){
+TEST(Benchmark, medium_sha384) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA384);
@@ -212,7 +212,7 @@ TEST(Benchmark, medium_sha384){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -223,7 +223,7 @@ TEST(Benchmark, medium_sha384){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -233,7 +233,7 @@ TEST(Benchmark, medium_sha384){
     filing("medium_sha384", CITERS, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, medium_sha512){
+TEST(Benchmark, medium_sha512) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA512);
@@ -246,7 +246,7 @@ TEST(Benchmark, medium_sha512){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -257,7 +257,7 @@ TEST(Benchmark, medium_sha512){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -267,7 +267,7 @@ TEST(Benchmark, medium_sha512){
     filing("medium_sha512", CITERS, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, large_sha256){
+TEST(Benchmark, large_sha256) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA256);
@@ -280,7 +280,7 @@ TEST(Benchmark, large_sha256){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -291,7 +291,7 @@ TEST(Benchmark, large_sha256){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -301,7 +301,7 @@ TEST(Benchmark, large_sha256){
     filing("large_sha256", CITERS, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, large_sha384){
+TEST(Benchmark, large_sha384) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA384);
@@ -314,7 +314,7 @@ TEST(Benchmark, large_sha384){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -325,7 +325,7 @@ TEST(Benchmark, large_sha384){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -335,7 +335,7 @@ TEST(Benchmark, large_sha384){
     filing("large_sha384", CITERS, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, large_sha512){
+TEST(Benchmark, large_sha512) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA512);
@@ -348,7 +348,7 @@ TEST(Benchmark, large_sha512){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < 1; i++){
+    for (u_int64_t i = 0; i < 1; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         std::cout << file << std::endl;
@@ -365,7 +365,7 @@ TEST(Benchmark, large_sha512){
         std::cout << "wrote to file" << std::endl;
         api.logout();
         std::cout << "logged out" << std::endl;
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -377,7 +377,7 @@ TEST(Benchmark, large_sha512){
     filing("large_sha512", CITERS, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, small_sha256_nochain){
+TEST(Benchmark, small_sha256_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA256);
@@ -390,7 +390,7 @@ TEST(Benchmark, small_sha256_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -401,7 +401,7 @@ TEST(Benchmark, small_sha256_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -411,7 +411,7 @@ TEST(Benchmark, small_sha256_nochain){
     filing("small_sha256_nochain", CITERS_SMALL, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, small_sha384_nochain){
+TEST(Benchmark, small_sha384_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA384);
@@ -424,7 +424,7 @@ TEST(Benchmark, small_sha384_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -435,7 +435,7 @@ TEST(Benchmark, small_sha384_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -445,7 +445,7 @@ TEST(Benchmark, small_sha384_nochain){
     filing("small_sha384_nochain", CITERS_SMALL, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, small_sha512_nochain){
+TEST(Benchmark, small_sha512_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA512);
@@ -458,7 +458,7 @@ TEST(Benchmark, small_sha512_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -469,7 +469,7 @@ TEST(Benchmark, small_sha512_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -479,7 +479,7 @@ TEST(Benchmark, small_sha512_nochain){
     filing("small_sha512_nochain", CITERS_SMALL, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, medium_sha256_nochain){
+TEST(Benchmark, medium_sha256_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA256);
@@ -492,7 +492,7 @@ TEST(Benchmark, medium_sha256_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -503,7 +503,7 @@ TEST(Benchmark, medium_sha256_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -513,7 +513,7 @@ TEST(Benchmark, medium_sha256_nochain){
     filing("medium_sha256_nochain", CITERS_SMALL, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, medium_sha384_nochain){
+TEST(Benchmark, medium_sha384_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA384);
@@ -526,7 +526,7 @@ TEST(Benchmark, medium_sha384_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -537,7 +537,7 @@ TEST(Benchmark, medium_sha384_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -547,7 +547,7 @@ TEST(Benchmark, medium_sha384_nochain){
     filing("medium_sha384_nochain", CITERS_SMALL, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, medium_sha512_nochain){
+TEST(Benchmark, medium_sha512_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA512);
@@ -560,7 +560,7 @@ TEST(Benchmark, medium_sha512_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -571,7 +571,7 @@ TEST(Benchmark, medium_sha512_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -581,7 +581,7 @@ TEST(Benchmark, medium_sha512_nochain){
     filing("medium_sha512_nochain", CITERS_SMALL, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, large_sha256_nochain){
+TEST(Benchmark, large_sha256_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA256);
@@ -594,7 +594,7 @@ TEST(Benchmark, large_sha256_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -605,7 +605,7 @@ TEST(Benchmark, large_sha256_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -615,7 +615,7 @@ TEST(Benchmark, large_sha256_nochain){
     filing("large_sha256_nochain", CITERS_SMALL, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, large_sha384_nochain){
+TEST(Benchmark, large_sha384_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA384);
@@ -628,7 +628,7 @@ TEST(Benchmark, large_sha384_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < ITERS; i++){
+    for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         api.createFile(file);
@@ -639,7 +639,7 @@ TEST(Benchmark, large_sha384_nochain){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
@@ -649,7 +649,7 @@ TEST(Benchmark, large_sha384_nochain){
     filing("large_sha384_nochain", CITERS_SMALL, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark, large_sha512_nochain){
+TEST(Benchmark, large_sha512_nochain) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA512);
@@ -662,7 +662,7 @@ TEST(Benchmark, large_sha512_nochain){
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for(u_int64_t i = 0; i < 1; i++){
+    for (u_int64_t i = 0; i < 1; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
         std::cout << file << std::endl;
@@ -679,7 +679,7 @@ TEST(Benchmark, large_sha512_nochain){
         std::cout << "wrote to file" << std::endl;
         api.logout();
         std::cout << "logged out" << std::endl;
-        if(i != ITERS - 1){
+        if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
