@@ -37,6 +37,14 @@ std::vector<unsigned char> RNG::get_random_bytes_large(const u_int64_t num) {
     }
 }
 
+void RNG::fill_random_bytes(unsigned char* bytes, const unsigned int num) {
+    if (RAND_bytes(bytes, num) != 1) {
+        // some error in openssl occurred (maybe the given entropy was too low)
+        PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
+        throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
+    }
+}
+
 unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned char upper, const unsigned int buffer_size) {
     // gets a random byte in a given range
     // it will get some random bytes, turn them into a long
