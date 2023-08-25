@@ -35,4 +35,4 @@ class Bytes {
 std::string toHex(const unsigned char byte) noexcept;  // returns a string (with two chars) that is the hexadecimal representation of the byte
 std::string toHex(const Bytes b) noexcept;             // returns a string (with 2*len chars) that is the hexadecimal representation of the Bytes
 u_int64_t toLong(const unsigned char byte) noexcept;   // returns a long that is the decimal representation of the byte
-u_int64_t toLong(const Bytes b) noexcept;              // returns a long that is the decimal representation of the Bytes
+u_int64_t toLong(const Bytes b);                       // returns a long that is the decimal representation of the Bytes
