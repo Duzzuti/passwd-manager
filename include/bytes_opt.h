@@ -14,7 +14,7 @@ class BytesOpt {
     size_t len;            // length of the byte array
 
    public:
-    static BytesOpt fromLong(const u_int64_t l);                         // sets the Bytes to the decimal representation of the given long
+    static BytesOpt fromLong(const u_int64_t l);  // sets the Bytes to the decimal representation of the given long
 
     BytesOpt(const int max_len);                                         // creates an empty byte array with a given maximum length
     BytesOpt(const BytesOpt& other);                                     // copy constructor

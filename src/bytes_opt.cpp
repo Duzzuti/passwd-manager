@@ -5,13 +5,13 @@
 #include "logger.h"
 #include "rng.h"
 
-BytesOpt BytesOpt::fromLong(const u_int64_t l) { 
+BytesOpt BytesOpt::fromLong(const u_int64_t l) {
     // sets the Bytes to the decimal representation of the given long
     BytesOpt res(8);
     unsigned char reversedBytes[8];
     std::memcpy(reversedBytes, &l, 8);
     for (size_t i = 0; i < 8; ++i) {
-        if(!res.isEmpty() || reversedBytes[7 - i] != 0){
+        if (!res.isEmpty() || reversedBytes[7 - i] != 0) {
             res.addByte(reversedBytes[7 - i]);
         }
     }
