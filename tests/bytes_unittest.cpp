@@ -325,7 +325,7 @@ TEST(Utils, toLong) {
         maxLongLessBytes.addByte(255);
         zeroBytes.addByte(0);
         oneBytes.addByte(0);
-        if(i < 3) {
+        if (i < 3) {
             threeBytes.addByte(198);
         }
     }
