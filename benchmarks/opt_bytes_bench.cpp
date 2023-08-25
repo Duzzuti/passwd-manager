@@ -9,6 +9,7 @@ const constexpr int ITERS = 10;
 const constexpr int NUM_BYTES = 10000000;
 const constexpr int NUM_BYTES2 = 5000000;
 const constexpr int NUM_BYTES3 = 100000;
+const constexpr int NUM_BYTES4 = 1000000;
 
 void filing(std::string op, u_int64_t iters, u_int64_t avg, u_int64_t slowest) {
     std::ofstream file;
@@ -134,14 +135,15 @@ TEST(BytesOPT, toHex) {
 }
 
 TEST(BytesOPT, toLong) {
-    BytesOpt b(NUM_BYTES2 * 2);
+    BytesOpt b(8);
     b.fillrandom();
     Timer timer;
     timer.start();
     for (int i = 0; i < ITERS; i++) {
-        b.toLong();
+        for(int j = 0; j < NUM_BYTES4; j++)
+            b.toLong();
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("toLong", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
+    filing("toLong", NUM_BYTES4, timer.getAverageTime(), timer.getSlowest());
 }
