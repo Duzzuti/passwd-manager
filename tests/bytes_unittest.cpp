@@ -19,6 +19,9 @@ TEST(BytesClass, returnTypes) {
     EXPECT_EQ(typeid(void), typeid(Bytes().print()));
     EXPECT_EQ(typeid(void), typeid(Bytes().setBytes(RNG::get_random_bytes(10))));
     EXPECT_EQ(typeid(std::vector<unsigned char>), typeid(Bytes(10).getBytes()));
+    unsigned char* l = new unsigned char[10];
+    EXPECT_EQ(typeid(void), typeid(Bytes(10).getBytesArray(l, 10)));
+    delete[] l;
     EXPECT_EQ(typeid(size_t), typeid(Bytes(10).getLen()));
     EXPECT_EQ(typeid(void), typeid(Bytes(10).addByte(1)));
     EXPECT_EQ(typeid(void), typeid(Bytes(10).addBytes(Bytes(10))));
@@ -316,11 +319,15 @@ TEST(Utils, toLong) {
     Bytes zeroBytes = Bytes();
     Bytes maxLongBytes = Bytes();
     Bytes maxLongLessBytes = Bytes();
+    Bytes threeBytes = Bytes();
     for (int i = 0; i < 7; i++) {
         maxLongBytes.addByte(255);
         maxLongLessBytes.addByte(255);
         zeroBytes.addByte(0);
         oneBytes.addByte(0);
+        if(i < 3) {
+            threeBytes.addByte(198);
+        }
     }
     zeroBytes.addByte(0);
     oneBytes.addByte(1);
@@ -331,6 +338,9 @@ TEST(Utils, toLong) {
     EXPECT_EQ(max_long_one_less, toLong(maxLongLessBytes));
     EXPECT_EQ(zero, toLong(zeroBytes));
     EXPECT_EQ(one, toLong(oneBytes));
+    EXPECT_THROW(toLong(Bytes(9)), std::length_error);
+    EXPECT_EQ(0, toLong(Bytes()));
+    EXPECT_EQ(13027014, toLong(threeBytes));
 }
 
 TEST(Utils, bytesOperator) {
