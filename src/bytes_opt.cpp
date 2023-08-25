@@ -5,6 +5,19 @@
 #include "logger.h"
 #include "rng.h"
 
+BytesOpt BytesOpt::fromLong(const u_int64_t l) { 
+    // sets the Bytes to the decimal representation of the given long
+    BytesOpt res(8);
+    unsigned char reversedBytes[8];
+    std::memcpy(reversedBytes, &l, 8);
+    for (size_t i = 0; i < 8; ++i) {
+        if(!res.isEmpty() || reversedBytes[7 - i] != 0){
+            res.addByte(reversedBytes[7 - i]);
+        }
+    }
+    return res;
+}
+
 BytesOpt::BytesOpt(const int max_len) {
     // creates an empty byte array with a given maximum length
     if (max_len < 0) {
@@ -147,7 +160,7 @@ void BytesOpt::addByte(const unsigned char& byte) {
     // adds one byte at the end of the byte array by reference
     if (this->len >= this->max_len) {
         PLOG_FATAL << "Bytes are already full. Cannot add an other byte (max_len = len = " << this->max_len << ")";
-        throw std::invalid_argument("Bytes are already full. Cannot add an other byte (max_len = len = " + std::to_string(this->max_len) + ")");
+        throw std::length_error("Bytes are already full. Cannot add an other byte (max_len = len = " + std::to_string(this->max_len) + ")");
     }
     this->bytes[this->len] = byte;
     this->len++;
@@ -174,7 +187,7 @@ BytesOpt BytesOpt::operator+(const BytesOpt& b2) const {
     // performs an add elementwise (the two byte arrays are added to each other (elementwise) mod 256)
     if (this->len != b2.len) {
         PLOG_FATAL << "cannot add bytes with different lengths (len1: " << this->len << ", len2: " << b2.len << ")";
-        throw std::invalid_argument("cannot add bytes with different lengths");
+        throw std::length_error("cannot add bytes with different lengths");
     }
     BytesOpt res(this->max_len);
     for (size_t i = 0; i < this->len; i++) {
@@ -188,7 +201,7 @@ BytesOpt BytesOpt::operator-(const BytesOpt& b2) const {
     // performs an subtract elementwise (the second byte array is subtracted from the first (elementwise) mod 256)
     if (this->len != b2.len) {
         PLOG_FATAL << "cannot subtract bytes with different lengths (len1: " << this->len << ", len2: " << b2.len << ")";
-        throw std::invalid_argument("cannot subtract bytes with different lengths");
+        throw std::length_error("cannot subtract bytes with different lengths");
     }
     BytesOpt res(this->max_len);
     for (size_t i = 0; i < this->len; i++) {
@@ -216,9 +229,13 @@ u_int64_t BytesOpt::toLong() const {
     // returns a long that is the decimal representation of the Bytes
     if (this->len > sizeof(u_int64_t)) {
         PLOG_ERROR << "BytesOpt::toLong() is not defined for BytesOpt with more than 8 bytes";
-        throw std::runtime_error("BytesOpt::toLong() is not defined for BytesOpt with more than 8 bytes");
+        throw std::length_error("BytesOpt::toLong() is not defined for BytesOpt with more than 8 bytes");
     }
-    u_int64_t res;
-    std::memcpy(&res, this->bytes, this->len);
+    u_int64_t res = 0;
+    unsigned char reversedBytes[this->len];
+    for (size_t i = 0; i < this->len; ++i) {
+        reversedBytes[this->len - 1 - i] = this->bytes[i];
+    }
+    std::memcpy(&res, reversedBytes, this->len);
     return res;
 }
