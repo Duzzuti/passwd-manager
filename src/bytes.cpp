@@ -167,7 +167,7 @@ std::string toHex(const Bytes b) noexcept {
 u_int64_t toLong(const unsigned char byte) noexcept { return (u_int64_t)byte; }
 
 u_int64_t toLong(const Bytes b) {
-    if(b.getLen() > 8) {
+    if (b.getLen() > 8) {
         // the Bytes object is too big to be converted to a long
         PLOG_ERROR << "The provided bytes are too big to be converted to a long (bytes_len: " << b.getLen() << ")";
         throw std::length_error("bytes are too big to be converted to a long");
