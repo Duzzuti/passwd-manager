@@ -140,8 +140,7 @@ TEST(BytesOPT, toLong) {
     Timer timer;
     timer.start();
     for (int i = 0; i < ITERS; i++) {
-        for(int j = 0; j < NUM_BYTES4; j++)
-            b.toLong();
+        for (int j = 0; j < NUM_BYTES4; j++) b.toLong();
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();

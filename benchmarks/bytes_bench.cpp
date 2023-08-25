@@ -190,8 +190,7 @@ TEST(Bytes, toLong) {
     Timer timer;
     timer.start();
     for (int i = 0; i < ITERS; i++) {
-        for(int j = 0; j < NUM_BYTES4; j++)
-            toLong(b);
+        for (int j = 0; j < NUM_BYTES4; j++) toLong(b);
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
