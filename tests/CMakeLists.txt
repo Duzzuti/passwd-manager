@@ -4,7 +4,6 @@ set_property(TEST APPEND PROPERTY ENVIRONMENT "CTEST_DIRECTORY=${PROJECT_SOURCE_
 set(TEST_INCLUDE_DIR ${TEST_DIR}/include)
 set(ATTACKER_DIR ${TEST_DIR}/Attacker)
 
-find_package(GTest REQUIRED)
 find_package(OpenSSL REQUIRED)
 enable_testing()
 
@@ -13,6 +12,11 @@ add_executable(pman_test_bytes main_test.cpp bytes_unittest.cpp ${SRC_DIR}/bytes
 target_link_libraries(pman_test_bytes gtest_main)
 target_link_libraries(pman_test_bytes ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_bytes PUBLIC ${INCLUDE_DIR})
+
+add_executable(pman_test_bytes_opt main_test.cpp bytes_opt_unittest.cpp ${SRC_DIR}/bytes_opt.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/bytes.cpp)
+target_link_libraries(pman_test_bytes_opt gtest_main)
+target_link_libraries(pman_test_bytes_opt ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(pman_test_bytes_opt PUBLIC ${INCLUDE_DIR})
 
 add_executable(pman_test_block main_test.cpp block_unittest.cpp ${SRC_DIR}/block.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_test_block gtest_main)
@@ -98,6 +102,7 @@ target_link_libraries(pman_test_chainhashdata ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_chainhashdata PUBLIC ${INCLUDE_DIR})
 
 add_test(bytes pman_test_bytes)
+add_test(bytes_opt pman_test_bytes_opt)
 add_test(block pman_test_block)
 add_test(sha256 pman_test_sha256)
 add_test(sha384 pman_test_sha384)

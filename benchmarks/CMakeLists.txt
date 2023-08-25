@@ -2,7 +2,6 @@ include(CTest)
 
 set_property(TEST APPEND PROPERTY ENVIRONMENT "CTEST_DIRECTORY=${PROJECT_SOURCE_DIR}/build/benchmarks")
 
-#find_package(GTest REQUIRED)
 find_package(OpenSSL REQUIRED)
 enable_testing()
 

@@ -61,6 +61,6 @@ else()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  #WORKadd_subdirectory(${TEST_DIR})
+  add_subdirectory(${TEST_DIR})
   add_subdirectory(${BENCHMARK_DIR})
 endif()
