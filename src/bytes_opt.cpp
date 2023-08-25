@@ -19,13 +19,13 @@ BytesOpt::BytesOpt(const int max_len) {
 
 // Copy constructor
 BytesOpt::BytesOpt(const BytesOpt& other) {
-    if(this == &other){
+    if (this == &other) {
         // self assignment
         return;
     }
     this->max_len = other.max_len;
     this->bytes = new unsigned char[max_len];
-    if(other.bytes == nullptr){
+    if (other.bytes == nullptr) {
         PLOG_FATAL << "cannot copy nullptr";
         throw std::invalid_argument("cannot copy nullptr");
     }
@@ -34,15 +34,15 @@ BytesOpt::BytesOpt(const BytesOpt& other) {
 }
 
 BytesOpt& BytesOpt::operator=(const BytesOpt& other) {
-    if(this == &other){
+    if (this == &other) {
         // self assignment
         return *this;
     }
-    if(other.bytes == nullptr){
+    if (other.bytes == nullptr) {
         PLOG_FATAL << "cannot copy nullptr";
         throw std::invalid_argument("cannot copy nullptr");
     }
-    if(max_len < other.len){
+    if (max_len < other.len) {
         PLOG_FATAL << "cannot copy to a BytesOpt object with max_len " << max_len << " from a BytesOpt object with len " << other.len;
         throw std::length_error("cannot copy to a BytesOpt object with max_len " + std::to_string(max_len) + " from a BytesOpt object with len " + std::to_string(other.len));
     }
@@ -106,7 +106,7 @@ void BytesOpt::copyToArray(unsigned char* array, const size_t len) const {
         PLOG_FATAL << "given array is too short to copy all bytes in (given: " << len << ", needed: " << this->len << ")";
         throw std::length_error("given array is too short to copy all bytes in (given: " + std::to_string(len) + ", needed: " + std::to_string(this->len) + ")");
     }
-    if(array == nullptr){
+    if (array == nullptr) {
         PLOG_FATAL << "cannot copy to nullptr array";
         throw std::invalid_argument("cannot copy to nullptr array");
     }
@@ -158,13 +158,13 @@ bool BytesOpt::isEmpty() const noexcept {
     return this->len == 0;
 }
 
-bool BytesOpt::operator==(const BytesOpt& b2) const noexcept{
+bool BytesOpt::operator==(const BytesOpt& b2) const noexcept {
     // returns true if the byte arrays of the two Byte objects are equal
     if (this->len != b2.len) return false;
     return std::memcmp(this->bytes, b2.bytes, this->len) == 0;
 }
 
-bool BytesOpt::operator!=(const BytesOpt& b2) const noexcept { 
+bool BytesOpt::operator!=(const BytesOpt& b2) const noexcept {
     // returns true if the byte arrays of the two Byte objects are not equal
     if (this->len != b2.len) return true;
     return std::memcmp(this->bytes, b2.bytes, this->len) != 0;
@@ -214,7 +214,7 @@ std::string BytesOpt::toHex() const noexcept {
 
 u_int64_t BytesOpt::toLong() const {
     // returns a long that is the decimal representation of the Bytes
-    if(this->len > sizeof(u_int64_t)){
+    if (this->len > sizeof(u_int64_t)) {
         PLOG_ERROR << "BytesOpt::toLong() is not defined for BytesOpt with more than 8 bytes";
         throw std::runtime_error("BytesOpt::toLong() is not defined for BytesOpt with more than 8 bytes");
     }

@@ -36,7 +36,7 @@ class BytesOpt {
     BytesOpt operator+(const BytesOpt& b2) const;                        // performs an add elementwise (the two byte arrays are added to each other (elementwise) mod 256)
     BytesOpt operator-(const BytesOpt& b2) const;                        // performs an subtract elementwise (the second byte array is subtracted from the first (elementwise) mod 256)
     ~BytesOpt() {
-        if (this->bytes != nullptr){
+        if (this->bytes != nullptr) {
             delete[] this->bytes;
             this->bytes = nullptr;
         }
