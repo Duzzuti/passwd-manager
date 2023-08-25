@@ -781,7 +781,7 @@ TEST(BytesOptClass, copy) {
     EXPECT_FALSE(std::memcmp(b5.getBytes(), bytes2, 20) == 0);
 }
 
-TEST(BytesOptClass, addByte){
+TEST(BytesOptClass, addByte) {
     BytesOpt b1(10);
     b1.addByte(0xad);
     EXPECT_EQ(1, b1.getLen());
@@ -797,12 +797,12 @@ TEST(BytesOptClass, addByte){
     EXPECT_EQ(0xac, b3.getBytes()[1]);
 
     BytesOpt b5(256);
-    for(int i = 0; i < 256; i++){
+    for (int i = 0; i < 256; i++) {
         b5.addByte(i);
         EXPECT_EQ(i + 1, b5.getLen());
         EXPECT_EQ(256, b5.getMaxLen());
     }
-    for(int i = 0; i < 256; i++){
+    for (int i = 0; i < 256; i++) {
         EXPECT_EQ(i, b5.getBytes()[i]);
     }
 
@@ -812,17 +812,17 @@ TEST(BytesOptClass, addByte){
     BytesOpt b7(10);
     EXPECT_NO_THROW(b7.addByte(0xad));
     BytesOpt b8(255);
-    
-    for(int i = 0; i < 256; i++){
-        if(i < 255){
+
+    for (int i = 0; i < 256; i++) {
+        if (i < 255) {
             EXPECT_NO_THROW(b8.addByte(i));
-        }else{
+        } else {
             EXPECT_THROW(b8.addByte(i), std::length_error);
         }
     }
 }
 
-TEST(BytesOptClass, isEmpty){
+TEST(BytesOptClass, isEmpty) {
     BytesOpt b1(10);
     EXPECT_TRUE(b1.isEmpty());
     b1.addByte(0xad);
@@ -834,7 +834,7 @@ TEST(BytesOptClass, isEmpty){
     EXPECT_TRUE(b2.isEmpty());
 }
 
-TEST(BytesOptClass, toLong){
+TEST(BytesOptClass, toLong) {
     BytesOpt b0(8);
     EXPECT_EQ(0, b0.toLong());
     BytesOpt b1(0);
@@ -889,7 +889,7 @@ TEST(BytesOptClass, toLong){
     b9.addByte(0xfb);
     b9.addByte(0xfa);
     b9.addByte(0xf9);
-    b9.addByte(0xf8);   
+    b9.addByte(0xf8);
     EXPECT_EQ(0xfffefdfcfbfaf9f8, b9.toLong());
 
     // exception checks
@@ -906,7 +906,7 @@ TEST(BytesOptClass, toLong){
     EXPECT_THROW(b12.toLong(), std::length_error);
 }
 
-TEST(BytesOptClass, toHex){
+TEST(BytesOptClass, toHex) {
     BytesOpt b1(0);
     EXPECT_EQ("", b1.toHex());
     BytesOpt b2(1);
@@ -944,22 +944,22 @@ TEST(BytesOptClass, toHex){
     EXPECT_EQ("450000001122", b7.toHex());
 
     BytesOpt b8(256);
-    for(int i = 0; i < 256; i++){
+    for (int i = 0; i < 256; i++) {
         b8.addByte(i);
     }
     std::string hex = b8.toHex();
-    for(int i = 0; i < 256; i++){
+    for (int i = 0; i < 256; i++) {
         std::stringstream ss;
         ss << std::uppercase << std::hex << i;
         std::string hex2 = ss.str();
-        if(hex2.length() == 1){
+        if (hex2.length() == 1) {
             hex2 = "0" + hex2;
         }
         EXPECT_EQ(hex2, hex.substr(i * 2, 2));
     }
 }
 
-TEST(BytesOptClass, fromLong){
+TEST(BytesOptClass, fromLong) {
     u_int64_t l1 = 0;
     BytesOpt b1 = BytesOpt::fromLong(l1);
     EXPECT_EQ(0, b1.getLen());
@@ -1031,7 +1031,7 @@ TEST(BytesOptClass, fromLong){
     EXPECT_NO_THROW(BytesOpt b17 = BytesOpt::fromLong(l17));
 }
 
-TEST(BytesOptClass, equal){
+TEST(BytesOptClass, equal) {
     BytesOpt b1(10);
     BytesOpt b2(8);
     EXPECT_EQ(b1, b2);
@@ -1063,8 +1063,8 @@ TEST(BytesOptClass, equal){
     EXPECT_EQ(b5, b6);
 }
 
-TEST(BytesOptClass, plus){
-    for(int i = 0; i < 1000; i++){
+TEST(BytesOptClass, plus) {
+    for (int i = 0; i < 1000; i++) {
         BytesOpt b1(10);
         BytesOpt b2(10);
         b1.fillrandom();
@@ -1073,12 +1073,12 @@ TEST(BytesOptClass, plus){
         EXPECT_EQ(b1.getLen(), b3.getLen());
         EXPECT_EQ(b2.getLen(), b3.getLen());
         EXPECT_EQ(10, b3.getMaxLen());
-        
-        for(int j = 0; j < 10; j++){
+
+        for (int j = 0; j < 10; j++) {
             EXPECT_EQ((unsigned char)(b1.getBytes()[j] + b2.getBytes()[j]), b3.getBytes()[j]);
         }
     }
-    for(int i = 0; i < 1000; i++){
+    for (int i = 0; i < 1000; i++) {
         BytesOpt b1(5);
         BytesOpt b2(10);
         b1.addrandom(5);
@@ -1087,8 +1087,8 @@ TEST(BytesOptClass, plus){
         EXPECT_EQ(b1.getLen(), b3.getLen());
         EXPECT_EQ(b2.getLen(), b3.getLen());
         EXPECT_EQ(5, b3.getMaxLen());
-        
-        for(int j = 0; j < 5; j++){
+
+        for (int j = 0; j < 5; j++) {
             EXPECT_EQ((unsigned char)(b1.getBytes()[j] + b2.getBytes()[j]), b3.getBytes()[j]);
         }
     }
@@ -1127,11 +1127,10 @@ TEST(BytesOptClass, plus){
     EXPECT_NO_THROW(b11 + b12);
     b12.addByte(0xad);
     EXPECT_THROW(b11 + b12, std::length_error);
-
 }
 
-TEST(BytesOptClass, minus){
-    for(int i = 0; i < 1000; i++){
+TEST(BytesOptClass, minus) {
+    for (int i = 0; i < 1000; i++) {
         BytesOpt b1(10);
         BytesOpt b2(10);
         b1.fillrandom();
@@ -1140,12 +1139,12 @@ TEST(BytesOptClass, minus){
         EXPECT_EQ(b1.getLen(), b3.getLen());
         EXPECT_EQ(b2.getLen(), b3.getLen());
         EXPECT_EQ(10, b3.getMaxLen());
-        
-        for(int j = 0; j < 10; j++){
+
+        for (int j = 0; j < 10; j++) {
             EXPECT_EQ((unsigned char)(b1.getBytes()[j] - b2.getBytes()[j]), b3.getBytes()[j]);
         }
     }
-    for(int i = 0; i < 1000; i++){
+    for (int i = 0; i < 1000; i++) {
         BytesOpt b1(5);
         BytesOpt b2(10);
         b1.addrandom(5);
@@ -1154,8 +1153,8 @@ TEST(BytesOptClass, minus){
         EXPECT_EQ(b1.getLen(), b3.getLen());
         EXPECT_EQ(b2.getLen(), b3.getLen());
         EXPECT_EQ(5, b3.getMaxLen());
-        
-        for(int j = 0; j < 5; j++){
+
+        for (int j = 0; j < 5; j++) {
             EXPECT_EQ((unsigned char)(b1.getBytes()[j] - b2.getBytes()[j]), b3.getBytes()[j]);
         }
     }
