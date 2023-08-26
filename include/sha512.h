@@ -11,6 +11,7 @@ class sha512 : public Hash {
     */
    public:
     int getHashSize() const noexcept override { return SHA512_DIGEST_LENGTH; }  // returns the length of the sha512 (64 byte)
-    Bytes hash(const Bytes bytes) const override;                               // performs the sha512 on a Bytes object
-    Bytes hash(const std::string str) const override;                           // performs the sha512 on a string
+    Bytes hash(const Bytes& bytes) const override;                               // performs the sha512 on a Bytes object
+    BytesOpt hash(const BytesOpt& bytes) const override;                         // performs the sha512 on a BytesOpt object
+    Bytes hash(const std::string& str) const override;                           // performs the sha512 on a string
 };
