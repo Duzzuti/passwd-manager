@@ -169,11 +169,11 @@ TEST(BytesOptClass, addrandom) {
     EXPECT_NO_THROW(b20.addrandom(1));
 }
 
-TEST(BytesOptClass, consumeBytes) {
+TEST(BytesOptClass, setBytes) {
     BytesOpt b1(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     unsigned char test[10];
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     EXPECT_EQ(10, b1.getLen());
     EXPECT_EQ(10, b1.getMaxLen());
     std::memcpy(test, b1.getBytes(), 10);
@@ -181,7 +181,7 @@ TEST(BytesOptClass, consumeBytes) {
 
     BytesOpt b2(10);
     b2.fillrandom();
-    b2.consumeBytes(bytes1, 10);
+    b2.setBytes(bytes1, 10);
     EXPECT_EQ(10, b2.getLen());
     EXPECT_EQ(10, b2.getMaxLen());
     std::memcpy(test, b2.getBytes(), 10);
@@ -189,7 +189,7 @@ TEST(BytesOptClass, consumeBytes) {
 
     BytesOpt b3(10);
     b3.addrandom(5);
-    b3.consumeBytes(bytes1, 10);
+    b3.setBytes(bytes1, 10);
     EXPECT_EQ(10, b3.getLen());
     EXPECT_EQ(10, b3.getMaxLen());
     std::memcpy(test, b3.getBytes(), 10);
@@ -197,7 +197,7 @@ TEST(BytesOptClass, consumeBytes) {
 
     BytesOpt b4(10);
     b4.addByte(0xad);
-    b4.consumeBytes(bytes1, 9);
+    b4.setBytes(bytes1, 9);
     EXPECT_EQ(9, b4.getLen());
     EXPECT_EQ(10, b4.getMaxLen());
     std::memcpy(test, b4.getBytes(), 9);
@@ -207,20 +207,20 @@ TEST(BytesOptClass, consumeBytes) {
     // exception checks
     unsigned char bytes2[11] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     BytesOpt b5(10);
-    EXPECT_THROW(b5.consumeBytes(bytes2, 11), std::length_error);
+    EXPECT_THROW(b5.setBytes(bytes2, 11), std::length_error);
     BytesOpt b6(0);
-    EXPECT_THROW(b6.consumeBytes(bytes2, 11), std::length_error);
+    EXPECT_THROW(b6.setBytes(bytes2, 11), std::length_error);
     BytesOpt b7(11);
-    EXPECT_NO_THROW(b7.consumeBytes(bytes2, 11));
+    EXPECT_NO_THROW(b7.setBytes(bytes2, 11));
     BytesOpt b8(11);
-    EXPECT_THROW(b8.consumeBytes(nullptr, 1), std::invalid_argument);
+    EXPECT_THROW(b8.setBytes(nullptr, 1), std::invalid_argument);
 }
 
-TEST(BytesOptClass, addconsumeBytes) {
+TEST(BytesOptClass, addBytes) {
     BytesOpt b1(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     unsigned char test[10];
-    b1.addconsumeBytes(bytes1, 10);
+    b1.addBytes(bytes1, 10);
     EXPECT_EQ(10, b1.getLen());
     EXPECT_EQ(10, b1.getMaxLen());
     std::memcpy(test, b1.getBytes(), 10);
@@ -228,7 +228,7 @@ TEST(BytesOptClass, addconsumeBytes) {
 
     BytesOpt b2(10);
     b2.addrandom(5);
-    b2.addconsumeBytes(bytes1, 5);
+    b2.addBytes(bytes1, 5);
     EXPECT_EQ(10, b2.getLen());
     EXPECT_EQ(10, b2.getMaxLen());
     std::memcpy(test, b2.getBytes() + 5, 5);
@@ -236,7 +236,7 @@ TEST(BytesOptClass, addconsumeBytes) {
 
     BytesOpt b3(10);
     b3.addByte(0xad);
-    b3.addconsumeBytes(bytes1, 5);
+    b3.addBytes(bytes1, 5);
     EXPECT_EQ(6, b3.getLen());
     EXPECT_EQ(10, b3.getMaxLen());
     std::memcpy(test + 1, bytes1, 5);
@@ -246,22 +246,22 @@ TEST(BytesOptClass, addconsumeBytes) {
     // exception checks
     unsigned char bytes2[11] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     BytesOpt b4(10);
-    EXPECT_THROW(b4.addconsumeBytes(bytes2, 11), std::length_error);
+    EXPECT_THROW(b4.addBytes(bytes2, 11), std::length_error);
     BytesOpt b5(0);
-    EXPECT_THROW(b5.addconsumeBytes(bytes2, 11), std::length_error);
+    EXPECT_THROW(b5.addBytes(bytes2, 11), std::length_error);
     BytesOpt b6(11);
-    EXPECT_NO_THROW(b6.addconsumeBytes(bytes2, 11));
+    EXPECT_NO_THROW(b6.addBytes(bytes2, 11));
     BytesOpt b7(11);
     b7.addByte(0xad);
-    EXPECT_THROW(b7.addconsumeBytes(bytes2, 11), std::length_error);
+    EXPECT_THROW(b7.addBytes(bytes2, 11), std::length_error);
     BytesOpt b8(11);
-    EXPECT_THROW(b8.addconsumeBytes(nullptr, 1), std::invalid_argument);
+    EXPECT_THROW(b8.addBytes(nullptr, 1), std::invalid_argument);
 }
 
 TEST(BytesOptClass, getBytes) {
     BytesOpt b1(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     unsigned char* test = b1.getBytes();
     EXPECT_TRUE(std::memcmp(bytes1, test, 10) == 0);
 
@@ -344,7 +344,7 @@ TEST(BytesOptClass, copyToArray) {
     BytesOpt b1(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     unsigned char test[10];
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     b1.copyToArray(test, 10);
     EXPECT_TRUE(std::memcmp(bytes1, test, 10) == 0);
 
@@ -389,7 +389,7 @@ TEST(BytesOptClass, copyToBytes) {
     BytesOpt b1(10);
     BytesOpt b2(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     b1.copyToBytes(b2);
     EXPECT_TRUE(std::memcmp(b1.getBytes(), b2.getBytes(), 10) == 0);
     EXPECT_TRUE(std::memcmp(bytes1, b2.getBytes(), 10) == 0);
@@ -460,7 +460,7 @@ TEST(BytesOptClass, copyToBytes) {
 TEST(BytesOptClass, copyConstructor) {
     BytesOpt b1(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     BytesOpt b2(b1);
     EXPECT_TRUE(std::memcmp(b1.getBytes(), b2.getBytes(), 10) == 0);
     EXPECT_TRUE(std::memcmp(bytes1, b2.getBytes(), 10) == 0);
@@ -527,7 +527,7 @@ TEST(BytesOptClass, copyConstructor) {
 TEST(BytesOptClass, copyAssignmentconstructor) {
     BytesOpt b1(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     BytesOpt b2 = b1;
     EXPECT_TRUE(std::memcmp(b1.getBytes(), b2.getBytes(), 10) == 0);
     EXPECT_TRUE(std::memcmp(bytes1, b2.getBytes(), 10) == 0);
@@ -594,7 +594,7 @@ TEST(BytesOptClass, copyAssignmentconstructor) {
 TEST(BytesOptClass, copyAssignment) {
     BytesOpt b1(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     BytesOpt b2(10);
     b2 = b1;
     EXPECT_TRUE(std::memcmp(b1.getBytes(), b2.getBytes(), 10) == 0);
@@ -678,7 +678,7 @@ TEST(BytesOptClass, addcopyToBytes) {
     BytesOpt b1(10);
     BytesOpt b2(10);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     b1.addcopyToBytes(b2);
     EXPECT_TRUE(std::memcmp(b1.getBytes(), b2.getBytes(), 10) == 0);
     EXPECT_TRUE(std::memcmp(bytes1, b2.getBytes(), 10) == 0);
@@ -699,7 +699,7 @@ TEST(BytesOptClass, addcopyToBytes) {
 
     BytesOpt b5(10);
     BytesOpt b6(10);
-    b5.consumeBytes(bytes1, 5);
+    b5.setBytes(bytes1, 5);
     b5.addcopyToBytes(b6);
     EXPECT_TRUE(std::memcmp(b5.getBytes(), b6.getBytes(), 5) == 0);
     EXPECT_EQ(b5.getLen(), b6.getLen());
@@ -709,8 +709,8 @@ TEST(BytesOptClass, addcopyToBytes) {
 
     BytesOpt b7(10);
     BytesOpt b8(10);
-    b7.consumeBytes(bytes1, 5);
-    b8.consumeBytes(bytes1 + 5, 5);
+    b7.setBytes(bytes1, 5);
+    b8.setBytes(bytes1 + 5, 5);
     b8.addcopyToBytes(b7);
     EXPECT_TRUE(std::memcmp(b8.getBytes(), b7.getBytes() + 5, 5) == 0);
     EXPECT_TRUE(std::memcmp(bytes1, b7.getBytes(), 10) == 0);
@@ -751,11 +751,84 @@ TEST(BytesOptClass, addcopyToBytes) {
     BytesOpt b19(11);
 }
 
+TEST(BytesOptClass, copySubBytes){
+    BytesOpt b1(10);
+    unsigned char bytes1[10] = {0,1,2,3,4,5,6,7,8,9};
+    b1.setBytes(bytes1, 10);
+    BytesOpt b2 = b1.copySubBytes(2,5);
+    EXPECT_TRUE(std::memcmp(bytes1 + 2, b2.getBytes(), 3) == 0);
+    EXPECT_EQ(3, b2.getLen());
+    EXPECT_EQ(3, b2.getMaxLen());
+    EXPECT_EQ(0x20304, b2.toLong());
+
+    BytesOpt b3(10);
+    b3.fillrandom();
+    BytesOpt b4 = b3.copySubBytes(0, 10);
+    EXPECT_TRUE(std::memcmp(b3.getBytes(), b4.getBytes(), 10) == 0);
+    EXPECT_EQ(10, b4.getLen());
+    EXPECT_EQ(10, b4.getMaxLen());
+    EXPECT_EQ(b3, b4);
+
+    BytesOpt b5(10);
+    b5.fillrandom();
+    BytesOpt b6 = b5.copySubBytes(0, 5);
+    EXPECT_TRUE(std::memcmp(b5.getBytes(), b6.getBytes(), 5) == 0);
+    EXPECT_EQ(5, b6.getLen());
+    EXPECT_EQ(5, b6.getMaxLen());
+
+    BytesOpt b7(10);
+    b7.fillrandom();
+    BytesOpt b8 = b7.copySubBytes(5, 10);
+    EXPECT_TRUE(std::memcmp(b7.getBytes() + 5, b8.getBytes(), 5) == 0);
+    EXPECT_EQ(5, b8.getLen());
+    EXPECT_EQ(5, b8.getMaxLen());
+
+    BytesOpt b9(10);
+    b9.fillrandom();
+    BytesOpt b10 = b9.copySubBytes(5, 5);
+    EXPECT_TRUE(std::memcmp(b9.getBytes() + 5, b10.getBytes(), 0) == 0);
+    EXPECT_EQ(0, b10.getLen());
+    EXPECT_EQ(0, b10.getMaxLen());
+    EXPECT_TRUE(b10.isEmpty());
+
+    BytesOpt b11(10);
+    b11.fillrandom();
+    BytesOpt b12 = b11.copySubBytes(0, 0);
+    EXPECT_TRUE(std::memcmp(b11.getBytes(), b12.getBytes(), 0) == 0);
+    EXPECT_EQ(0, b12.getLen());
+    EXPECT_EQ(0, b12.getMaxLen());
+    EXPECT_TRUE(b12.isEmpty());
+
+    // exception checks
+    BytesOpt b13(10);
+    b13.fillrandom();
+    EXPECT_THROW(b13.copySubBytes(0, 11), std::length_error);
+    BytesOpt b14(10);
+    EXPECT_THROW(b14.copySubBytes(0, 1), std::length_error);
+    BytesOpt b25(10);
+    b25.addByte(0xad);
+    EXPECT_THROW(b25.copySubBytes(1, 2), std::length_error);
+    EXPECT_FALSE(b25.copySubBytes(0, 1).isEmpty());
+    EXPECT_TRUE(b25.copySubBytes(0, 0).isEmpty());
+    EXPECT_TRUE(b25.copySubBytes(1, 1).isEmpty());
+    BytesOpt b15(10);
+    EXPECT_TRUE(b15.copySubBytes(0, 0).isEmpty());
+    BytesOpt b16(10);
+    b16.fillrandom();
+    EXPECT_THROW(b16.copySubBytes(1, 0), std::invalid_argument);
+    BytesOpt b17(10);
+    b17.fillrandom();
+    EXPECT_THROW(b17.copySubBytes(11, 11), std::length_error);
+    BytesOpt b18(10);
+    b18.fillrandom();
+    EXPECT_THROW(b18.copySubBytes(-1, 2), std::invalid_argument);
+}
+
 TEST(BytesOptClass, copy) {
     BytesOpt b1(20);
     BytesOpt b2(20);
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    b1.consumeBytes(bytes1, 10);
+    b1.setBytes(bytes1, 10);
     b1.copyToBytes(b2);
     b1.fillrandom();
     EXPECT_NE(b1, b2);
@@ -765,7 +838,7 @@ TEST(BytesOptClass, copy) {
     BytesOpt b3(20);
     BytesOpt b4(20);
     b4.addByte(0xad);
-    b3.consumeBytes(bytes1, 10);
+    b3.setBytes(bytes1, 10);
     b3.addcopyToBytes(b4);
     b3.fillrandom();
     EXPECT_NE(b3, b4);
@@ -774,11 +847,19 @@ TEST(BytesOptClass, copy) {
 
     BytesOpt b5(20);
     unsigned char bytes2[20];
-    b5.consumeBytes(bytes1, 10);
+    b5.setBytes(bytes1, 10);
     b5.copyToArray(bytes2, 20);
     b5.fillrandom();
     EXPECT_TRUE(std::memcmp(b5.getBytes(), bytes2, 10) == 0);
     EXPECT_FALSE(std::memcmp(b5.getBytes(), bytes2, 20) == 0);
+
+    BytesOpt b6(20);
+    b6.setBytes(bytes1, 10);
+    BytesOpt b7 = b6.copySubBytes(2, 5);
+    b6.fillrandom();
+    EXPECT_NE(b6, b7);
+    EXPECT_TRUE(std::memcmp(bytes1 + 2, b7.getBytes(), 3) == 0);
+
 }
 
 TEST(BytesOptClass, addByte) {
@@ -1057,9 +1138,9 @@ TEST(BytesOptClass, equal) {
     BytesOpt b5(15);
     BytesOpt b6(11);
     EXPECT_EQ(b5, b6);
-    b5.consumeBytes(bytes1, 10);
+    b5.setBytes(bytes1, 10);
     EXPECT_NE(b5, b6);
-    b6.consumeBytes(bytes1, 10);
+    b6.setBytes(bytes1, 10);
     EXPECT_EQ(b5, b6);
 }
 
@@ -1105,8 +1186,8 @@ TEST(BytesOptClass, plus) {
 
     BytesOpt b4(10);
     BytesOpt b5(10);
-    b4.consumeBytes(bytes1, 10);
-    b5.consumeBytes(bytes2, 10);
+    b4.setBytes(bytes1, 10);
+    b5.setBytes(bytes2, 10);
     BytesOpt b6 = b4 + b5;
     EXPECT_TRUE(std::memcmp(b6.getBytes(), bytes3, 10) == 0);
 
@@ -1171,8 +1252,8 @@ TEST(BytesOptClass, minus) {
 
     BytesOpt b4(10);
     BytesOpt b5(10);
-    b4.consumeBytes(bytes1, 10);
-    b5.consumeBytes(bytes2, 10);
+    b4.setBytes(bytes1, 10);
+    b5.setBytes(bytes2, 10);
     BytesOpt b6 = b4 - b5;
     EXPECT_TRUE(std::memcmp(b6.getBytes(), bytes3, 10) == 0);
 
