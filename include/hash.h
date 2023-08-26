@@ -1,7 +1,7 @@
 #pragma once
 
-#include "block.h"
 #include "bytes.h"
+#include "bytes_opt.h"
 
 class Hash {
     /*
@@ -11,8 +11,8 @@ class Hash {
    public:
     Hash() = default;                                     // it needs a default constructor
     virtual int getHashSize() const noexcept = 0;         // a getter for the byte len of the hash
-    Bytes hash(const Block* block) const;                 // a hash function that takes a Block object
-    virtual Bytes hash(const Bytes bytes) const = 0;      // a hash function that takes a Bytes object
-    virtual Bytes hash(const std::string str) const = 0;  // a second hash function that takes a string
+    virtual Bytes hash(const Bytes& bytes) const = 0;      // a hash function that takes a Bytes object
+    virtual BytesOpt hash(const BytesOpt& bytes) const = 0;  // a hash function that takes a BytesOpt object
+    virtual Bytes hash(const std::string& str) const = 0;  // a second hash function that takes a string
     virtual ~Hash(){};
 };
