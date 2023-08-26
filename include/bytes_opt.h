@@ -21,12 +21,13 @@ class BytesOpt {
     BytesOpt& operator=(const BytesOpt& other);                          // copy assignment
     void fillrandom() noexcept;                                          // fills the byte array with random bytes
     void addrandom(const int num);                                       // adds random bytes to the byte array (num is the number of bytes that will be added)
-    void consumeBytes(const unsigned char* bytes, const size_t len);     // set the bytes to a given value
-    void addconsumeBytes(const unsigned char* bytes, const size_t len);  // adds the bytes to the current value
+    void setBytes(const unsigned char* bytes, const size_t len);         // set the bytes to a given value
+    void addBytes(const unsigned char* bytes, const size_t len);         // adds the bytes to the current value
     unsigned char* getBytes() const noexcept;                            // getter for the byte array (by reference)
     void copyToArray(unsigned char* array, const size_t len) const;      // copys the bytes to the given array
     void copyToBytes(BytesOpt& b) const;                                 // copys the bytes to the given Bytes object
     void addcopyToBytes(BytesOpt& b) const;                              // adds the bytes to the given Bytes object
+    BytesOpt copySubBytes(const size_t start, const size_t end) const;   // returns a Bytes object that is a copy of the bytes from start to end
     size_t getLen() const noexcept;                                      // getter for the length in bytes
     size_t getMaxLen() const noexcept;                                   // getter for the maximum length in bytes
     void addByte(const unsigned char& byte);                             // adds one byte at the end of the byte array by reference

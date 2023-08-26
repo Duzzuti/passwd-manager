@@ -80,7 +80,7 @@ void BytesOpt::addrandom(const int num) {
     this->len += num;
 }
 
-void BytesOpt::consumeBytes(const unsigned char* bytes, const size_t len) {
+void BytesOpt::setBytes(const unsigned char* bytes, const size_t len) {
     // set the bytes to a given value
     if (len > this->max_len) {
         PLOG_FATAL << "cannot consume bytes with len " << len << " in a BytesOpt object with max len " << this->max_len;
@@ -94,7 +94,7 @@ void BytesOpt::consumeBytes(const unsigned char* bytes, const size_t len) {
     std::memcpy(this->bytes, bytes, len);  // copy the bytes to the byte array
 }
 
-void BytesOpt::addconsumeBytes(const unsigned char* bytes, const size_t len) {
+void BytesOpt::addBytes(const unsigned char* bytes, const size_t len) {
     // adds the bytes to the current value
     if (this->len + len > this->max_len) {
         PLOG_FATAL << "cannot add consume bytes with len " << len << " in a BytesOpt object with free space " << this->max_len - this->len;
@@ -144,6 +144,22 @@ void BytesOpt::addcopyToBytes(BytesOpt& b) const {
     }
     std::memcpy(b.bytes + b.len, this->bytes, this->len);
     b.len += this->len;
+}
+
+BytesOpt BytesOpt::copySubBytes(const size_t start, const size_t end) const { 
+    // returns a Bytes object that is a copy of the bytes from start to end
+    if (start > end) {
+        PLOG_FATAL << "start is bigger than end (start: " << start << ", end: " << end << ")";
+        throw std::invalid_argument("start is bigger than end (start: " + std::to_string(start) + ", end: " + std::to_string(end) + ")");
+    }
+    if (end > this->len) {
+        PLOG_FATAL << "end is bigger than len (end: " << end << ", len: " << this->len << ")";
+        throw std::length_error("end is bigger than len (end: " + std::to_string(end) + ", len: " + std::to_string(this->len) + ")");
+    }
+    BytesOpt res(end - start);
+    std::memcpy(res.bytes, this->bytes + start, end - start);
+    res.len = end - start;
+    return res;
 }
 
 size_t BytesOpt::getLen() const noexcept {
