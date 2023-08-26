@@ -751,11 +751,11 @@ TEST(BytesOptClass, addcopyToBytes) {
     BytesOpt b19(11);
 }
 
-TEST(BytesOptClass, copySubBytes){
+TEST(BytesOptClass, copySubBytes) {
     BytesOpt b1(10);
-    unsigned char bytes1[10] = {0,1,2,3,4,5,6,7,8,9};
+    unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     b1.setBytes(bytes1, 10);
-    BytesOpt b2 = b1.copySubBytes(2,5);
+    BytesOpt b2 = b1.copySubBytes(2, 5);
     EXPECT_TRUE(std::memcmp(bytes1 + 2, b2.getBytes(), 3) == 0);
     EXPECT_EQ(3, b2.getLen());
     EXPECT_EQ(3, b2.getMaxLen());
@@ -859,7 +859,6 @@ TEST(BytesOptClass, copy) {
     b6.fillrandom();
     EXPECT_NE(b6, b7);
     EXPECT_TRUE(std::memcmp(bytes1 + 2, b7.getBytes(), 3) == 0);
-
 }
 
 TEST(BytesOptClass, addByte) {
