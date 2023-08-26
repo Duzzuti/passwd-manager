@@ -12,9 +12,9 @@ Bytes sha256::hash(const Bytes& bytes) const {
     return ret;
 }
 
-BytesOpt sha256::hash(const BytesOpt& bytes) const { 
-    unsigned char bytesout[this->getHashSize()];  // output buffer with hashsize length
-    SHA256(bytes.getBytes(), bytes.getLen(), bytesout);                                                  // performs the hash
+BytesOpt sha256::hash(const BytesOpt& bytes) const {
+    unsigned char bytesout[this->getHashSize()];         // output buffer with hashsize length
+    SHA256(bytes.getBytes(), bytes.getLen(), bytesout);  // performs the hash
     BytesOpt ret(this->getHashSize());
     ret.setBytes(bytesout, this->getHashSize());  // sets the output vector as new bytes in the Bytes object
     return ret;
