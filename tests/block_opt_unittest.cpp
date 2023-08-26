@@ -55,7 +55,7 @@ TEST(BlockClass, DecryptBlock) {
     EXPECT_EQ(b3 - salt, block.getResult());
 
     EXPECT_THROW(block.addData(b4), std::length_error);
-    
+
     DecryptBlockOpt block2(hash, salt);
     b4.addcopyToBytes(b3);
     EXPECT_THROW(block2.addData(b3), std::length_error);
@@ -136,7 +136,7 @@ TEST(BlockClass, EncryptBlock) {
     EXPECT_EQ(b3 + salt, block.getResult());
 
     EXPECT_THROW(block.addData(b4), std::length_error);
-    
+
     EncryptBlockOpt block2(hash, salt);
     b4.addcopyToBytes(b3);
     EXPECT_THROW(block2.addData(b3), std::length_error);
@@ -166,5 +166,4 @@ TEST(BlockClass, EncryptBlock) {
     EXPECT_EQ(block15.getFreeSpace(), 64);
     b5.addcopyToBytes(b3);
     EXPECT_THROW(EncryptBlockOpt block16(hash3, b3), std::length_error);
-
 }
