@@ -5,7 +5,7 @@ contains the implementation of the abstract Block class
 
 #include "logger.h"
 
-BlockOpt::BlockOpt(std::shared_ptr<Hash> hash, const BytesOpt& salt) : block_len(hash->getHashSize()), data(BytesOpt(block_len)), dec_hash(BytesOpt(block_len)), salt(salt){
+BlockOpt::BlockOpt(std::shared_ptr<Hash> hash, const BytesOpt& salt) : block_len(hash->getHashSize()), data(BytesOpt(block_len)), dec_hash(BytesOpt(block_len)), salt(salt) {
     if (this->block_len <= 0) {
         // invalid block length
         PLOG_ERROR << "cannot create new block with invalid block length (len: " << this->block_len << ")";
