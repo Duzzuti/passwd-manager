@@ -146,7 +146,7 @@ void BytesOpt::addcopyToBytes(BytesOpt& b) const {
     b.len += this->len;
 }
 
-BytesOpt BytesOpt::copySubBytes(const size_t start, const size_t end) const { 
+BytesOpt BytesOpt::copySubBytes(const size_t start, const size_t end) const {
     // returns a Bytes object that is a copy of the bytes from start to end
     if (start > end) {
         PLOG_FATAL << "start is bigger than end (start: " << start << ", end: " << end << ")";
