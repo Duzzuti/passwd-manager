@@ -10,5 +10,5 @@ class DecryptBlockOpt : public BlockOpt {
    public:
     DecryptBlockOpt(std::shared_ptr<Hash> hash, const BytesOpt& salt) : BlockOpt(std::move(hash), salt){};
     void addData(const BytesOpt& enc_data) override;  // adds new data to the block (this data is decrypted with the salt)
-    BytesOpt getResult() const noexcept override;    // getter for the result data
+    BytesOpt getResult() const noexcept override;     // getter for the result data
 };
