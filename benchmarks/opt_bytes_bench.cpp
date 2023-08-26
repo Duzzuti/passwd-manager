@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include <fstream>
 #include <cstring>
+#include <fstream>
 
 #include "bytes_opt.h"
-#include "timer.h"
 #include "rng.h"
+#include "timer.h"
 
 const constexpr int ITERS = 10;
 const constexpr int NUM_BYTES = 10000000;
@@ -20,7 +20,7 @@ void filing(std::string op, u_int64_t iters, u_int64_t avg, u_int64_t slowest) {
     file.close();
 }
 
-TEST(BytesOPT, fromLong){
+TEST(BytesOPT, fromLong) {
     u_int64_t* l = new u_int64_t[NUM_BYTES3];
     for (int i = 0; i < NUM_BYTES3; i++) {
         unsigned char bytes[8];
@@ -30,8 +30,7 @@ TEST(BytesOPT, fromLong){
     Timer timer;
     timer.start();
     for (int i = 0; i < ITERS; i++) {
-        for(int j = 0; j < NUM_BYTES3; j++)
-            BytesOpt b = BytesOpt::fromLong(l[j]);
+        for (int j = 0; j < NUM_BYTES3; j++) BytesOpt b = BytesOpt::fromLong(l[j]);
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
@@ -53,7 +52,7 @@ TEST(BytesOPT, addByte) {
     filing("addByte", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BytesOPT, setBytes){
+TEST(BytesOPT, setBytes) {
     BytesOpt b(NUM_BYTES);
     BytesOpt c(NUM_BYTES);
     c.fillrandom();
@@ -96,20 +95,20 @@ TEST(BytesOPT, constructor) {
     filing("constructor", NUM_BYTES2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BytesOPT, addrandom){
+TEST(BytesOPT, addrandom) {
     Timer timer;
     timer.start();
     for (int i = 0; i < ITERS; i++) {
         BytesOpt b(NUM_BYTES);
-        b.addrandom(NUM_BYTES*0.99);
+        b.addrandom(NUM_BYTES * 0.99);
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
     filing("addrandom", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BytesOPT, copyconstructor){
-    BytesOpt b(NUM_BYTES*10);
+TEST(BytesOPT, copyconstructor) {
+    BytesOpt b(NUM_BYTES * 10);
     b.fillrandom();
     Timer timer;
     timer.start();
@@ -118,11 +117,11 @@ TEST(BytesOPT, copyconstructor){
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("copyconstructor", NUM_BYTES*10, timer.getAverageTime(), timer.getSlowest());
+    filing("copyconstructor", NUM_BYTES * 10, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BytesOPT, copyassignment){
-    BytesOpt b(NUM_BYTES*10);
+TEST(BytesOPT, copyassignment) {
+    BytesOpt b(NUM_BYTES * 10);
     b.fillrandom();
     Timer timer;
     timer.start();
@@ -131,7 +130,7 @@ TEST(BytesOPT, copyassignment){
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
-    filing("copyassignment", NUM_BYTES*10, timer.getAverageTime(), timer.getSlowest());
+    filing("copyassignment", NUM_BYTES * 10, timer.getAverageTime(), timer.getSlowest());
 }
 
 TEST(BytesOPT, getByteArray) {
@@ -149,7 +148,7 @@ TEST(BytesOPT, getByteArray) {
     filing("getByteArray", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BytesOPT, copyToBytes){
+TEST(BytesOPT, copyToBytes) {
     BytesOpt b(NUM_BYTES2 * 2);
     b.fillrandom();
     BytesOpt c(NUM_BYTES2 * 2);
@@ -163,7 +162,7 @@ TEST(BytesOPT, copyToBytes){
     filing("copyToBytes", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BytesOPT, copyaddToBytes){
+TEST(BytesOPT, copyaddToBytes) {
     BytesOpt b(NUM_BYTES2 * 2 - 7);
     b.fillrandom();
     BytesOpt c(NUM_BYTES2 * 2 * ITERS);
@@ -178,13 +177,13 @@ TEST(BytesOPT, copyaddToBytes){
     filing("copyaddToBytes", NUM_BYTES2 * 2, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(BytesOPT, copySubBytes){
+TEST(BytesOPT, copySubBytes) {
     BytesOpt b(NUM_BYTES2 * 2);
     b.fillrandom();
     Timer timer;
     timer.start();
     for (int i = 0; i < ITERS; i++) {
-        BytesOpt c = b.copySubBytes(3, NUM_BYTES2*2-7);
+        BytesOpt c = b.copySubBytes(3, NUM_BYTES2 * 2 - 7);
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
