@@ -14,7 +14,7 @@ void BlockChainStream::enc_stream(std::ifstream in, std::ofstream out) noexcept 
         // read the data from the file (max. the free space in the last block)
         unsigned char buffer[this->getFreeSpaceInLastBlock()];
         int readsize = in.readsome(reinterpret_cast<char*>(buffer), this->getFreeSpaceInLastBlock());
-        
+
         // create a Bytes object from the data
         BytesOpt data(readsize);
         data.addBytes(buffer, readsize);
@@ -26,11 +26,11 @@ void BlockChainStream::enc_stream(std::ifstream in, std::ofstream out) noexcept 
         // write the result data to the output file, but ignore the first written bytes because they already were written to the file
         out.write(reinterpret_cast<char*>(this->current_block.value()->getResult().copySubBytes(written, this->hash_size).getBytes()), this->hash_size - written);
 
-        if (in.peek() != EOF){
+        if (in.peek() != EOF) {
             // more data is available, so create a new block
             assert(this->getFreeSpaceInLastBlock() == 0);
             this->setBlock();
-        }else
+        } else
             break;
     }
     PLOG_VERBOSE << "added new data to blockchain [HEIGHT] " << this->getHeight() << " [DATA_SIZE] " << this->getDataSize() << "B";

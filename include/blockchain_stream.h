@@ -1,6 +1,6 @@
 #pragma once
-#include <memory>
 #include <fstream>
+#include <memory>
 
 #include "block_opt.h"
 #include "logger.h"
@@ -36,8 +36,8 @@ class BlockChainStream {
         for every block it generates a new salt with the hash of the last block
         */
        private:
-        bool ready;  // is the iterator ready to generate salts
-        bool first;  // is this the first salt/block
+        bool ready;        // is the iterator ready to generate salts
+        bool first;        // is this the first salt/block
         BytesOpt hash{0};  // the current hash (first is the passwordhash)
         BytesOpt salt{0};  // the current salt (first is the encrypted salt)
        public:
@@ -97,12 +97,12 @@ class BlockChainStream {
         }
     };
 
-    u_int64_t height;                           // the height of the chain
-    const size_t hash_size;                           // the byte size of the hash function
-    std::optional<std::unique_ptr<BlockOpt>> current_block = {};       // the current block
-    BytesOpt last_block_hash;                      // the hash of the last block
-    SaltIterator salt_iter;                     // the salt iterator that is used to generate the salts
-    
+    u_int64_t height;                                             // the height of the chain
+    const size_t hash_size;                                       // the byte size of the hash function
+    std::optional<std::unique_ptr<BlockOpt>> current_block = {};  // the current block
+    BytesOpt last_block_hash;                                     // the hash of the last block
+    SaltIterator salt_iter;                                       // the salt iterator that is used to generate the salts
+
    protected:
     // sets a new block and updates the last block hash from the current block
     virtual bool setBlock() noexcept = 0;
