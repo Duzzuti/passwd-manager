@@ -18,7 +18,7 @@ std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
     }
 }
 
-std::string RNG::get_random_string(const unsigned int num) { 
+std::string RNG::get_random_string(const unsigned int num) {
     // gets a random string with the given length
     // it will get some random bytes, turn them into a long
     // and calculate a random number in that range by shorting it down to the range (long mod range + lower)
@@ -30,15 +30,15 @@ std::string RNG::get_random_string(const unsigned int num) {
     }
     std::string res;
     unsigned int len = 0;
-    while(true){
+    while (true) {
         unsigned char rand_bytes[num];  // creates a new buffer with the given length
         if (RAND_bytes(rand_bytes, sizeof(rand_bytes)) == 1) {
             for (int i = 0; i < sizeof(rand_bytes); i++) {
-                if(rand_bytes[i] >= 65 && rand_bytes[i] <= 90 || rand_bytes[i] >= 97 && rand_bytes[i] <= 122){
+                if (rand_bytes[i] >= 65 && rand_bytes[i] <= 90 || rand_bytes[i] >= 97 && rand_bytes[i] <= 122) {
                     res += rand_bytes[i];
                     len++;
                 }
-                if(len == num){
+                if (len == num) {
                     return res;
                 }
             }
