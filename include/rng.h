@@ -13,6 +13,7 @@ class RNG {
     */
    public:
     static std::vector<unsigned char> get_random_bytes(const unsigned int num);     // get random bytes with the given length
+    static std::string get_random_string(const unsigned int num);                   // get random string with the given length
     static std::vector<unsigned char> get_random_bytes_large(const u_int64_t num);  // get random bytes with the given length (large)
     static void fill_random_bytes(unsigned char* bytes, const unsigned int num);    // fill the given bytes with random bytes
     // get a random byte between a lower and upper bound

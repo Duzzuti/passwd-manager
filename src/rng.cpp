@@ -18,6 +18,38 @@ std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
     }
 }
 
+std::string RNG::get_random_string(const unsigned int num) { 
+    // gets a random string with the given length
+    // it will get some random bytes, turn them into a long
+    // and calculate a random number in that range by shorting it down to the range (long mod range + lower)
+    // the buffer size should be long if really random numbers are needed
+    // it can be short (1) if the range is 255.
+    if (num < 1) {
+        PLOG_FATAL << "num cannot be zero";
+        throw std::logic_error("num cannot be zero");
+    }
+    std::string res;
+    unsigned int len = 0;
+    while(true){
+        unsigned char rand_bytes[num];  // creates a new buffer with the given length
+        if (RAND_bytes(rand_bytes, sizeof(rand_bytes)) == 1) {
+            for (int i = 0; i < sizeof(rand_bytes); i++) {
+                if(rand_bytes[i] >= 65 && rand_bytes[i] <= 90 || rand_bytes[i] >= 97 && rand_bytes[i] <= 122){
+                    res += rand_bytes[i];
+                    len++;
+                }
+                if(len == num){
+                    return res;
+                }
+            }
+        } else {
+            // some error in openssl occurred (maybe the given entropy was too low)
+            PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
+            throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
+        }
+    }
+}
+
 std::vector<unsigned char> RNG::get_random_bytes_large(const u_int64_t num) {
     unsigned char* rand_bytes = new unsigned char[num];  // creates a new buffer with the given length
     std::vector<unsigned char> ret{};
