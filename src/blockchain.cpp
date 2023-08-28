@@ -19,7 +19,7 @@ void BlockChain::addData(const Bytes data) noexcept {
         }
         // add the data to the last block
 
-        //PLOG_VERBOSE << "added new data to blockchain: " << toHex(data_part.value());
+        // PLOG_VERBOSE << "added new data to blockchain: " << toHex(data_part.value());
         this->chain.back()->addData(data_part.value());
         // add a new block if still data is left
         if (data_copy.getLen() != 0)

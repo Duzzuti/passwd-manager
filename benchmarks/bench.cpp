@@ -18,7 +18,7 @@ const constexpr u_int64_t DATA_SIZE_MEDIUM_MB = 50;
 const constexpr u_int64_t DATA_SIZE_LARGE = 1024 * 1024 * 1024;  // 1GB
 const constexpr u_int64_t DATA_SIZE_LARGE_MB = 1024;
 const constexpr u_int64_t ITERS = 2;
-const constexpr u_int64_t FILES = 10; //100
+const constexpr u_int64_t FILES = 10;  // 100
 std::string password = "password";
 
 std::atomic<bool> _terminateMeasurementThread(false);
@@ -692,9 +692,9 @@ TEST(Benchmark_write, large_sha512_nochain) {
     filing("large_sha512_nochain", CITERS_SMALL, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark_read1, sha256){
+TEST(Benchmark_read1, sha256) {
     std::filesystem::path files[FILES];
-    for(int i = 0; i < FILES; i++){
+    for (int i = 0; i < FILES; i++) {
         files[i] = RNG::get_random_string(10) + ".enc";
     }
     DataHeaderSettingsIters ds;
@@ -741,9 +741,9 @@ TEST(Benchmark_read1, sha256){
     filing("read_sha256", 1, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark_read1, sha384){
+TEST(Benchmark_read1, sha384) {
     std::filesystem::path files[FILES];
-    for(int i = 0; i < FILES; i++){
+    for (int i = 0; i < FILES; i++) {
         files[i] = RNG::get_random_string(10) + ".enc";
     }
     DataHeaderSettingsIters ds;
@@ -790,9 +790,9 @@ TEST(Benchmark_read1, sha384){
     filing("read_sha384", 1, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark_read1, sha512){
+TEST(Benchmark_read1, sha512) {
     std::filesystem::path files[FILES];
-    for(int i = 0; i < FILES; i++){
+    for (int i = 0; i < FILES; i++) {
         files[i] = RNG::get_random_string(10) + ".enc";
     }
     DataHeaderSettingsIters ds;
@@ -815,7 +815,6 @@ TEST(Benchmark_read1, sha512){
         api.getEncryptedData(fds);
         api.writeToFile();
         api.logout();
-
     }
     std::thread memoryThread(MemoryThread);
     Timer timer;
@@ -838,7 +837,7 @@ TEST(Benchmark_read1, sha512){
     filing("read_sha512", 1, DATA_SIZE_SMALL_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
-TEST(Benchmark_read2, sha256){
+TEST(Benchmark_read2, sha256) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);
     ds.setHashMode(HASHMODE_SHA256);
