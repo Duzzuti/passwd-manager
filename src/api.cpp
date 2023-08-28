@@ -109,7 +109,6 @@ DataHeaderHelperStruct API::_createDataHeaderIters(const std::string password, c
         dhhs.errorStruct.what = ch2_err.what;
         return dhhs;
     }
-
     // setting the validation hash
     dhp.setValidPasswordHash(ch2_err.returnValue());
 
@@ -439,13 +438,12 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
     // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
     PLOG_VERBOSE << "Verifying password (timeout: " << timeout << ")";
-    std::shared_ptr<Hash> hash = nullptr;
 
     try {
         // gets the header parts to work with (could throw)
         DataHeaderParts dhp = this->parent->dh.getDataHeaderParts();
         // gets the hash function (could throw)
-        hash = std::move(HashModes::getHash(dhp.getHashMode()));
+        std::shared_ptr<Hash> hash = std::move(HashModes::getHash(dhp.getHashMode()));
         // perform the first chain hash (password -> passwordhash)
         ErrorStruct<Bytes> err1 = ChainHashModes::performChainHash(dhp.chainhash1, hash, password, timeout);
         if (!err1.isSuccess()) {
@@ -472,7 +470,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string password
             return err1;
         }
         // the password is invalid
-        PLOG_INFO << "The given password is invalid (verifyPassword)";
+        PLOG_WARNING << "The given password is invalid (verifyPassword)";
         ErrorStruct<Bytes> err;
         err.success = SuccessType::FAIL;
         err.errorCode = ErrorCode::ERR_PASSWORD_INVALID;
