@@ -97,11 +97,11 @@ class BlockChainStream {
         }
     };
 
-    u_int64_t height;                                             // the height of the chain
-    const size_t hash_size;                                       // the byte size of the hash function
+    u_int64_t height;                                          // the height of the chain
+    const size_t hash_size;                                    // the byte size of the hash function
     std::optional<std::unique_ptr<Block>> current_block = {};  // the current block
-    Bytes last_block_hash;                                        // the hash of the last block
-    SaltIterator salt_iter;                                       // the salt iterator that is used to generate the salts
+    Bytes last_block_hash;                                     // the hash of the last block
+    SaltIterator salt_iter;                                    // the salt iterator that is used to generate the salts
 
    protected:
     // sets a new block and updates the last block hash from the current block
