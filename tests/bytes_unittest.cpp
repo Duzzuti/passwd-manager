@@ -1,9 +1,9 @@
-#include "bytes_opt.h"
-
 #include <gtest/gtest.h>
 
 #include <cstring>
 #include <memory>
+
+#include "bytes_opt.h"
 
 TEST(BytesClass, constructor) {
     Bytes b1(10);

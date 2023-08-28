@@ -1,6 +1,7 @@
+#include "bytes.h"
+
 #include <sstream>
 
-#include "bytes.h"
 #include "logger.h"
 #include "rng.h"
 
