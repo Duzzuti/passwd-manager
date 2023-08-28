@@ -8,7 +8,7 @@ class EncryptBlockOpt : public BlockOpt {
     its a block that is used to encrypt data
     */
    public:
-    EncryptBlockOpt(std::shared_ptr<Hash> hash, const BytesOpt& salt) : BlockOpt(std::move(hash), salt){};
-    void addData(const BytesOpt& dec_data) override;  // adds new data to the block (this data is encrypted with the salt)
-    BytesOpt getResult() const noexcept override;     // getter for the result data
+    EncryptBlockOpt(std::shared_ptr<Hash> hash, const Bytes& salt) : BlockOpt(std::move(hash), salt){};
+    void addData(const Bytes& dec_data) override;  // adds new data to the block (this data is encrypted with the salt)
+    Bytes getResult() const noexcept override;     // getter for the result data
 };

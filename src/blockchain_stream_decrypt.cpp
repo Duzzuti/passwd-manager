@@ -10,7 +10,7 @@ bool DecryptBlockChainStream::setBlock() noexcept {
     }
 
     // get the next block salt
-    BytesOpt next_salt(this->hash_size);
+    Bytes next_salt(this->hash_size);
     if (this->current_block.has_value())
         // hashes the last block and use it to generate the next salt
         next_salt = salt_iter.next(this->current_block.value()->getHash());

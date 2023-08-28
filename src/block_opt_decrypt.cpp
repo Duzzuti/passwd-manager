@@ -2,7 +2,7 @@
 
 #include "logger.h"
 
-void DecryptBlockOpt::addData(const BytesOpt& enc_data) {
+void DecryptBlockOpt::addData(const Bytes& enc_data) {
     // add the data to the block
     if (this->getFreeSpace() < enc_data.getLen()) {
         // the block data length will exceed the DecryptBlock length if the data is added
@@ -24,7 +24,7 @@ void DecryptBlockOpt::addData(const BytesOpt& enc_data) {
     }
 }
 
-BytesOpt DecryptBlockOpt::getResult() const noexcept {
+Bytes DecryptBlockOpt::getResult() const noexcept {
     // returns the decrypted data
     if (this->getFreeSpace() != 0) {
         // block is not completed

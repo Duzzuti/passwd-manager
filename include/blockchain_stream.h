@@ -38,8 +38,8 @@ class BlockChainStream {
        private:
         bool ready;        // is the iterator ready to generate salts
         bool first;        // is this the first salt/block
-        BytesOpt hash{0};  // the current hash (first is the passwordhash)
-        BytesOpt salt{0};  // the current salt (first is the encrypted salt)
+        Bytes hash{0};  // the current hash (first is the passwordhash)
+        Bytes salt{0};  // the current salt (first is the encrypted salt)
        public:
         std::shared_ptr<Hash> hashObj;  // the hash object that provides the hash function
 
@@ -49,7 +49,7 @@ class BlockChainStream {
             this->ready = false;
             this->first = true;
         }
-        void init(const BytesOpt pwhash, const BytesOpt enc_salt, std::shared_ptr<Hash> hashObj) {
+        void init(const Bytes pwhash, const Bytes enc_salt, std::shared_ptr<Hash> hashObj) {
             // initializes the iterator with the password hash and the encrypted salt
             if (hashObj == nullptr) {
                 PLOG_FATAL << "given hash object is nullptr";
@@ -68,7 +68,7 @@ class BlockChainStream {
             this->salt = enc_salt;
             this->hashObj = std::move(hashObj);
         }
-        BytesOpt next(BytesOpt last_block_hash = BytesOpt(0)) {
+        Bytes next(Bytes last_block_hash = Bytes(0)) {
             // generates the next salt with the last block hash
             if (this->first) {
                 // if this is the first block, the last_block_hash is set to 0
@@ -100,7 +100,7 @@ class BlockChainStream {
     u_int64_t height;                                             // the height of the chain
     const size_t hash_size;                                       // the byte size of the hash function
     std::optional<std::unique_ptr<BlockOpt>> current_block = {};  // the current block
-    BytesOpt last_block_hash;                                     // the hash of the last block
+    Bytes last_block_hash;                                     // the hash of the last block
     SaltIterator salt_iter;                                       // the salt iterator that is used to generate the salts
 
    protected:
@@ -111,7 +111,7 @@ class BlockChainStream {
 
    public:
     // creates a new empty blockchain with the hash function, the password hash and the encrypted salt
-    BlockChainStream(std::shared_ptr<Hash> hash, const BytesOpt passwordhash, const BytesOpt enc_salt);
+    BlockChainStream(std::shared_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt);
     BlockChainStream(const BlockChainStream&) = delete;
     BlockChainStream& operator=(const BlockChainStream&) = delete;
     BlockChainStream() = delete;
