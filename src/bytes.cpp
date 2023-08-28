@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "bytes_opt.h"
+#include "bytes.h"
 #include "logger.h"
 #include "rng.h"
 
