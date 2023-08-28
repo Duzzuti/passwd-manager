@@ -18,7 +18,7 @@ const constexpr u_int64_t DATA_SIZE_MEDIUM_MB = 50;
 const constexpr u_int64_t DATA_SIZE_LARGE = 1024 * 1024 * 1024;  // 1GB
 const constexpr u_int64_t DATA_SIZE_LARGE_MB = 1024;
 const constexpr u_int64_t ITERS = 2;
-const constexpr u_int64_t FILES = 10;  // 100
+const constexpr u_int64_t FILES = 100;  // 100
 std::string password = "password";
 
 std::atomic<bool> _terminateMeasurementThread(false);
