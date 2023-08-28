@@ -3,8 +3,8 @@ contains implementations of utility functions from utility.h
 */
 #include "utility.h"
 
-#include <vector>
 #include <cstring>
+#include <vector>
 
 bool endsWith(const std::string& fullString, const std::string& ending) noexcept {
     // checks if a string ends with a given string
