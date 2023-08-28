@@ -113,6 +113,15 @@ unsigned char* Bytes::getBytes() const noexcept {
     return this->bytes;
 }
 
+void Bytes::setLen(const size_t len) {
+    // setter for the length in bytes
+    if (len > this->max_len) {
+        PLOG_FATAL << "cannot set len to " << len << " in a Bytes object with max len " << this->max_len;
+        throw std::length_error("cannot set len to " + std::to_string(len) + " in a Bytes object with max len " + std::to_string(this->max_len));
+    }
+    this->len = len;
+}
+
 void Bytes::copyToArray(unsigned char* array, const size_t len) const {
     // copys the bytes to the given array
     if (len < this->len) {

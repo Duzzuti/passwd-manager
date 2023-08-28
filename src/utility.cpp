@@ -4,6 +4,7 @@ contains implementations of utility functions from utility.h
 #include "utility.h"
 
 #include <vector>
+#include <cstring>
 
 bool endsWith(const std::string& fullString, const std::string& ending) noexcept {
     // checks if a string ends with a given string
@@ -15,7 +16,7 @@ bool endsWith(const std::string& fullString, const std::string& ending) noexcept
     }
 }
 
-std::vector<unsigned char> LongToCharVec(const u_int64_t a) noexcept {
+std::vector<unsigned char> LongToCharVec(const u_int64_t& a) noexcept {
     // transforms a long number into its byte representation and returns the byte vector
     std::vector<unsigned char> ret;
     int i = 0;
@@ -38,12 +39,13 @@ std::string charVecToString(const std::vector<unsigned char> v) noexcept {
 
 Bytes stringToBytes(const std::string str) noexcept {
     // transforms a string into a Bytes object
-    Bytes ret;
-    ret.setBytes(std::vector<unsigned char>(str.begin(), str.end()));
+    const unsigned char* str_arr = reinterpret_cast<const unsigned char*>(str.c_str());  // to get the char array from the string
+    Bytes ret(str.length());
+    ret.setBytes(str_arr, str.length());
     return ret;
 }
 
-unsigned int getLongLen(const u_int64_t num) noexcept {
+unsigned int getLongLen(const u_int64_t& num) noexcept {
     // gets the byte length of a long number
     unsigned int ret = 0;
     u_int64_t tmp = num;
@@ -56,7 +58,7 @@ unsigned int getLongLen(const u_int64_t num) noexcept {
     return ret;
 }
 
-bool isValidNumber(const std::string number, const bool accept_blank, const u_int64_t lower_bound, const u_int64_t upper_bound) noexcept {
+bool isValidNumber(const std::string& number, const bool accept_blank, const u_int64_t& lower_bound, const u_int64_t& upper_bound) noexcept {
     if (number.empty()) {
         // if the number string was empty return if blank is accepted
         return accept_blank;

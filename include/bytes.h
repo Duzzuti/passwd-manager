@@ -24,6 +24,7 @@ class Bytes {
     void setBytes(const unsigned char* bytes, const size_t len);     // set the bytes to a given value
     void addBytes(const unsigned char* bytes, const size_t len);     // adds the bytes to the current value
     unsigned char* getBytes() const noexcept;                        // getter for the byte array (by reference)
+    void setLen(const size_t len);                                   // setter for the length in bytes
     void copyToArray(unsigned char* array, const size_t len) const;  // copys the bytes to the given array
     void copyToBytes(Bytes& b) const;                                // copys the bytes to the given Bytes object
     void addcopyToBytes(Bytes& b) const;                             // adds the bytes to the given Bytes object
