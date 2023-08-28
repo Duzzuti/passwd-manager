@@ -34,10 +34,10 @@ class BlockChain {
         for every block it generates a new salt with the hash of the last block
         */
        private:
-        bool ready;  // is the iterator ready to generate salts
-        bool first;  // is this the first salt/block
-        Bytes hash;  // the current hash (first is the passwordhash)
-        Bytes salt;  // the current salt (first is the encrypted salt)
+        bool ready;     // is the iterator ready to generate salts
+        bool first;     // is this the first salt/block
+        Bytes hash{0};  // the current hash (first is the passwordhash)
+        Bytes salt{0};  // the current salt (first is the encrypted salt)
        public:
         std::shared_ptr<Hash> hashObj;  // the hash object that provides the hash function
 
@@ -47,8 +47,7 @@ class BlockChain {
             this->ready = false;
             this->first = true;
         }
-        void init(const Bytes pwhash, const Bytes enc_salt, std::shared_ptr<Hash> hashObj) {
-            // note that SaltIterator does not take ownership of the hashObj pointer you need to delete it yourself
+        void init(const Bytes& pwhash, const Bytes& enc_salt, std::shared_ptr<Hash> hashObj) {
             // initializes the iterator with the password hash and the encrypted salt
             if (hashObj == nullptr) {
                 PLOG_FATAL << "given hash object is nullptr";
@@ -73,8 +72,10 @@ class BlockChain {
                 // if this is the first block, the last_block_hash is set to 0
                 first = false;
                 // generate a Bytes object with the size of the hash with all bytes set to 0
-                last_block_hash = Bytes(0);
-                last_block_hash = last_block_hash.getFirstBytesFilledUp(this->hashObj->getHashSize(), 0);
+                unsigned char buffer[this->hashObj->getHashSize()];
+                // will set the whole buffer to 0
+                std::memset(buffer, 0, this->hashObj->getHashSize());
+                last_block_hash.setBytes(buffer, this->hashObj->getHashSize());
             }
             if (last_block_hash.getLen() != this->hashObj->getHashSize()) {
                 PLOG_FATAL << "last_block_hash has to be the same size as the hash from the hash function (last_block_hash_len: " << last_block_hash.getLen()
@@ -93,7 +94,6 @@ class BlockChain {
             return this->hashObj->hash(this->hash + this->salt);
         }
     };
-
     std::vector<std::unique_ptr<Block>> chain;  // the chain of blocks
     SaltIterator salt_iter;                     // the salt iterator that is used to generate the salts
     size_t hash_size;                           // the byte size of the hash function
@@ -106,13 +106,13 @@ class BlockChain {
 
    public:
     // creates a new empty blockchain with the hash function, the password hash and the encrypted salt
-    BlockChain(std::shared_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt);
+    BlockChain(std::shared_ptr<Hash> hash, const Bytes& passwordhash, const Bytes& enc_salt);
     BlockChain(const BlockChain&) = delete;
     BlockChain& operator=(const BlockChain&) = delete;
     BlockChain() = delete;
 
     // adds new data to the blockchain
-    void addData(const Bytes data) noexcept;
+    void addData(const Bytes& data) noexcept;
 
     // returns the result data of the blockchain
     Bytes getResult() const;

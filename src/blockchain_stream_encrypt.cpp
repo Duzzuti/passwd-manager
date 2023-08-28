@@ -13,7 +13,7 @@ bool EncryptBlockChainStream::setBlock() noexcept {
     Bytes next_salt(this->hash_size);
     if (this->current_block.has_value())
         // hashes the last block and use it to generate the next salt
-        next_salt = salt_iter.next(this->current_block.value()->getHash());
+        next_salt = this->salt_iter.next(this->current_block.value()->getHash());
     else
         // no previous block, generate the next salt without a last block hash
         next_salt = this->salt_iter.next();

@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <optional>
 #include <memory>
 
 #include "block.h"
@@ -49,7 +50,7 @@ class BlockChainStream {
             this->ready = false;
             this->first = true;
         }
-        void init(const Bytes pwhash, const Bytes enc_salt, std::shared_ptr<Hash> hashObj) {
+        void init(const Bytes& pwhash, const Bytes& enc_salt, std::shared_ptr<Hash> hashObj) {
             // initializes the iterator with the password hash and the encrypted salt
             if (hashObj == nullptr) {
                 PLOG_FATAL << "given hash object is nullptr";
@@ -111,7 +112,7 @@ class BlockChainStream {
 
    public:
     // creates a new empty blockchain with the hash function, the password hash and the encrypted salt
-    BlockChainStream(std::shared_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt);
+    BlockChainStream(std::shared_ptr<Hash> hash, const Bytes& passwordhash, const Bytes& enc_salt);
     BlockChainStream(const BlockChainStream&) = delete;
     BlockChainStream& operator=(const BlockChainStream&) = delete;
     BlockChainStream() = delete;

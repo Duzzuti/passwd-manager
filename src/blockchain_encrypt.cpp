@@ -10,7 +10,7 @@ bool EncryptBlockChain::addBlock() noexcept {
     }
 
     // get the next block salt
-    Bytes next_salt;
+    Bytes next_salt(this->hash_size);
     if (this->chain.size() > 0)
         // hashes the last block and use it to generate the next salt
         next_salt = this->salt_iter.next(this->chain.back()->getHash());
@@ -19,7 +19,7 @@ bool EncryptBlockChain::addBlock() noexcept {
         next_salt = this->salt_iter.next();
 
     // create the new block
-    std::unique_ptr<Block> new_block = std::make_unique<EncryptBlock>(this->salt_iter.hashObj, this->hash_size, next_salt);
+    std::unique_ptr<Block> new_block = std::make_unique<EncryptBlock>(this->salt_iter.hashObj, next_salt);
 
     // add the new block to the chain
     this->chain.push_back(std::move(new_block));

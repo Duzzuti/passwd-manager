@@ -1,6 +1,6 @@
 #include "blockchain_stream.h"
 
-BlockChainStream::BlockChainStream(std::shared_ptr<Hash> hash, const Bytes passwordhash, const Bytes enc_salt) : hash_size(hash->getHashSize()), last_block_hash(hash_size) {
+BlockChainStream::BlockChainStream(std::shared_ptr<Hash> hash, const Bytes& passwordhash, const Bytes& enc_salt) : hash_size(hash->getHashSize()), last_block_hash(hash_size) {
     // initialize the salt generator (iterator)
     this->salt_iter.init(passwordhash, enc_salt, std::move(hash));
 }
