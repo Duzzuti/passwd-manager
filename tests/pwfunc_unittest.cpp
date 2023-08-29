@@ -8,8 +8,8 @@
 #include "sha384.h"
 #include "sha512.h"
 #include "test_settings.cpp"
-#include "utility.h"
 #include "timer.h"
+#include "utility.h"
 
 TEST(PWFUNCClass, returnTypes) {
     // check if the return types are correct
@@ -95,9 +95,9 @@ TEST(PWFUNCClass, passwordvalid) {
 
 TEST(PWFUNCClass, input_output) {
     // check if the input and output has the correct format
-    for(int kj = 0; kj < 3; kj++){
+    for (int kj = 0; kj < 3; kj++) {
         std::unique_ptr<Hash> hash;
-        switch(kj){
+        switch (kj) {
             case 0:
                 hash = std::make_unique<sha256>();
                 break;
@@ -113,8 +113,8 @@ TEST(PWFUNCClass, input_output) {
 
         for (int i = 0; i < TEST_MAX_PW_LEN; i++) {
             Bytes rand_b(8);
-            RNG::fill_random_bytes(rand_b, 2);  // max ca. 65000
-            u_int64_t l1 = rand_b.toLong() / 6;          // max ca. 10000 iterations
+            RNG::fill_random_bytes(rand_b, 2);   // max ca. 65000
+            u_int64_t l1 = rand_b.toLong() / 6;  // max ca. 10000 iterations
             if (MIN_ITERATIONS > l1) {
                 l1 = MIN_ITERATIONS;
             } else if (MAX_ITERATIONS < l1) {
@@ -228,16 +228,15 @@ TEST(PWFUNCClass, input_output) {
             timer.stop();
             EXPECT_EQ(hash_size, tmp20.result.getLen());
             EXPECT_NEAR(89, timer.getTime(), 1);
-
         }
     }
 }
 
 TEST(PWFUNCClass, consistency) {
     // check if the output is consistent (same input -> same output)
-    for(int kj = 0; kj < 3; kj++){
+    for (int kj = 0; kj < 3; kj++) {
         std::unique_ptr<Hash> hash;
-        switch(kj){
+        switch (kj) {
             case 0:
                 hash = std::make_unique<sha256>();
                 break;
@@ -407,10 +406,10 @@ TEST(PWFUNCClass, correctness) {
     EXPECT_EQ(phashchainquad, pwf.chainhashWithQuadraticCountSalt(passwordbytes, 3, 90, 5, 8, 3).returnValue().toHex());
 }
 
-TEST(PWFUNCClass, timedIters){
-    for(int kj = 0; kj < 3; kj++){
+TEST(PWFUNCClass, timedIters) {
+    for (int kj = 0; kj < 3; kj++) {
         std::unique_ptr<Hash> hash;
-        switch(kj){
+        switch (kj) {
             case 0:
                 hash = std::make_unique<sha256>();
                 break;
@@ -470,7 +469,6 @@ TEST(PWFUNCClass, timedIters){
         EXPECT_EQ(hash_size, tmp[4].result.getLen());
         EXPECT_EQ(tmp[4].result, pwf.chainhashWithQuadraticCountSalt(password, tmp[4].iterations, l2, l3, l4, l5).returnValue());
 
-
         tmp[0] = pwf.chainhashTimed(passwordbytes, 672);
         tmp[1] = pwf.chainhashWithConstantSaltTimed(passwordbytes, 167, s);
         tmp[2] = pwf.chainhashWithCountSaltTimed(passwordbytes, 10, l2);
@@ -487,7 +485,5 @@ TEST(PWFUNCClass, timedIters){
         EXPECT_EQ(tmp[3].result, pwf.chainhashWithCountAndConstantSalt(passwordbytes, tmp[3].iterations, l2, s).returnValue());
         EXPECT_EQ(hash_size, tmp[4].result.getLen());
         EXPECT_EQ(tmp[4].result, pwf.chainhashWithQuadraticCountSalt(passwordbytes, tmp[4].iterations, l2, l3, l4, l5).returnValue());
-
-        
     }
 }

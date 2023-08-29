@@ -8,9 +8,7 @@
 struct TimedResult {
     u_int64_t iterations;
     Bytes result{0};
-    friend bool operator==(const TimedResult& lhs, const TimedResult& rhs) {
-        return lhs.iterations == rhs.iterations && lhs.result == rhs.result;
-    }
+    friend bool operator==(const TimedResult& lhs, const TimedResult& rhs) { return lhs.iterations == rhs.iterations && lhs.result == rhs.result; }
 };
 
 class PwFunc {
@@ -31,7 +29,7 @@ class PwFunc {
     // checks the password for illegal characters and length
     static ErrorStruct<bool> isPasswordValid(const std::string& password) noexcept;
 
-    PwFunc(std::shared_ptr<Hash> hash) noexcept;                                                                                           // sets the hash function
+    PwFunc(std::shared_ptr<Hash> hash) noexcept;                                                                                            // sets the hash function
     ErrorStruct<Bytes> chainhash(const std::string& password, const u_int64_t iterations = 1, const u_int64_t timeout = 0) const noexcept;  // performs a chainhash
     // adds a constant salt each iteration
     ErrorStruct<Bytes> chainhashWithConstantSalt(const std::string& password, const u_int64_t iterations = 1, const std::string& salt = "", const u_int64_t timeout = 0) const noexcept;
