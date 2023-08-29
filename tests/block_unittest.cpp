@@ -127,12 +127,12 @@ TEST(BlockClass, EncryptBlock) {
     b4.addcopyToBytes(b3);
     block.addData(b4);
     EXPECT_EQ(block.getFreeSpace(), 0);
-    EXPECT_EQ(hash->hash(b3 - salt), block.getHash());
+    EXPECT_EQ(hash->hash(b3), block.getHash());
     EXPECT_EQ(b3 + salt, block.getResult());
 
     EXPECT_NO_THROW(block.addData(Bytes(10)));
     EXPECT_EQ(block.getFreeSpace(), 0);
-    EXPECT_EQ(hash->hash(b3 - salt), block.getHash());
+    EXPECT_EQ(hash->hash(b3), block.getHash());
     EXPECT_EQ(b3 + salt, block.getResult());
 
     EXPECT_THROW(block.addData(b4), std::length_error);

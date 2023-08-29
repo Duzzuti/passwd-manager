@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "bytes.h"
 #include "hash.h"
 
 class Block {

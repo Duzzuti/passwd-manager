@@ -29,7 +29,7 @@ B:
 
 #include <iostream>
 
-const constexpr bool TEST_VERBOSE = false;  // should the tests print information?
+const constexpr bool TEST_VERBOSE = true;  // should the tests print information?
 
 //####################### EASY MODE (tests are running fast) ######################################
 //+++++++++++++++++hashing functions+++++++++++++++++++++++

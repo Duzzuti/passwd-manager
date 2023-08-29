@@ -3,7 +3,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "bytes_opt.h"
+#include "bytes.h"
 #include "rng.h"
 #include "timer.h"
 
