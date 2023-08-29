@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "test_settings.cpp"
+#include "bytes.h"
 
 // stores one data set of entropy data
 struct entropyData {
@@ -24,16 +25,55 @@ struct entropyData {
 TEST(RNGClass, returnTypes) {
     // tests if the return types of the RNG class are correct
     EXPECT_EQ(typeid(unsigned char), typeid(RNG::get_random_byte()));
-    EXPECT_EQ(typeid(std::vector<unsigned char>), typeid(RNG::get_random_bytes(1)));
+    EXPECT_EQ(typeid(std::string), typeid(RNG::get_random_string(1)));
+    unsigned char c[1];
+    EXPECT_EQ(typeid(void), typeid(RNG::fill_random_bytes(c, 1)));
 }
 
 TEST(RNGClass, entropy_bytes) {
     // calculates the entropy of the RNG gen bytes
     // a bytemap which stores how many bytes are got of a byte value
     std::unordered_map<unsigned char, u_int64_t> bytemap{};
+    // generates the bytes
+    unsigned char* bytes = new unsigned char[TEST_RNG_ITERS_ENTROPY];
+    RNG::fill_random_bytes(bytes, TEST_RNG_ITERS_ENTROPY);
+
     for (u_int64_t i = 0; i < TEST_RNG_ITERS_ENTROPY; i++) {
         // getting the random byte and storing it in the bytemap
-        bytemap[RNG::get_random_bytes(1)[0]] += 1;
+        bytemap[bytes[i]] += 1;
+    }
+    delete[] bytes;
+    // calculates the entropy of the gotten bytes
+    double entropy{};
+    for (std::pair<unsigned char, u_int64_t> key_value : bytemap) {
+        // calculates the actual entropy by adding p*log2(p), with p - probability of that byte
+        double num = key_value.second;
+        double charprob = num / TEST_RNG_ITERS_ENTROPY;
+        if (isnanl(charprob) || charprob == 0) {
+            continue;
+        }
+        entropy += charprob * (log2(charprob));
+    }
+    entropy = -entropy;
+    if (TEST_VERBOSE) {
+        std::cout << "Entropy per byte (in bit): " << entropy << std::endl;
+    }
+    // checks if the entropy is near enough on the perfect entropy of 8
+    EXPECT_GT(entropy, 8 - TEST_RNG_ENTROPY_ERROR);
+}
+
+TEST(RNGClass, entropy_bytes2) {
+    // calculates the entropy of the RNG gen bytes
+    // a bytemap which stores how many bytes are got of a byte value
+    std::unordered_map<unsigned char, u_int64_t> bytemap{};
+    // generates the bytes
+    unsigned char* bytes = new unsigned char[TEST_RNG_ITERS_ENTROPY];
+    Bytes b(bytes, TEST_RNG_ITERS_ENTROPY);
+    RNG::fill_random_bytes(b, TEST_RNG_ITERS_ENTROPY);
+
+    for (u_int64_t i = 0; i < TEST_RNG_ITERS_ENTROPY; i++) {
+        // getting the random byte and storing it in the bytemap
+        bytemap[b.getBytes()[i]] += 1;
     }
     // calculates the entropy of the gotten bytes
     double entropy{};
@@ -63,21 +103,21 @@ TEST(RNGClass, gen_byte_io) {
     unsigned char byte;    // return byte
     unsigned char buffer;  // buffer size
     for (int i = 0; i < TEST_RNG_ITERS_IO; i++) {
-        mode = RNG::get_random_bytes(1)[0];
+        mode = RNG::get_random_string(1)[0];
         if (mode % 3 == 0) {
             // first mode with default buffer and random bounds
-            lower = RNG::get_random_bytes(1)[0];
-            upper = RNG::get_random_bytes(1)[0];
+            lower = RNG::get_random_string(1)[0];
+            upper = RNG::get_random_string(1)[0];
             buffer = 4;
         } else if (mode % 3 == 1) {
             // second mode with default max and random buffer and min
-            lower = RNG::get_random_bytes(1)[0];
+            lower = RNG::get_random_string(1)[0];
             upper = 255;
-            buffer = RNG::get_random_bytes(1)[0];
+            buffer = RNG::get_random_string(1)[0];
         } else {
             // third mode, with buffer of 1 and random bounds
-            lower = RNG::get_random_bytes(1)[0];
-            upper = RNG::get_random_bytes(1)[0];
+            lower = RNG::get_random_string(1)[0];
+            upper = RNG::get_random_string(1)[0];
             buffer = 1;
         }
         if (lower > upper || buffer == 0 || buffer > 8) {
@@ -109,7 +149,7 @@ TEST(RNGClass, entropy_byte) {
         for (int j = 0; j < TEST_RNG_VALUES_PER_RANGE; j++) {
             // loops a set number of times per range
             // in each run with a range, the lower and upper bounds are picked randomly with the other generator function
-            lower = RNG::get_random_bytes(1)[0];  // get random lower bound
+            lower = RNG::get_random_string(1)[0];  // get random lower bound
             if (lower > 255 - range) {            // if lower bound is too big it has to be set to the maximum possible value
                 lower = 255 - range;
             }
