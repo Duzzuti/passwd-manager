@@ -44,7 +44,7 @@ void RNG::fill_random_bytes(unsigned char* bytes, const unsigned int num) {
 }
 
 void RNG::fill_random_bytes(Bytes& bytes, const unsigned int num) {
-    if(bytes.getMaxLen() < num) {
+    if (bytes.getMaxLen() < num) {
         PLOG_FATAL << "bytes length cannot be smaller than num";
         throw std::logic_error("bytes length cannot be smaller than num");
     }

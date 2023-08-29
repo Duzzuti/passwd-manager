@@ -5,8 +5,8 @@
 
 #include <sstream>
 
-#include "test_settings.cpp"
 #include "bytes.h"
+#include "test_settings.cpp"
 
 // stores one data set of entropy data
 struct entropyData {
@@ -150,7 +150,7 @@ TEST(RNGClass, entropy_byte) {
             // loops a set number of times per range
             // in each run with a range, the lower and upper bounds are picked randomly with the other generator function
             lower = RNG::get_random_string(1)[0];  // get random lower bound
-            if (lower > 255 - range) {            // if lower bound is too big it has to be set to the maximum possible value
+            if (lower > 255 - range) {             // if lower bound is too big it has to be set to the maximum possible value
                 lower = 255 - range;
             }
             upper = lower + range;
