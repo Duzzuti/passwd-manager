@@ -2,6 +2,7 @@
 contains implementations of utility functions from utility.h
 */
 #include "utility.h"
+#include "logger.h"
 
 #include <cstring>
 #include <vector>
@@ -16,33 +17,22 @@ bool endsWith(const std::string& fullString, const std::string& ending) noexcept
     }
 }
 
-std::vector<unsigned char> LongToCharVec(const u_int64_t& a) noexcept {
-    // transforms a long number into its byte representation and returns the byte vector
-    std::vector<unsigned char> ret;
-    int i = 0;
-    for (i = 0; i < 8; ++i) {
-        // a u_int64_t has 8 Bytes
-        ret.push_back((unsigned char)((((u_int64_t)a) >> (56 - (8 * i))) & 0xFFu));
-    }
-    return ret;
-}
-
-std::string charVecToString(const std::vector<unsigned char> v) noexcept {
-    // transforms the byte vector into a string
-    std::string ret;
-    // loops over the vector and add each character to the string
-    for (size_t i = 0; i < v.size(); i++) {
-        ret += v[i];
-    }
-    return ret;
-}
-
 Bytes stringToBytes(const std::string str) noexcept {
     // transforms a string into a Bytes object
     const unsigned char* str_arr = reinterpret_cast<const unsigned char*>(str.c_str());  // to get the char array from the string
     Bytes ret(str.length());
     ret.setBytes(str_arr, str.length());
     return ret;
+}
+
+void addStringToBytes(const std::string& str, Bytes& bytes) {
+    // adds a string to a Bytes object
+    if(str.length() > bytes.getMaxLen() - bytes.getLen()){
+        // if the string is longer than the remaining space in the bytes object, throw an error
+        PLOG_FATAL << "string is too long to be added to the bytes object";
+        throw std::runtime_error("string is too long to be added to the bytes object");
+    }
+    bytes.addBytes(reinterpret_cast<const unsigned char*>(str.c_str()), str.length());
 }
 
 unsigned int getLongLen(const u_int64_t& num) noexcept {
@@ -62,6 +52,12 @@ bool isValidNumber(const std::string& number, const bool accept_blank, const u_i
     if (number.empty()) {
         // if the number string was empty return if blank is accepted
         return accept_blank;
+    }
+    for(char c : number) {
+        // check if the number string contains only numbers
+        if (!isdigit(c)) {
+            return false;
+        }
     }
     u_int64_t long_number;
     try {
