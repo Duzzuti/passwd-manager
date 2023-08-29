@@ -30,6 +30,32 @@ Bytes::Bytes(const int max_len) {
     this->bytes = new unsigned char[max_len];
 }
 
+Bytes::Bytes(unsigned char* bytes, const size_t len) {
+    // creates a Bytes object with the given bytes and length (consumes the array)
+    if (bytes == nullptr) {
+        PLOG_FATAL << "cannot consume nullptr";
+        throw std::invalid_argument("cannot consume nullptr");
+    }
+    this->max_len = len;
+    this->len = len;
+    this->bytes = bytes;  // set the byte array to the given bytes
+}
+
+Bytes::Bytes(const Bytes& other, const size_t extra_len) {
+    if (this == &other) {
+        // self assignment
+        return;
+    }
+    this->max_len = other.max_len + extra_len;
+    this->bytes = new unsigned char[this->max_len];
+    if (other.bytes == nullptr) {
+        PLOG_FATAL << "cannot copy nullptr";
+        throw std::invalid_argument("cannot copy nullptr");
+    }
+    std::memcpy(this->bytes, other.bytes, other.len);
+    this->len = other.len;
+}
+
 // Copy constructor
 Bytes::Bytes(const Bytes& other) {
     if (this == &other) {
@@ -55,13 +81,21 @@ Bytes& Bytes::operator=(const Bytes& other) {
         PLOG_FATAL << "cannot copy nullptr";
         throw std::invalid_argument("cannot copy nullptr");
     }
-    if (max_len < other.len) {
-        PLOG_FATAL << "cannot copy to a Bytes object with max_len " << max_len << " from a Bytes object with len " << other.len;
-        throw std::length_error("cannot copy to a Bytes object with max_len " + std::to_string(max_len) + " from a Bytes object with len " + std::to_string(other.len));
-    }
+    // if (max_len < other.len) {
+    //     PLOG_FATAL << "cannot copy to a Bytes object with max_len " << max_len << " from a Bytes object with len " << other.len;
+    //     throw std::length_error("cannot copy to a Bytes object with max_len " + std::to_string(max_len) + " from a Bytes object with len " + std::to_string(other.len));
+    // }
+    this->max_len = other.max_len;
+    delete[] this->bytes;
+    this->bytes = new unsigned char[max_len];
     std::memcpy(this->bytes, other.bytes, other.len);
     this->len = other.len;
     return *this;
+}
+
+void Bytes::setDeallocate(const bool deallocate) noexcept {
+    // setter for the deallocate variable
+    this->deallocate = deallocate;
 }
 
 void Bytes::fillrandom() noexcept {
@@ -83,12 +117,12 @@ void Bytes::addrandom(const int num) {
 void Bytes::setBytes(const unsigned char* bytes, const size_t len) {
     // set the bytes to a given value
     if (len > this->max_len) {
-        PLOG_FATAL << "cannot consume bytes with len " << len << " in a Bytes object with max len " << this->max_len;
+        PLOG_FATAL << "cannot set bytes with len " << len << " in a Bytes object with max len " << this->max_len;
         throw std::length_error("cannot consume bytes with len " + std::to_string(len) + " in a Bytes object with max len " + std::to_string(this->max_len));
     }
     if (bytes == nullptr) {
-        PLOG_FATAL << "cannot consume nullptr";
-        throw std::invalid_argument("cannot consume nullptr");
+        PLOG_FATAL << "cannot set nullptr";
+        throw std::invalid_argument("cannot set nullptr");
     }
     this->len = len;
     std::memcpy(this->bytes, bytes, len);  // copy the bytes to the byte array
@@ -97,15 +131,42 @@ void Bytes::setBytes(const unsigned char* bytes, const size_t len) {
 void Bytes::addBytes(const unsigned char* bytes, const size_t len) {
     // adds the bytes to the current value
     if (this->len + len > this->max_len) {
-        PLOG_FATAL << "cannot add consume bytes with len " << len << " in a Bytes object with free space " << this->max_len - this->len;
-        throw std::length_error("cannot add consume bytes with len " + std::to_string(len) + " in a Bytes object with free space " + std::to_string(this->max_len - this->len));
+        PLOG_FATAL << "cannot add bytes with len " << len << " in a Bytes object with free space " << this->max_len - this->len;
+        throw std::length_error("cannot add bytes with len " + std::to_string(len) + " in a Bytes object with free space " + std::to_string(this->max_len - this->len));
     }
     if (bytes == nullptr) {
-        PLOG_FATAL << "cannot add consume nullptr";
-        throw std::invalid_argument("cannot add consume nullptr");
+        PLOG_FATAL << "cannot add nullptr";
+        throw std::invalid_argument("cannot add nullptr");
     }
     std::memcpy(this->bytes + this->len, bytes, len);  // copy the bytes to the byte array
     this->len += len;
+}
+
+void Bytes::consumeBytes(unsigned char* bytes, const size_t len) {
+    // consumes the bytes from the current value
+    if (len > this->max_len) {
+        PLOG_FATAL << "cannot consume bytes with len " << len << " in a Bytes object with max len " << this->max_len;
+        throw std::length_error("cannot consume bytes with len " + std::to_string(len) + " in a Bytes object with max len " + std::to_string(this->max_len));
+    }
+    if (bytes == nullptr) {
+        PLOG_FATAL << "cannot consume nullptr";
+        throw std::invalid_argument("cannot consume nullptr");
+    }
+    this->len = len;
+    delete[] this->bytes;
+    this->bytes = bytes;    // set the byte array to the given bytes
+}
+
+void Bytes::consumeBytes(Bytes&& b) {
+    // consumes the bytes from the bytes object
+    if (b.getLen() > this->max_len) {
+        PLOG_FATAL << "cannot consume bytes object with len " << b.getLen() << " in a Bytes object with max len " << this->max_len;
+        throw std::length_error("cannot consume bytes object with len " + std::to_string(b.getLen()) + " in a Bytes object with max len " + std::to_string(this->max_len));
+    }
+    this->len = b.getLen();
+    delete[] this->bytes;
+    this->bytes = b.getBytes();    // set the byte array to the given bytes
+    b.setDeallocate(false);  // the bytes object should not deallocate the bytes array (because it is now owned by this object)
 }
 
 unsigned char* Bytes::getBytes() const noexcept {

@@ -12,17 +12,23 @@ class Bytes {
     unsigned char* bytes;  // bytes array (deployed on the heap)
     size_t max_len;        // max length of the byte array
     size_t len;            // length of the byte array
+    bool deallocate = true;  // if the bytes array should be deallocated when the object is destroyed
 
    public:
     static Bytes fromLong(const u_int64_t l);  // sets the Bytes to the decimal representation of the given long
 
     Bytes(const int max_len);                                        // creates an empty byte array with a given maximum length
+    Bytes(unsigned char* bytes, const size_t len);                   // creates a Bytes object with the given bytes and length (consumes the array)
+    Bytes(const Bytes& other, const size_t extra_len);               // creates a new Bytes object with the bytes of the other Bytes object and adds extra_len bytes at the end
     Bytes(const Bytes& other);                                       // copy constructor
     Bytes& operator=(const Bytes& other);                            // copy assignment
+    void setDeallocate(const bool deallocate) noexcept;              // setter for the deallocate variable
     void fillrandom() noexcept;                                      // fills the byte array with random bytes
     void addrandom(const int num);                                   // adds random bytes to the byte array (num is the number of bytes that will be added)
     void setBytes(const unsigned char* bytes, const size_t len);     // set the bytes to a given value
     void addBytes(const unsigned char* bytes, const size_t len);     // adds the bytes to the current value
+    void consumeBytes(unsigned char* bytes, const size_t len);       // consumes the bytes from the current value
+    void consumeBytes(Bytes&& b);                                    // consumes the bytes from the current value (from another Bytes object)
     unsigned char* getBytes() const noexcept;                        // getter for the byte array (by reference)
     void setLen(const size_t len);                                   // setter for the length in bytes
     void copyToArray(unsigned char* array, const size_t len) const;  // copys the bytes to the given array
@@ -40,7 +46,7 @@ class Bytes {
     Bytes operator+(const Bytes& b2) const;                          // performs an add elementwise (the two byte arrays are added to each other (elementwise) mod 256)
     Bytes operator-(const Bytes& b2) const;                          // performs an subtract elementwise (the second byte array is subtracted from the first (elementwise) mod 256)
     ~Bytes() {
-        if (this->bytes != nullptr) {
+        if (this->bytes != nullptr && this->deallocate) {
             delete[] this->bytes;
             this->bytes = nullptr;
         }
