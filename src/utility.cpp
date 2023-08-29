@@ -2,10 +2,11 @@
 contains implementations of utility functions from utility.h
 */
 #include "utility.h"
-#include "logger.h"
 
 #include <cstring>
 #include <vector>
+
+#include "logger.h"
 
 bool endsWith(const std::string& fullString, const std::string& ending) noexcept {
     // checks if a string ends with a given string
@@ -27,7 +28,7 @@ Bytes stringToBytes(const std::string str) noexcept {
 
 void addStringToBytes(const std::string& str, Bytes& bytes) {
     // adds a string to a Bytes object
-    if(str.length() > bytes.getMaxLen() - bytes.getLen()){
+    if (str.length() > bytes.getMaxLen() - bytes.getLen()) {
         // if the string is longer than the remaining space in the bytes object, throw an error
         PLOG_FATAL << "string is too long to be added to the bytes object";
         throw std::runtime_error("string is too long to be added to the bytes object");
@@ -53,7 +54,7 @@ bool isValidNumber(const std::string& number, const bool accept_blank, const u_i
         // if the number string was empty return if blank is accepted
         return accept_blank;
     }
-    for(char c : number) {
+    for (char c : number) {
         // check if the number string contains only numbers
         if (!isdigit(c)) {
             return false;

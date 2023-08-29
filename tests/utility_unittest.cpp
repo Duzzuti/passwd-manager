@@ -77,7 +77,7 @@ TEST(UtilityClass, getLongLen) {
     EXPECT_EQ(4, getLongLen(l11));
 }
 
-TEST(UtilityClass, isValidNumber){
+TEST(UtilityClass, isValidNumber) {
     std::string s1 = "0";
     std::string s2 = "";
     std::string s3 = "102131231421";
