@@ -36,13 +36,13 @@ TEST(TimerClass, throws) {
     t = Timer();
     t.start();
     t.stop();
-    EXPECT_THROW(t.start(), std::logic_error);
     EXPECT_THROW(t.stop(), std::logic_error);
     EXPECT_THROW(t.recordTime(), std::logic_error);
     EXPECT_THROW(t.peekTime(), std::logic_error);
     EXPECT_NO_THROW(t.getAverageTime());
     EXPECT_NO_THROW(t.getTime());
     EXPECT_NO_THROW(t.getLaps());
+    EXPECT_NO_THROW(t.start());
 }
 
 TEST(TimerClass, behaviour) {

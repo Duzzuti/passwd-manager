@@ -10,6 +10,7 @@ void Timer::start() {
     this->require_not_started();  // it has not been started
     this->started = true;
     this->stopped = false;
+    this->laps.clear();
     this->last_time = std::chrono::steady_clock::now();
 }
 
@@ -19,6 +20,7 @@ void Timer::stop() {
     this->require_started();      // it has been started
     this->recordTime();
     this->stopped = true;
+    this->started = false;
 }
 
 u_int64_t Timer::recordTime() {
