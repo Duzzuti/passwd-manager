@@ -1,9 +1,9 @@
+#include "bytes.h"
+
 #include <gtest/gtest.h>
 
 #include <cstring>
 #include <memory>
-
-#include "bytes.h"
 
 TEST(BytesClass, constructor) {
     Bytes b1(10);
@@ -17,8 +17,6 @@ TEST(BytesClass, constructor) {
     EXPECT_EQ(1000, b3.getMaxLen());
 
     EXPECT_THROW(Bytes b4(-1), std::invalid_argument);
-
-
 }
 
 TEST(BytesClass, fillrandom) {
@@ -286,7 +284,7 @@ TEST(BytesClass, consumeBytes) {
     Bytes b300(bytes4, 9);
     unsigned char test[10];
     b1.consumeBytes(std::move(b));
-    b1.setDeallocate(false); // ownwership of the bytes array is bytes1
+    b1.setDeallocate(false);  // ownwership of the bytes array is bytes1
     EXPECT_EQ(10, b1.getLen());
     EXPECT_EQ(10, b1.getMaxLen());
     EXPECT_EQ(&bytes1[0], b1.getBytes());
@@ -296,7 +294,7 @@ TEST(BytesClass, consumeBytes) {
     Bytes b2(10);
     b2.fillrandom();
     b2.consumeBytes(std::move(b100));
-    b2.setDeallocate(false); // ownwership of the bytes array is bytes2
+    b2.setDeallocate(false);  // ownwership of the bytes array is bytes2
     EXPECT_EQ(10, b2.getLen());
     EXPECT_EQ(10, b2.getMaxLen());
     EXPECT_EQ(&bytes2[0], b2.getBytes());
@@ -306,7 +304,7 @@ TEST(BytesClass, consumeBytes) {
     Bytes b3(10);
     b3.addrandom(5);
     b3.consumeBytes(std::move(b200));
-    b3.setDeallocate(false); // ownwership of the bytes array is bytes3
+    b3.setDeallocate(false);  // ownwership of the bytes array is bytes3
     EXPECT_EQ(10, b3.getLen());
     EXPECT_EQ(10, b3.getMaxLen());
     EXPECT_EQ(&bytes3[0], b3.getBytes());
@@ -316,7 +314,7 @@ TEST(BytesClass, consumeBytes) {
     Bytes b4(10);
     b4.addByte(0xad);
     b4.consumeBytes(std::move(b300));
-    b4.setDeallocate(false); // ownwership of the bytes array is bytes4
+    b4.setDeallocate(false);  // ownwership of the bytes array is bytes4
     EXPECT_EQ(9, b4.getLen());
     EXPECT_EQ(10, b4.getMaxLen());
     EXPECT_EQ(&bytes4[0], b4.getBytes());
@@ -343,7 +341,7 @@ TEST(BytesClass, consumeBytesConstructor) {
     unsigned char bytes1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     unsigned char test[10];
     Bytes b1(bytes1, 10);
-    b1.setDeallocate(false); // ownwership of the bytes array is bytes1
+    b1.setDeallocate(false);  // ownwership of the bytes array is bytes1
     EXPECT_EQ(10, b1.getLen());
     EXPECT_EQ(10, b1.getMaxLen());
     EXPECT_EQ(&bytes1[0], b1.getBytes());
@@ -351,7 +349,7 @@ TEST(BytesClass, consumeBytesConstructor) {
 
     unsigned char bytes2[0];
     Bytes b2(bytes2, 0);
-    b2.setDeallocate(false); // ownwership of the bytes array is bytes2
+    b2.setDeallocate(false);  // ownwership of the bytes array is bytes2
     EXPECT_EQ(0, b2.getLen());
     EXPECT_EQ(0, b2.getMaxLen());
 

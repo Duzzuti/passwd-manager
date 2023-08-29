@@ -9,9 +9,9 @@ class Bytes {
     it is a lot faster than Bytes but it does not support all functionalities
     */
    private:
-    unsigned char* bytes;  // bytes array (deployed on the heap)
-    size_t max_len;        // max length of the byte array
-    size_t len;            // length of the byte array
+    unsigned char* bytes;    // bytes array (deployed on the heap)
+    size_t max_len;          // max length of the byte array
+    size_t len;              // length of the byte array
     bool deallocate = true;  // if the bytes array should be deallocated when the object is destroyed
 
    public:

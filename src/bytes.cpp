@@ -154,7 +154,7 @@ void Bytes::consumeBytes(unsigned char* bytes, const size_t len) {
     }
     this->len = len;
     delete[] this->bytes;
-    this->bytes = bytes;    // set the byte array to the given bytes
+    this->bytes = bytes;  // set the byte array to the given bytes
 }
 
 void Bytes::consumeBytes(Bytes&& b) {
@@ -165,8 +165,8 @@ void Bytes::consumeBytes(Bytes&& b) {
     }
     this->len = b.getLen();
     delete[] this->bytes;
-    this->bytes = b.getBytes();    // set the byte array to the given bytes
-    b.setDeallocate(false);  // the bytes object should not deallocate the bytes array (because it is now owned by this object)
+    this->bytes = b.getBytes();  // set the byte array to the given bytes
+    b.setDeallocate(false);      // the bytes object should not deallocate the bytes array (because it is now owned by this object)
 }
 
 unsigned char* Bytes::getBytes() const noexcept {
