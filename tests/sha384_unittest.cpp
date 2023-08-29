@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 
+#include "rng.h"
 #include "test_settings.cpp"
 #include "utility.h"
-#include "rng.h"
 
 TEST(SHA384Class, returnTypes) {
     // testing the return types of the sha384 class

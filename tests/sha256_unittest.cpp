@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 
+#include "rng.h"
 #include "test_settings.cpp"
 #include "utility.h"
-#include "rng.h"
 
 TEST(SHA256Class, returnTypes) {
     // testing the return types of the sha256 class
