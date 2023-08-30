@@ -12,7 +12,7 @@ class FileModes {
     */
    public:
     // gets some information about this file mode (what it does)
-    static std::string getInfo(const FModes file_mode);
+    static std::string getInfo(const FModes& file_mode);
     // checks if the given mode is valid (in a certain range)
-    static bool isModeValid(const FModes file_mode) noexcept;
+    static bool isModeValid(const FModes& file_mode) noexcept;
 };

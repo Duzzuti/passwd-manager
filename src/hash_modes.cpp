@@ -9,12 +9,12 @@ this file contains implementations of HashModes class
 #include "sha384.h"
 #include "sha512.h"
 
-bool HashModes::isModeValid(const HModes hash_mode) noexcept {
+bool HashModes::isModeValid(const HModes& hash_mode) noexcept {
     // checks whether the given hash mode is in the accepted range
     return (1 <= hash_mode && hash_mode <= MAX_HASHMODE_NUMBER);
 }
 
-std::unique_ptr<Hash> HashModes::getHash(const HModes hash_mode) {
+std::unique_ptr<Hash> HashModes::getHash(const HModes& hash_mode) {
     // gets the concrete hash sub class
     PLOG_VERBOSE << "getting hash function for hash mode: " << +hash_mode;
     switch (hash_mode) {
@@ -30,7 +30,7 @@ std::unique_ptr<Hash> HashModes::getHash(const HModes hash_mode) {
     }
 }
 
-std::string HashModes::getInfo(const HModes hash_mode, const bool only_name) {
+std::string HashModes::getInfo(const HModes& hash_mode, const bool only_name) {
     // gets some information about this hash mode (hash function)
     std::stringstream msg{};
     // start with a base string

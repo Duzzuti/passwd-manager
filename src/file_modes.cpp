@@ -8,7 +8,7 @@ this file contains the implementations of FileModes class
 #include "logger.h"
 #include "settings.h"
 
-std::string FileModes::getInfo(const FModes file_mode) {
+std::string FileModes::getInfo(const FModes& file_mode) {
     // gets some information about the provided file mode
     std::stringstream msg{};
     msg << "The file mode " << +file_mode << " stores ";  // start string
@@ -25,7 +25,7 @@ std::string FileModes::getInfo(const FModes file_mode) {
     return msg.str();
 }
 
-bool FileModes::isModeValid(const FModes file_mode) noexcept {
+bool FileModes::isModeValid(const FModes& file_mode) noexcept {
     // checks whether the given file mode is in the accepted range
     return (1 <= file_mode && file_mode <= MAX_FILEMODE_NUMBER);
 }
