@@ -8,7 +8,7 @@ contains the implementations of the ChainHashData class
 #include "logger.h"
 #include "utility.h"
 
-unsigned char ChainHashData::calculateDatablockSize(const Format& format) noexcept { 
+unsigned char ChainHashData::calculateDatablockSize(const Format& format) noexcept {
     // calculates the size of the datablock
     // the size is the sum of all parts length
     unsigned char size = 0;
@@ -18,9 +18,8 @@ unsigned char ChainHashData::calculateDatablockSize(const Format& format) noexce
     return size;
 }
 
-ChainHashData::ChainHashData(const Format& format) 
-    : format(format), datablock_size(calculateDatablockSize(format)), 
-    is_star(format.getNameLenList().empty() ? false : format.getNameLenList().back().len == 0) {
+ChainHashData::ChainHashData(const Format& format)
+    : format(format), datablock_size(calculateDatablockSize(format)), is_star(format.getNameLenList().empty() ? false : format.getNameLenList().back().len == 0) {
     // gets the name len data to name the data parts and know which length they are
     // calculates the final length of the datablock
     this->name_len_ind = 0;  // the index of the current part
@@ -60,7 +59,7 @@ Bytes ChainHashData::getPart(const std::string& data_name) const {
         // loops through the name_lens list and checks if any name is equal to the given string
         // there has to be more than the index elements in data parts (in order to get the element)
         if (this->format.getNameLenList()[i].name == data_name && this->name_len_ind > i) {
-            return this->datablock.copySubBytes(start_ind, this->name_len_ind > i+1 ? start_ind + this->format.getNameLenList()[i].len : this->datablock.getLen());
+            return this->datablock.copySubBytes(start_ind, this->name_len_ind > i + 1 ? start_ind + this->format.getNameLenList()[i].len : this->datablock.getLen());
         }
         start_ind += this->format.getNameLenList()[i].len;  // adds the length of the current part to the start index
     }
@@ -88,7 +87,7 @@ void ChainHashData::addBytes(const Bytes& bytes) {
         PLOG_ERROR << "tried to add a data part with a not matching length (to the format) (len: " << bytes.getLen() << ", expected_len: " << current_name_len.len << ")";
         throw std::invalid_argument("tried to add a data part with a not matching length (to the format).");
     }
-    try{
+    try {
         bytes.addcopyToBytes(this->datablock);  // add the new byte part
     } catch (std::length_error) {
         // datablock is too long
@@ -107,11 +106,11 @@ void ChainHashData::generateRandomData() {
         PLOG_ERROR << "Cannot generate random data, because some data parts have been set.";
         throw new std::logic_error("Cannot generate random data, because some data parts have been set.");
     }
-    if(is_star)
+    if (is_star)
         this->datablock.fillrandom();  // fills the datablock with random data
     else
         this->datablock.addrandom(this->datablock_size);  // fills the datablock with random data
-    
+
     this->name_len_ind = this->format.getNameLenList().size();  // set the index to the last part
 }
 

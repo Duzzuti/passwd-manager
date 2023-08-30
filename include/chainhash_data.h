@@ -1,7 +1,7 @@
 #pragma once
 
-#include "format.h"
 #include "bytes.h"
+#include "format.h"
 
 class ChainHashData {
     /*
@@ -10,16 +10,16 @@ class ChainHashData {
     a format declares parts of the datablock, these data parts have a name and a len (NameLen)
     */
    private:
-    const Format format;                    // the format of the datablock
-    Bytes datablock{255};                  // the datablock can have up to 255 bytes
-    const unsigned char datablock_size;     // the size of the final datablock
-    const bool is_star;                           // true if the format contains a star element
-    unsigned char name_len_ind;             // the index of the current part
+    const Format format;                 // the format of the datablock
+    Bytes datablock{255};                // the datablock can have up to 255 bytes
+    const unsigned char datablock_size;  // the size of the final datablock
+    const bool is_star;                  // true if the format contains a star element
+    unsigned char name_len_ind;          // the index of the current part
    private:
     unsigned char calculateDatablockSize(const Format& format) noexcept;  // calculates the size of the datablock
    public:
     ChainHashData& operator=(const ChainHashData& chd) = delete;  // copy assignment is deleted
-    ChainHashData(const Format& format);  // constructs the data object, takes a format for this datablock
+    ChainHashData(const Format& format);                          // constructs the data object, takes a format for this datablock
 
     // checks if all expected data is already gotten
     bool isComplete() const noexcept;
