@@ -52,6 +52,22 @@ TEST(UtilityClass, stringToBytes) {
     EXPECT_EQ(b2, stringToBytes(s1));
 }
 
+TEST(UtilityClass, bytesTostr){
+    Bytes b1(10);
+    for (u_int64_t i = 0; i < 1000; i++) {
+        std::string str = RNG::get_random_string(10);
+        b1.setBytes(reinterpret_cast<const unsigned char*>(str.c_str()), str.length());
+        EXPECT_EQ(str, bytesToString(b1));
+    }
+    Bytes b2(4);
+    b2.addByte('m');
+    b2.addByte('o');
+    b2.addByte('i');
+    b2.addByte('n');
+    std::string s1 = "moin";
+    EXPECT_EQ(s1, bytesToString(b2));
+}
+
 TEST(UtilityClass, getLongLen) {
     u_int64_t l1 = 0;
     u_int64_t l2 = 1;

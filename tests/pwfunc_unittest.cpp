@@ -132,7 +132,7 @@ TEST(PWFUNCClass, input_output) {
             // create same random password string and Bytes
             Bytes passwordbytes(TEST_MAX_PW_LEN);
             RNG::fill_random_bytes(passwordbytes, i);
-            std::string password{passwordbytes.getBytes(), passwordbytes.getBytes() + passwordbytes.getLen()};
+            std::string password = bytesToString(passwordbytes);
 
             // testing chainhashes with string data
             Bytes tmp = pwf.chainhash(password, l1).returnValue();
@@ -254,7 +254,7 @@ TEST(PWFUNCClass, consistency) {
             // create same random password string and Bytes
             Bytes passwordbytes(TEST_MAX_PW_LEN);
             RNG::fill_random_bytes(passwordbytes, i);
-            std::string password{passwordbytes.getBytes(), passwordbytes.getBytes() + passwordbytes.getLen()};
+            std::string password = bytesToString(passwordbytes);
 
             // create same random salt
             std::string s = RNG::get_random_string(100);
@@ -425,7 +425,7 @@ TEST(PWFUNCClass, timedIters) {
         // create same random password string and Bytes
         Bytes passwordbytes(20);
         RNG::fill_random_bytes(passwordbytes, 20);
-        std::string password{passwordbytes.getBytes(), passwordbytes.getBytes() + passwordbytes.getLen()};
+        std::string password = bytesToString(passwordbytes);
 
         // create same random salt
         std::string s = RNG::get_random_string(100);

@@ -209,8 +209,8 @@ void Bytes::copyToBytes(Bytes& b) const {
 void Bytes::addcopyToBytes(Bytes& b) const {
     // adds the bytes to the given Bytes object
     if (b.max_len < this->len + b.len) {
-        PLOG_FATAL << "given Bytes object is too short to add copy to (given: " << b.max_len << ", needed: " << this->len << ")";
-        throw std::length_error("given Bytes object is too short to add copy to (given: " + std::to_string(b.max_len) + ", needed: " + std::to_string(this->len) + ")");
+        PLOG_FATAL << "given Bytes object is too short to add copy to (given: " << b.max_len << ", needed: " << this->len + b.len << ")";
+        throw std::length_error("given Bytes object is too short to add copy to (given: " + std::to_string(b.max_len) + ", needed: " + std::to_string(this->len + b.len) + ")");
     }
     std::memcpy(b.bytes + b.len, this->bytes, this->len);
     b.len += this->len;
