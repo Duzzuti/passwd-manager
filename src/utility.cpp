@@ -26,6 +26,11 @@ Bytes stringToBytes(const std::string str) noexcept {
     return ret;
 }
 
+std::string bytesToString(const Bytes & bytes) noexcept{
+    // transforms a Bytes object into a string
+    return std::string(reinterpret_cast<const char*>(bytes.getBytes()), bytes.getLen());
+}
+
 void addStringToBytes(const std::string& str, Bytes& bytes) {
     // adds a string to a Bytes object
     if (str.length() > bytes.getMaxLen() - bytes.getLen()) {

@@ -13,6 +13,8 @@ if a functionality is used in different files or scenarios, it should be defined
 bool endsWith(const std::string& fullString, const std::string& ending) noexcept;
 // transforms a string into a bytes object
 Bytes stringToBytes(const std::string str) noexcept;
+// transforms a bytes object into a string
+std::string bytesToString(const Bytes& bytes) noexcept;
 // adds a string to a bytes object
 void addStringToBytes(const std::string& str, Bytes& bytes);
 // gets the byte length of a long number
