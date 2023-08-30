@@ -52,7 +52,7 @@ TEST(UtilityClass, stringToBytes) {
     EXPECT_EQ(b2, stringToBytes(s1));
 }
 
-TEST(UtilityClass, bytesTostr){
+TEST(UtilityClass, bytesTostr) {
     Bytes b1(10);
     for (u_int64_t i = 0; i < 1000; i++) {
         std::string str = RNG::get_random_string(10);
