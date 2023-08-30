@@ -13,7 +13,7 @@ std::string Format::getFormatString(const CHModes& chainhash_mode) const {
         case CHAINHASH_NORMAL:
             return "";
         case CHAINHASH_CONSTANT_SALT:
-            return  "*B S";
+            return "*B S";
         case CHAINHASH_COUNT_SALT:
             return "8B SN";
         case CHAINHASH_CONSTANT_COUNT_SALT:

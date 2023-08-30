@@ -13,14 +13,15 @@ class Format {
     chainhash_modes.md
     */
    private:
-    const CHModes chainhash_mode;  // the chainhash mode that the user provides with the constructor
-    const std::string format;      // the format string depending on the chainhash mode
+    const CHModes chainhash_mode;          // the chainhash mode that the user provides with the constructor
+    const std::string format;              // the format string depending on the chainhash mode
     const std::vector<NameLen> name_lens;  // a list of all expected datablock parts as NameLen
    private:
     // calculates the format list for a given chainhash mode
     std::string getFormatString(const CHModes& chainhash_mode) const;  // gets the format string for a given chainhash mode
     // calculates the NameLen list for a given chainhash mode
     std::vector<NameLen> calcNameLenList(const CHModes& chainhash_mode) const;
+
    public:
     // constructor has to set the chainhash_mode and the corresponding string
     Format& operator=(const Format& format) = delete;  // copy assignment is deleted
