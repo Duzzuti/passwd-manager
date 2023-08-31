@@ -1,7 +1,6 @@
 #include "sha384.h"
 
 #include <gtest/gtest.h>
-
 #include <openssl/sha.h>
 
 #include "rng.h"

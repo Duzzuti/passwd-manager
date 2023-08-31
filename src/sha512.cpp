@@ -1,5 +1,6 @@
-#include <openssl/sha.h>
 #include "sha512.h"
+
+#include <openssl/sha.h>
 
 int sha512::getHashSize() const noexcept { return SHA512_DIGEST_LENGTH; }
 

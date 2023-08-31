@@ -37,7 +37,7 @@ class Bytes {
     Bytes copySubBytes(const size_t start, const size_t end) const;  // returns a Bytes object that is a copy of the bytes from start to end
     size_t getLen() const noexcept;                                  // getter for the length in bytes
     size_t getMaxLen() const noexcept;                               // getter for the maximum length in bytes
-    void addByte(const unsigned char byte);                         // adds one byte at the end of the byte array by reference
+    void addByte(const unsigned char byte);                          // adds one byte at the end of the byte array by reference
     bool isEmpty() const noexcept;                                   // returns true if there are no bytes in the array
     u_int64_t toLong() const;                                        // returns a long that is the decimal representation of the Bytes
     std::string toHex() const noexcept;                              // returns a string (with 2*len chars) that is the hexadecimal representation of the Bytes

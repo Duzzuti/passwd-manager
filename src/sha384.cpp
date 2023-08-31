@@ -1,5 +1,6 @@
-#include <openssl/sha.h>
 #include "sha384.h"
+
+#include <openssl/sha.h>
 
 int sha384::getHashSize() const noexcept { return SHA384_DIGEST_LENGTH; }
 

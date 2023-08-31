@@ -1,10 +1,9 @@
 #include "rng.h"
 
-#include "openssl/err.h"
-#include "openssl/rand.h"
-
 #include "bytes.h"
 #include "logger.h"
+#include "openssl/err.h"
+#include "openssl/rand.h"
 
 std::string RNG::get_random_string(const unsigned int num) {
     // gets a random string with the given length
