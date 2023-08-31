@@ -242,7 +242,7 @@ size_t Bytes::getMaxLen() const noexcept {
     return this->max_len;
 }
 
-void Bytes::addByte(const unsigned char& byte) {
+void Bytes::addByte(const unsigned char byte) {
     // adds one byte at the end of the byte array by reference
     if (this->len >= this->max_len) {
         PLOG_FATAL << "Bytes are already full. Cannot add an other byte (max_len = len = " << this->max_len << ")";
