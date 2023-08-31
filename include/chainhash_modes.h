@@ -38,10 +38,10 @@ class ChainHashModes {
 // ChainHash struct holds all components that are needed to describe a chainhash
 struct ChainHash {
    private:
-    std::optional<CHModes> mode{};       // the mode
+    std::optional<CHModes> mode{};                       // the mode
     std::shared_ptr<ChainHashData> datablock = nullptr;  // the data corresponding to the chainhash
-    u_int64_t iters = 0;                 // the iters
-    bool val = false;                    // is this chainhash valid?
+    u_int64_t iters = 0;                                 // the iters
+    bool val = false;                                    // is this chainhash valid?
 
     // checks if the given chainhash is valid (with the iterations and datablock which contains data that is used by the chainhash)
     ErrorStruct<bool> isValid() noexcept {
@@ -177,10 +177,10 @@ struct ChainHash {
 // this chainhash does not contain iterations but a runtime to get the iterations
 struct ChainHashTimed {
    private:
-    std::optional<CHModes> mode;         // the mode
+    std::optional<CHModes> mode;                         // the mode
     std::shared_ptr<ChainHashData> datablock = nullptr;  // the data corresponding to the chainhash
-    u_int64_t run_time;                  // the time that this chainhash should run (in ms)
-    bool val = false;                    // is this chainhash valid?
+    u_int64_t run_time;                                  // the time that this chainhash should run (in ms)
+    bool val = false;                                    // is this chainhash valid?
 
     // checks if the given chainhash is valid (with the runtime and datablock which contains data that is used by the chainhash)
     ErrorStruct<bool> isValid() noexcept {
