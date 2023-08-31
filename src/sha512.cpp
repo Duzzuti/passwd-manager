@@ -1,4 +1,7 @@
+#include <openssl/sha.h>
 #include "sha512.h"
+
+int sha512::getHashSize() const noexcept { return SHA512_DIGEST_LENGTH; }
 
 Bytes sha512::hash(const Bytes& bytes, const u_int32_t extra_space) const {
     Bytes ret(this->getHashSize() + extra_space);              // output buffer with hashsize length and extra_space

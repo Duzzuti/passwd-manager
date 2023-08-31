@@ -1,4 +1,7 @@
+#include <openssl/sha.h>
 #include "sha384.h"
+
+int sha384::getHashSize() const noexcept { return SHA384_DIGEST_LENGTH; }
 
 Bytes sha384::hash(const Bytes& bytes, const u_int32_t extra_space) const {
     Bytes ret(this->getHashSize() + extra_space);              // output buffer with hashsize length and extra_space

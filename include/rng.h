@@ -3,9 +3,6 @@
 #include <iostream>
 #include <vector>
 
-#include "openssl/err.h"
-#include "openssl/rand.h"
-
 class Bytes;
 
 class RNG {

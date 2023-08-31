@@ -1,5 +1,8 @@
 #include "rng.h"
 
+#include "openssl/err.h"
+#include "openssl/rand.h"
+
 #include "bytes.h"
 #include "logger.h"
 

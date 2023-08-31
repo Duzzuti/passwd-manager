@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <openssl/sha.h>
+
 #include "rng.h"
 #include "test_settings.cpp"
 #include "utility.h"
