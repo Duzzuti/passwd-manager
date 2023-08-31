@@ -20,7 +20,19 @@ TEST(RNG, get_random_bytes) {
     Timer timer;
     timer.start();
     for (int i = 0; i < ITERS; i++) {
-        RNG::get_random_bytes(NUM_BYTES);
+        RNG::get_random_string(NUM_BYTES);
+        if (i != ITERS - 1) timer.recordTime();
+    }
+    timer.stop();
+    filing("get_random_string", NUM_BYTES, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(RNG, fill_random_bytes) {
+    Timer timer;
+    timer.start();
+    for (int i = 0; i < ITERS; i++) {
+        Bytes bytes(NUM_BYTES);
+        RNG::fill_random_bytes(bytes, NUM_BYTES);
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
