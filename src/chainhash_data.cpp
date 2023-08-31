@@ -67,7 +67,7 @@ Bytes ChainHashData::getPart(const std::string& data_name) const {
     throw std::invalid_argument("Could not find data name in data parts");
 }
 
-size_t ChainHashData::getLen() const noexcept {
+unsigned char ChainHashData::getLen() const noexcept {
     // gets the length of the set data parts
     return this->datablock.getLen();
 }

@@ -10,7 +10,7 @@ TEST(ChainHashDataClass, returnTypes) {
     EXPECT_EQ(typeid(unsigned char), typeid(chd.getPartsNumber()));
     EXPECT_EQ(typeid(Bytes), typeid(chd.getDataBlock()));
     EXPECT_EQ(typeid(Bytes), typeid(chd.getPart("A")));
-    EXPECT_EQ(typeid(size_t), typeid(chd.getLen()));
+    EXPECT_EQ(typeid(unsigned char), typeid(chd.getLen()));
     EXPECT_EQ(typeid(void), typeid(chd.addBytes(Bytes(8))));
     EXPECT_EQ(typeid(bool), typeid(chd == chd));
 }

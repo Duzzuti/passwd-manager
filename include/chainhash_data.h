@@ -33,7 +33,7 @@ class ChainHashData {
     // gets the bytes for a given part name, throws if the part name is not found (or set)
     Bytes getPart(const std::string& data_name) const;
 
-    size_t getLen() const noexcept;  // gets the length of the datablock (the sum of all parts length)
+    unsigned char getLen() const noexcept;  // gets the length of the datablock (the sum of all parts length)
 
     // add bytes to the datablock; it is assumed that these bytes corresponds to the next part
     // the bytes have to be provided in the format string order
