@@ -78,31 +78,31 @@ TEST(DataHeaderClass, setChainHash) {
     // testing the chainhash modes with different iterations and datablocks
     for (int i = 0; i < ch_modes.size(); i++) {
         for (int j = 0; j < TEST_DH_ITERS; j++) {
-            Bytes tmp;
-            tmp.setBytes(RNG::get_random_bytes(rand_bytes));  // set random iterations
-            u_int64_t iters = toLong(tmp);                    // sets random iters
+            Bytes tmp(rand_bytes);
+            tmp.fillrandom();  // set random iterations
+            u_int64_t iters = tmp.toLong();                    // sets random iters
             if (iters > MAX_ITERATIONS) {
                 // if the random iterations are bigger than the max iterations, set the max iterations
                 iters = MAX_ITERATIONS;
             }
             // init chainhashdata with chainhash mode
-            Format format{CHAINHASH_NORMAL};
+            std::shared_ptr<Format> format = nullptr;
             if (i == 0 || i == ch_modes.size() - 1) {
                 // invalid chainhash mode
                 EXPECT_THROW(Format(CHModes(ch_modes[i])), std::invalid_argument);
+                continue;
             } else {
-                format = Format{CHModes(ch_modes[i])};
+                format = std::make_shared<Format>(CHModes(ch_modes[i]));
             }
-            ChainHashData chd{format};
-            std::vector<NameLen> vnl = format.getNameLenList();
+            std::shared_ptr<ChainHashData> chd = std::make_shared<ChainHashData>(*format);
+            std::vector<NameLen> vnl = format->getNameLenList();
             // add random datablock data
-            chd.generateRandomData();
-            unsigned char len = chd.getLen();  // current used datablock length
+            chd->generateRandomData();
 
-            EXPECT_TRUE(chd.isCompletedFormat(format));  // check if the chainhashdata is completed
+            EXPECT_TRUE(chd->isCompletedFormat(*format));  // check if the chainhashdata is completed
 
             // setting up the ChainHash struct
-            ChainHash chainhash = ChainHash{CHModes(ch_modes[i]), iters, chd};
+            ChainHash chainhash{CHModes(ch_modes[i]), iters, chd};
 
             // testing the chainhash modes on the setter
             // init dataheader with random hashmode
@@ -111,50 +111,46 @@ TEST(DataHeaderClass, setChainHash) {
             unsigned char hash_size = hash->getHashSize();
             DataHeader dh{hash_mode};   // testing chainhash1
             DataHeader dh2{hash_mode};  // testing chainhash2
-            if (i == 0 || i == ch_modes.size() - 1) {
-                // invalid chainhash mode
-                EXPECT_THROW(dh.setChainHash1(chainhash, len), std::invalid_argument);
-                EXPECT_THROW(dh2.setChainHash2(chainhash, len), std::invalid_argument);
-            } else {
-                // valid chainhash mode
-                EXPECT_NO_THROW(dh.setChainHash1(chainhash, len));
-                // checking if the setter returns void
-                EXPECT_EQ(typeid(void), typeid(DataHeader(HModes(hash_mode)).setChainHash1(chainhash, len)));
-                EXPECT_EQ(typeid(void), typeid(DataHeader(HModes(hash_mode)).setChainHash2(chainhash, len)));
+            // valid chainhash mode
+            EXPECT_NO_THROW(dh.setChainHash1(chainhash));
+            // checking if the setter returns void
+            EXPECT_EQ(typeid(void), typeid(DataHeader(HModes(hash_mode)).setChainHash1(chainhash)));
+            EXPECT_EQ(typeid(void), typeid(DataHeader(HModes(hash_mode)).setChainHash2(chainhash)));
 
-                // tests on the changed object
-                EXPECT_THROW(dh.getDataHeaderParts(), std::logic_error);               // dataheader is not completed
-                EXPECT_EQ(0, dh.getHeaderLength());                                    // chainhash2 is not set, therefore no length can be computed
-                EXPECT_THROW(dh.getHeaderBytes(), std::logic_error);                   // dataheader is not completed
-                EXPECT_THROW(dh.calcHeaderBytes(Bytes(hash_size)), std::logic_error);  // dataheader is not completed
+            Bytes hsb(hash_size);
+            hsb.fillrandom();
+            // tests on the changed object
+            EXPECT_THROW(dh.getDataHeaderParts(), std::logic_error);               // dataheader is not completed
+            EXPECT_EQ(0, dh.getHeaderLength());                                    // chainhash2 is not set, therefore no length can be computed
+            EXPECT_THROW(dh.getHeaderBytes(), std::logic_error);                   // dataheader is not completed
+            EXPECT_THROW(dh.calcHeaderBytes(hsb), std::logic_error);  // dataheader is not completed
 
-                // chainhash2
-                // valid chainhash mode
-                EXPECT_NO_THROW(dh2.setChainHash2(chainhash, len));
-                // tests on the changed object
-                EXPECT_THROW(dh2.getDataHeaderParts(), std::logic_error);               // dataheader is not completed
-                EXPECT_EQ(0, dh2.getHeaderLength());                                    // chainhash1 is not set, therefore no length can be computed
-                EXPECT_THROW(dh2.getHeaderBytes(), std::logic_error);                   // dataheader is not completed
-                EXPECT_THROW(dh2.calcHeaderBytes(Bytes(hash_size)), std::logic_error);  // dataheader is not completed
+            // chainhash2
+            // valid chainhash mode
+            EXPECT_NO_THROW(dh2.setChainHash2(chainhash));
+            // tests on the changed object
+            EXPECT_THROW(dh2.getDataHeaderParts(), std::logic_error);               // dataheader is not completed
+            EXPECT_EQ(0, dh2.getHeaderLength());                                    // chainhash1 is not set, therefore no length can be computed
+            EXPECT_THROW(dh2.getHeaderBytes(), std::logic_error);                   // dataheader is not completed
+            EXPECT_THROW(dh2.calcHeaderBytes(hsb), std::logic_error);  // dataheader is not completed
 
-                // setting both chainhashes
-                EXPECT_NO_THROW(dh.setChainHash2(chainhash, len));
-                EXPECT_NO_THROW(dh2.setChainHash1(chainhash, len));
-                // tests on the changed object
-                EXPECT_THROW(dh2.getDataHeaderParts(), std::logic_error);                 // dataheader is not completed
-                EXPECT_EQ(22 + 2 * hash_size + 2 * chd.getLen(), dh2.getHeaderLength());  // both chainhashes are set, therefore a length can be computed
-                EXPECT_THROW(dh2.getHeaderBytes(), std::logic_error);                     // dataheader is not completed
-                EXPECT_THROW(dh2.calcHeaderBytes(Bytes(hash_size)), std::logic_error);    // dataheader is not completed
-            }
+            // setting both chainhashes
+            EXPECT_NO_THROW(dh.setChainHash2(chainhash));
+            EXPECT_NO_THROW(dh2.setChainHash1(chainhash));
+            // tests on the changed object
+            EXPECT_THROW(dh2.getDataHeaderParts(), std::logic_error);                 // dataheader is not completed
+            EXPECT_EQ(22 + 2 * hash_size + 2 * chd->getLen(), dh2.getHeaderLength());  // both chainhashes are set, therefore a length can be computed
+            EXPECT_THROW(dh2.getHeaderBytes(), std::logic_error);                     // dataheader is not completed
+            EXPECT_THROW(dh2.calcHeaderBytes(hsb), std::logic_error);    // dataheader is not completed
             // some edge cases
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(ch_modes[i] - 255), iters, chd}, len), std::invalid_argument);
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(ch_modes[i] - 256), iters, chd}, len), std::invalid_argument);
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(0), iters, chd}, len), std::invalid_argument);
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(-1), iters, chd}, len), std::invalid_argument);
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(ch_modes[i] - 255), iters, chd}, len), std::invalid_argument);
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(ch_modes[i] - 256), iters, chd}, len), std::invalid_argument);
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(0), iters, chd}, len), std::invalid_argument);
-            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(-1), iters, chd}, len), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(ch_modes[i] - 255), iters, chd}), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(ch_modes[i] - 256), iters, chd}), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(0), iters, chd}), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash1(ChainHash{CHModes(-1), iters, chd}), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(ch_modes[i] - 255), iters, chd}), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(ch_modes[i] - 256), iters, chd}), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(0), iters, chd}), std::invalid_argument);
+            EXPECT_THROW(DataHeader(HModes(STANDARD_HASHMODE)).setChainHash2(ChainHash{CHModes(-1), iters, chd}), std::invalid_argument);
         }
     }
 }
@@ -169,19 +165,23 @@ TEST(DataHeaderClass, setValidPasswordHashBytes) {
         unsigned char hash_size = hash->getHashSize();
 
         // checking if the setter returns void
-        EXPECT_EQ(typeid(void), typeid(DataHeader{HModes(hash_mode)}.setValidPasswordHashBytes(Bytes(hash_size))));
+        Bytes tmp(hash_size);
+        tmp.fillrandom();  // random password hash validator
+        EXPECT_EQ(typeid(void), typeid(DataHeader{HModes(hash_mode)}.setValidPasswordHashBytes(tmp)));
 
-        EXPECT_NO_THROW(dh.setValidPasswordHashBytes(Bytes(hash_size)));  // valid hashsize
+        EXPECT_NO_THROW(dh.setValidPasswordHashBytes(tmp));  // valid hashsize
         // tests on the changed object
         EXPECT_THROW(dh.getDataHeaderParts(), std::logic_error);               // dataheader is not completed
         EXPECT_EQ(0, dh.getHeaderLength());                                    // chainhashes are not set, therefore no length can be computed
         EXPECT_THROW(dh.getHeaderBytes(), std::logic_error);                   // dataheader is not completed
-        EXPECT_THROW(dh.calcHeaderBytes(Bytes(hash_size)), std::logic_error);  // dataheader is not completed
+        EXPECT_THROW(dh.calcHeaderBytes(tmp), std::logic_error);  // dataheader is not completed
 
         // invalid hashsize
-        for (unsigned int i = 0; i < 512; i++) {
+        for (u_int16_t i = 0; i < 512; i++) {
             if (i != hash_size) {
-                EXPECT_THROW(DataHeader{HModes(hash_mode)}.setValidPasswordHashBytes(Bytes(i)), std::length_error);
+                Bytes tmp2(i);
+                tmp2.fillrandom();
+                EXPECT_THROW(DataHeader{HModes(hash_mode)}.setValidPasswordHashBytes(tmp2), std::invalid_argument);
             }
         }
     }
@@ -198,16 +198,17 @@ TEST(DataHeaderClass, calcHeaderBytes) {
             std::shared_ptr<Hash> hash = std::move(HashModes::getHash(HModes(hash_mode)));
             unsigned char hash_size = hash->getHashSize();
 
-            Bytes tmp;
+            Bytes tmp(getLongLen(TEST_DH_MAX_PW_ITERS - 1));
+            Bytes tmp2(getLongLen(TEST_DH_MAX_PW_ITERS - 1));
+            tmp.fillrandom();
+            tmp2.fillrandom();
             // generating random chainhash modes and iterations
             CHModes ch1_mode = CHModes(RNG::get_random_byte(1, MAX_CHAINHASHMODE_NUMBER));
             Format format1{ch1_mode};
             CHModes ch2_mode = CHModes(RNG::get_random_byte(1, MAX_CHAINHASHMODE_NUMBER));
             Format format2{ch2_mode};
-            tmp.setBytes(RNG::get_random_bytes(getLongLen(TEST_DH_MAX_PW_ITERS - 1)));
-            u_int64_t iters1 = toLong(tmp);  // random iterations
-            tmp.setBytes(RNG::get_random_bytes(getLongLen(TEST_DH_MAX_PW_ITERS - 1)));
-            u_int64_t iters2 = toLong(tmp);  // random iterations
+            u_int64_t iters1 = tmp.toLong();  // random iterations
+            u_int64_t iters2 = tmp2.toLong();  // random iterations
             // culling the iterations to the maximum
             if (iters1 > TEST_DH_MAX_PW_ITERS) {
                 iters1 = TEST_DH_MAX_PW_ITERS;
@@ -218,56 +219,60 @@ TEST(DataHeaderClass, calcHeaderBytes) {
 
             FModes file_mode = FModes(RNG::get_random_byte(1, MAX_FILEMODE_NUMBER));
 
-            ChainHashData chd1{format1};
-            ChainHashData chd2{format2};
+            std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(format1);
+            std::shared_ptr<ChainHashData> chd2 = std::make_shared<ChainHashData>(format2);
 
             // setting the chainhash data parts into the datablock
-            chd1.generateRandomData();
-            unsigned int len1 = chd1.getLen();
-            chd2.generateRandomData();
-            unsigned int len2 = chd2.getLen();
+            chd1->generateRandomData();
+            chd2->generateRandomData();
 
-            EXPECT_TRUE(chd1.isCompletedFormat(format1));  // checking if the chainhashdata is completed
-            EXPECT_TRUE(chd2.isCompletedFormat(format2));  // checking if the chainhashdata is completed
+            EXPECT_TRUE(chd1->isCompletedFormat(format1));  // checking if the chainhashdata is completed
+            EXPECT_TRUE(chd2->isCompletedFormat(format2));  // checking if the chainhashdata is completed
             // setting up the ChainHash struct
             ChainHash chainhash1 = ChainHash{ch1_mode, iters1, chd1};
             ChainHash chainhash2 = ChainHash{ch2_mode, iters2, chd2};
 
             // dataheader is not completed
-            EXPECT_THROW(dh.calcHeaderBytes(Bytes(hash_size)), std::logic_error);
+            Bytes hsb(hash_size);
+            hsb.fillrandom();
+            EXPECT_THROW(dh.calcHeaderBytes(hsb), std::logic_error);
 
             EXPECT_NO_THROW(dh.setFileDataMode(file_mode));
 
             // dataheader is not completed
-            EXPECT_THROW(dh.calcHeaderBytes(Bytes(hash_size)), std::logic_error);
+            EXPECT_THROW(dh.calcHeaderBytes(hsb), std::logic_error);
 
-            EXPECT_NO_THROW(dh.setChainHash1(chainhash1, len1));
+            EXPECT_NO_THROW(dh.setChainHash1(chainhash1));
             // dataheader is not completed
-            EXPECT_THROW(dh.calcHeaderBytes(Bytes(hash_size)), std::logic_error);
+            EXPECT_THROW(dh.calcHeaderBytes(hsb), std::logic_error);
 
-            EXPECT_NO_THROW(dh.setChainHash2(chainhash2, len2));
+            EXPECT_NO_THROW(dh.setChainHash2(chainhash2));
             // dataheader is not completed
-            EXPECT_THROW(dh.calcHeaderBytes(Bytes(hash_size)), std::logic_error);
+            EXPECT_THROW(dh.calcHeaderBytes(hsb), std::logic_error);
 
             DataHeader dh2{dh};
             DataHeader dh3{dh};
             DataHeader dh4{dh};
 
             // generating random password and passwordhash
-            std::string password = charVecToString(RNG::get_random_bytes(16));  // random password with 16 characters
+            std::string password =  RNG::get_random_string(16);  // random password with 16 characters
             Bytes phash = ChainHashModes::performChainHash(chainhash1, hash, password).returnValue();
             Bytes pval = ChainHashModes::performChainHash(chainhash2, hash, phash).returnValue();
 
             // wrong valid password hash validator and passwordhash
-            EXPECT_NO_THROW(dh2.setValidPasswordHashBytes(Bytes(hash_size)));
-            EXPECT_THROW(dh2.calcHeaderBytes(Bytes(hash_size)), std::logic_error);
+            RNG::fill_random_bytes(hsb, hash_size);
+            EXPECT_NO_THROW(dh2.setValidPasswordHashBytes(hsb));
+            RNG::fill_random_bytes(hsb, hash_size);
+            EXPECT_THROW(dh2.calcHeaderBytes(hsb), std::logic_error);
 
             // valid password hash validator and wrong passwordhash
             EXPECT_NO_THROW(dh3.setValidPasswordHashBytes(pval));
-            EXPECT_THROW(dh2.calcHeaderBytes(Bytes(hash_size)), std::logic_error);
+            RNG::fill_random_bytes(hsb, hash_size);
+            EXPECT_THROW(dh2.calcHeaderBytes(hsb), std::logic_error);
 
             // wrong password hash validator and valid passwordhash
-            EXPECT_NO_THROW(dh4.setValidPasswordHashBytes(Bytes(hash_size)));
+            RNG::fill_random_bytes(hsb, hash_size);
+            EXPECT_NO_THROW(dh4.setValidPasswordHashBytes(hsb));
             EXPECT_THROW(dh4.calcHeaderBytes(phash), std::logic_error);
 
             // valid password hash validator and valid passwordhash
@@ -277,55 +282,55 @@ TEST(DataHeaderClass, calcHeaderBytes) {
 
             // stores the valid data
             DataHeaderParts dp;
-            Bytes dataheaderbytes;
+            Bytes dataheaderbytes(MAX_HEADER_SIZE);
 
             EXPECT_THROW(dh2.getHeaderBytes(), std::logic_error);                // dataheader is invalid
             EXPECT_THROW(dh3.getHeaderBytes(), std::logic_error);                // dataheader is invalid
             EXPECT_THROW(dh4.getHeaderBytes(), std::logic_error);                // dataheader is invalid
             EXPECT_NO_THROW(dataheaderbytes = dh.getHeaderBytes());              // dataheader is valid
             EXPECT_NO_THROW(dp = dh.getDataHeaderParts());                       // dataheader is valid
-            EXPECT_EQ(22 + 2 * hash_size + len1 + len2, dh.getHeaderLength());   // chainhashes are set, therefore length can be computed
-            EXPECT_EQ(22 + 2 * hash_size + len1 + len2, dh2.getHeaderLength());  // chainhashes are set, therefore length can be computed
-            EXPECT_EQ(22 + 2 * hash_size + len1 + len2, dh3.getHeaderLength());  // chainhashes are set, therefore length can be computed
-            EXPECT_EQ(22 + 2 * hash_size + len1 + len2, dh4.getHeaderLength());  // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh.getHeaderLength());   // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh2.getHeaderLength());  // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh3.getHeaderLength());  // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh4.getHeaderLength());  // chainhashes are set, therefore length can be computed
 
             // testing the returned dataparts
-            EXPECT_EQ(HModes(hash_mode), dp.hash_mode);
-            EXPECT_EQ(file_mode, dp.file_mode);
-            EXPECT_EQ(ch1_mode, dp.chainhash1.mode);
-            EXPECT_EQ(ch2_mode, dp.chainhash2.mode);
-            EXPECT_EQ(iters1, dp.chainhash1.iters);
-            EXPECT_EQ(iters2, dp.chainhash2.iters);
-            EXPECT_EQ(len1, dp.chainhash1_datablock_len);
-            EXPECT_EQ(len2, dp.chainhash2_datablock_len);
-            EXPECT_EQ(chd1, dp.chainhash1.datablock);
-            EXPECT_EQ(chd2, dp.chainhash2.datablock);
-            EXPECT_EQ(pval, dp.valid_passwordhash);
+            EXPECT_EQ(HModes(hash_mode), dp.getHashMode());
+            EXPECT_EQ(file_mode, dp.getFileDataMode());
+            EXPECT_EQ(ch1_mode, dp.chainhash1.getMode());
+            EXPECT_EQ(ch2_mode, dp.chainhash2.getMode());
+            EXPECT_EQ(iters1, dp.chainhash1.getIters());
+            EXPECT_EQ(iters2, dp.chainhash2.getIters());
+            EXPECT_EQ(chd1->getLen(), dp.chainhash1.getChainHashData()->getLen());
+            EXPECT_EQ(chd2->getLen(), dp.chainhash2.getChainHashData()->getLen());
+            EXPECT_EQ(chd1, dp.chainhash1.getChainHashData());
+            EXPECT_EQ(chd2, dp.chainhash2.getChainHashData());
+            EXPECT_EQ(pval, dp.getValidPasswordHash());
 
             // testing the returned dataheaderbytes
-            EXPECT_EQ(22 + 2 * hash_size + len1 + len2, dataheaderbytes.getLen());
-            EXPECT_EQ(file_mode, FModes(dataheaderbytes.popFirstBytes(1).value().getBytes()[0]));
-            EXPECT_EQ(hash_mode, HModes(dataheaderbytes.popFirstBytes(1).value().getBytes()[0]));
-            EXPECT_EQ(ch1_mode, CHModes(dataheaderbytes.popFirstBytes(1).value().getBytes()[0]));
-            EXPECT_EQ(iters1, toLong(dataheaderbytes.popFirstBytes(8).value()));
-            EXPECT_EQ(len1, dataheaderbytes.popFirstBytes(1).value().getBytes()[0]);
-            EXPECT_EQ(chd1.getDataBlock(), dataheaderbytes.popFirstBytes(len1).value());
-            EXPECT_EQ(ch2_mode, CHModes(dataheaderbytes.popFirstBytes(1).value().getBytes()[0]));
-            EXPECT_EQ(iters2, toLong(dataheaderbytes.popFirstBytes(8).value()));
-            EXPECT_EQ(len2, dataheaderbytes.popFirstBytes(1).value().getBytes()[0]);
-            EXPECT_EQ(chd2.getDataBlock(), dataheaderbytes.popFirstBytes(len2).value());
-            EXPECT_EQ(pval, dataheaderbytes.popFirstBytes(hash_size).value());
-            EXPECT_EQ(dp.enc_salt, dataheaderbytes.popFirstBytes(hash_size).value());
-            EXPECT_EQ(0, dataheaderbytes.getLen());
+            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dataheaderbytes.getLen());
+            EXPECT_EQ(file_mode, FModes(dataheaderbytes.copySubBytes(0,1).getBytes()[0]));
+            EXPECT_EQ(hash_mode, HModes(dataheaderbytes.copySubBytes(1,2).getBytes()[0]));
+            EXPECT_EQ(ch1_mode, CHModes(dataheaderbytes.copySubBytes(2,3).getBytes()[0]));
+            EXPECT_EQ(iters1, dataheaderbytes.copySubBytes(3,11).toLong());
+            EXPECT_EQ(chd1->getLen(), dataheaderbytes.copySubBytes(11,12).getBytes()[0]);
+            EXPECT_EQ(chd1->getDataBlock(), dataheaderbytes.copySubBytes(12,12 + chd1->getLen()));
+            EXPECT_EQ(ch2_mode, CHModes(dataheaderbytes.copySubBytes(12 + chd1->getLen(),13 + chd1->getLen()).getBytes()[0]));
+            EXPECT_EQ(iters2, dataheaderbytes.copySubBytes(13 + chd1->getLen(), 21 + chd1->getLen()).toLong());
+            EXPECT_EQ(chd2->getLen(), dataheaderbytes.copySubBytes(21 + chd1->getLen(), 22 + chd1->getLen()).getBytes()[0]);
+            EXPECT_EQ(chd2->getDataBlock(), dataheaderbytes.copySubBytes(22 + chd1->getLen(), 22 + chd1->getLen() + chd2->getLen()));
+            EXPECT_EQ(pval, dataheaderbytes.copySubBytes(22 + chd1->getLen() + chd2->getLen(), 22 + chd1->getLen() + chd2->getLen() + hash_size));
+            EXPECT_EQ(dp.getEncSalt(), dataheaderbytes.copySubBytes(22 + chd1->getLen() + chd2->getLen() + hash_size, 22 + chd1->getLen() + chd2->getLen() + 2*hash_size));
 
             // testing some edge cases
             // setting all data except valid hash or file mode
             DataHeader dh5{HModes(hash_mode)};
-            EXPECT_NO_THROW(dh5.setChainHash1(chainhash1, len1));
-            EXPECT_NO_THROW(dh5.setChainHash2(chainhash2, len2));
+            EXPECT_NO_THROW(dh5.setChainHash1(chainhash1));
+            EXPECT_NO_THROW(dh5.setChainHash2(chainhash2));
             DataHeader dh6{dh5};
             EXPECT_NO_THROW(dh5.setFileDataMode(file_mode));
-            EXPECT_THROW(dh5.calcHeaderBytes(Bytes(hash_size)), std::logic_error);
+            RNG::fill_random_bytes(hsb, hash_size);
+            EXPECT_THROW(dh5.calcHeaderBytes(hsb), std::logic_error);
             EXPECT_NO_THROW(dh6.setValidPasswordHashBytes(pval));
             EXPECT_THROW(dh6.calcHeaderBytes(phash), std::logic_error);
         }
