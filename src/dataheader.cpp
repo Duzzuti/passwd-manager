@@ -23,10 +23,10 @@ bool DataHeader::isComplete() const noexcept {
 
 unsigned int DataHeader::getHeaderLength() const noexcept {
     // gets the header len, if there is no header set try to calculate the len, else return 0
-    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                                                           // all data set to calculate the header length
+    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                                                             // all data set to calculate the header length
         return 22 + 2 * this->hash_size + this->dh.chainhash1.getChainHashData()->getLen() + this->dh.chainhash2.getChainHashData()->getLen();  // dataheader.md
-    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                                                  // header bytes are set, so we get this length
-    return 0;                                                                                                                                 // not enough infos to get the header length
+    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                                                    // header bytes are set, so we get this length
+    return 0;                                                                                                                                   // not enough infos to get the header length
 }
 
 int DataHeader::getHashSize() const noexcept {
@@ -37,7 +37,7 @@ int DataHeader::getHashSize() const noexcept {
 void DataHeader::setChainHash1(const ChainHash chainhash) {
     // sets the information about the first chainhash
     PLOG_VERBOSE << "setting chainhash1: " << chainhash;
-    if(!chainhash.valid()){
+    if (!chainhash.valid()) {
         PLOG_ERROR << "got invalid chainhash1: " << chainhash;
         throw std::invalid_argument("got invalid chainhash1");
     }
@@ -48,7 +48,7 @@ void DataHeader::setChainHash1(const ChainHash chainhash) {
 void DataHeader::setChainHash2(const ChainHash chainhash) {
     // sets the information about the second chainhash
     PLOG_VERBOSE << "setting chainhash2: " << chainhash;
-    if(!chainhash.valid()){
+    if (!chainhash.valid()) {
         PLOG_ERROR << "got invalid chainhash2: " << chainhash;
         throw std::invalid_argument("got invalid chainhash2");
     }
@@ -115,31 +115,31 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
     unsigned int len = this->getHeaderLength();
 
     Bytes dataheader = Bytes(len);
-    try{
+    try {
         dataheader.addByte(this->dh.getFileDataMode());     // add file mode byte
         dataheader.addByte(this->dh.getHashMode());         // add hash mode byte
         dataheader.addByte(this->dh.chainhash1.getMode());  // add first chainhash mode byte
         Bytes tmp = Bytes::fromLong(this->dh.chainhash1.getIters(), true);
-        tmp.addcopyToBytes(dataheader);                                                  // add iterations for the first chainhash
-        dataheader.addByte(this->dh.chainhash1.getChainHashData()->getLen());         // add datablock length byte
+        tmp.addcopyToBytes(dataheader);                                                     // add iterations for the first chainhash
+        dataheader.addByte(this->dh.chainhash1.getChainHashData()->getLen());               // add datablock length byte
         this->dh.chainhash1.getChainHashData()->getDataBlock().addcopyToBytes(dataheader);  // add first datablock
-        dataheader.addByte(this->dh.chainhash2.getMode());                           // add second chainhash mode
+        dataheader.addByte(this->dh.chainhash2.getMode());                                  // add second chainhash mode
         tmp = Bytes::fromLong(this->dh.chainhash2.getIters(), true);
-        tmp.addcopyToBytes(dataheader);                                                  // add iterations for the second chainhash
-        dataheader.addByte(this->dh.chainhash2.getChainHashData()->getLen());         // add datablock length byte
+        tmp.addcopyToBytes(dataheader);                                                     // add iterations for the second chainhash
+        dataheader.addByte(this->dh.chainhash2.getChainHashData()->getLen());               // add datablock length byte
         this->dh.chainhash2.getChainHashData()->getDataBlock().addcopyToBytes(dataheader);  // add second datablock
-        this->dh.getValidPasswordHash().addcopyToBytes(dataheader);                        // add password validator
+        this->dh.getValidPasswordHash().addcopyToBytes(dataheader);                         // add password validator
         // generate the salt with random bytes
         Bytes rand_salt(this->hash_size);
         rand_salt.fillrandom();
-        this->dh.setEncSalt(rand_salt);  // set the random generated encrypted salt
-        this->dh.getEncSalt().addcopyToBytes(dataheader);   // add encrypted salt
-    }catch(std::length_error& ex){
+        this->dh.setEncSalt(rand_salt);                    // set the random generated encrypted salt
+        this->dh.getEncSalt().addcopyToBytes(dataheader);  // add encrypted salt
+    } catch (std::length_error& ex) {
         // trying to add more bytes than previously calculated
         PLOG_ERROR << "trying to add more bytes to the header than previously calculated (error msg: " << ex.what() << ")";
         throw std::logic_error("trying to add more bytes to the header than previously calculated");
     }
-    if (dataheader.getLen() != len) {             // checks if the length is equal to the expected length
+    if (dataheader.getLen() != len) {  // checks if the length is equal to the expected length
         PLOG_FATAL << "calculated header has not the expected length (expected: " << +len << ", actual: " << +dataheader.getLen() << ")";
         throw std::logic_error("calculated header has not the expected length");
     }
@@ -163,7 +163,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
-    u_int16_t index = 0;    // index of the current byte
+    u_int16_t index = 0;  // index of the current byte
     try {
         // loading file mode
         fmode = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
@@ -304,16 +304,16 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
                 index += (ch1datablocklen - data_len);
                 break;
             }
-            
+
         } catch (const std::length_error& ex) {
-            if(!copied){
+            if (!copied) {
                 // copySubBytes failed because the length is reached
                 PLOG_ERROR << "not enough data to read the chainhash data block 1 (error msg: " << ex.what() << ")";
                 err.errorCode = ERR_NOT_ENOUGH_DATA;
                 err.errorInfo = "Chainhash data block 1";
                 err.what = ex.what();
                 return err;
-            }else{
+            } else {
                 // adding to much bytes
                 PLOG_ERROR << "adding to much bytes to the chainhash data block 1 (error msg: " << ex.what() << ")";
                 err.errorCode = ERR_CHAINHASH_DATABLOCK_OUTOFRANGE;
@@ -456,16 +456,16 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
                 index += (ch2datablocklen - data_len);
                 break;
             }
-            
+
         } catch (const std::length_error& ex) {
-            if(!copied){
+            if (!copied) {
                 // popFirstBytes returned an empty optional
                 PLOG_ERROR << "not enough data to read the chainhash data block 2 (error msg: " << ex.what() << ")";
                 err.errorCode = ERR_NOT_ENOUGH_DATA;
                 err.errorInfo = "Chainhash data block 2";
                 err.what = ex.what();
                 return err;
-            }else{
+            } else {
                 // adding to much bytes
                 PLOG_ERROR << "adding to much bytes to the chainhash data block 2 (error msg: " << ex.what() << ")";
                 err.errorCode = ERR_CHAINHASH_DATABLOCK_OUTOFRANGE;
@@ -583,13 +583,13 @@ ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts& dhp) n
     ErrorStruct<DataHeader> err{FAIL, ERR, ""};
     try {
         // these methods throw exceptions if the data is invalid
-        DataHeader dh{dhp.getHashMode()};                                              // setting the hash mode
-        dh.setFileDataMode(dhp.getFileDataMode());                                     // setting the file data mode
-        dh.setChainHash1(dhp.chainhash1);                                              // setting the chainhash 1
-        dh.setChainHash2(dhp.chainhash2);                                              // setting the chainhash 2
-        dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());                      // setting the password validator hash
-        if (dhp.isEncSaltSet())                                                        // enc salt is not necessary
-            dh.setEncSalt(dhp.getEncSalt());                                           // setting the encrypted salt
+        DataHeader dh{dhp.getHashMode()};                          // setting the hash mode
+        dh.setFileDataMode(dhp.getFileDataMode());                 // setting the file data mode
+        dh.setChainHash1(dhp.chainhash1);                          // setting the chainhash 1
+        dh.setChainHash2(dhp.chainhash2);                          // setting the chainhash 2
+        dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());  // setting the password validator hash
+        if (dhp.isEncSaltSet())                                    // enc salt is not necessary
+            dh.setEncSalt(dhp.getEncSalt());                       // setting the encrypted salt
 
         // success
         err.setReturnValue(dh);

@@ -121,8 +121,7 @@ struct DataHeaderParts {
     bool isComplete(const unsigned char hash_size) const noexcept {
         // checks if everything is set correctly
         try {
-            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && 
-                this->isHashModeSet() && this->getHashSize() == hash_size)
+            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->isHashModeSet() && this->getHashSize() == hash_size)
                 return true;  // everything is set correctly
         } catch (std::exception& e) {
             PLOG_WARNING << "isComplete thrown: " << e.what();
@@ -492,9 +491,9 @@ class DataHeader {
     more information about the header: docs/dataheader.md
     */
    private:
-    DataHeaderParts dh;       // saves every part of the header
-    unsigned char hash_size;  // the size of the hash provided by the hash function (in Bytes)
-    Bytes header_bytes = Bytes(MAX_HEADER_SIZE);       // bytes that are in the header
+    DataHeaderParts dh;                           // saves every part of the header
+    unsigned char hash_size;                      // the size of the hash provided by the hash function (in Bytes)
+    Bytes header_bytes = Bytes(MAX_HEADER_SIZE);  // bytes that are in the header
 
    private:
     // checks if all data is set correctly
