@@ -1333,6 +1333,78 @@ TEST(BytesClass, fromLong) {
     EXPECT_NO_THROW(Bytes b17 = Bytes::fromLong(l17));
 }
 
+TEST(BytesClass, fromLongaddzeros) {
+    u_int64_t l1 = 0;
+    Bytes b1 = Bytes::fromLong(l1, true);
+    EXPECT_EQ(8, b1.getLen());
+    EXPECT_EQ(8, b1.getMaxLen());
+    EXPECT_EQ(0, b1.toLong());
+
+    u_int64_t l2 = 0xad;
+    Bytes b2 = Bytes::fromLong(l2, true);
+    EXPECT_EQ(8, b2.getLen());
+    EXPECT_EQ(8, b2.getMaxLen());
+    EXPECT_EQ(0xad, b2.toLong());
+
+    u_int64_t l3 = 0xadac;
+    Bytes b3 = Bytes::fromLong(l3, true);
+    EXPECT_EQ(8, b3.getLen());
+    EXPECT_EQ(8, b3.getMaxLen());
+    EXPECT_EQ(0xadac, b3.toLong());
+
+    u_int64_t l4 = 0xadacab;
+    Bytes b4 = Bytes::fromLong(l4, true);
+    EXPECT_EQ(8, b4.getLen());
+    EXPECT_EQ(8, b4.getMaxLen());
+    EXPECT_EQ(0xadacab, b4.toLong());
+
+    u_int64_t l5 = 0x00ac00aa;
+    Bytes b5 = Bytes::fromLong(l5, true);
+    EXPECT_EQ(8, b5.getLen());
+    EXPECT_EQ(8, b5.getMaxLen());
+    EXPECT_EQ(0xac00aa, b5.toLong());
+
+    u_int64_t l6 = 0x0000001122;
+    Bytes b6 = Bytes::fromLong(l6, true);
+    EXPECT_EQ(8, b6.getLen());
+    EXPECT_EQ(8, b6.getMaxLen());
+    EXPECT_EQ(0x1122, b6.toLong());
+
+    u_int64_t l7 = 0x450000001122;
+    Bytes b7 = Bytes::fromLong(l7, true);
+    EXPECT_EQ(8, b7.getLen());
+    EXPECT_EQ(8, b7.getMaxLen());
+    EXPECT_EQ(0x450000001122, b7.toLong());
+
+    u_int64_t l8 = 0x00ffffffffffff;
+    Bytes b8 = Bytes::fromLong(l8, true);
+    EXPECT_EQ(8, b8.getLen());
+    EXPECT_EQ(8, b8.getMaxLen());
+    EXPECT_EQ(0xffffffffffff, b8.toLong());
+
+    u_int64_t l9 = 0xfffefdfcfbfaf9f8;
+    Bytes b9 = Bytes::fromLong(l9, true);
+    EXPECT_EQ(8, b9.getLen());
+    EXPECT_EQ(8, b9.getMaxLen());
+    EXPECT_EQ(0xfffefdfcfbfaf9f8, b9.toLong());
+
+    u_int64_t l10 = 0xfffefdfcfbfaf9f;
+    Bytes b10 = Bytes::fromLong(l10, true);
+    EXPECT_EQ(8, b10.getLen());
+    EXPECT_EQ(8, b10.getMaxLen());
+    EXPECT_EQ(0xfffefdfcfbfaf9f, b10.toLong());
+
+    // exception checks
+    u_int64_t l15 = 0x00fffefdfcfbfaf9f8;
+    EXPECT_NO_THROW(Bytes b15 = Bytes::fromLong(l15, true));
+
+    u_int64_t l16 = 0x0fffefdfcfbfaf9f;
+    EXPECT_NO_THROW(Bytes b16 = Bytes::fromLong(l16, true));
+
+    u_int64_t l17 = 0x0fffefdfcfbfaf9f8;
+    EXPECT_NO_THROW(Bytes b17 = Bytes::fromLong(l17, true));
+}
+
 TEST(BytesClass, equal) {
     Bytes b1(10);
     Bytes b2(8);
