@@ -5,7 +5,7 @@
 #include "logger.h"
 #include "rng.h"
 
-Bytes Bytes::fromLong(const u_int64_t l) {
+Bytes Bytes::fromLong(const u_int64_t l, const bool addzeros) {
     // sets the Bytes to the decimal representation of the given long
     Bytes res(8);
     unsigned char reversedBytes[8];
@@ -13,6 +13,8 @@ Bytes Bytes::fromLong(const u_int64_t l) {
     for (size_t i = 0; i < 8; ++i) {
         if (!res.isEmpty() || reversedBytes[7 - i] != 0) {
             res.addByte(reversedBytes[7 - i]);
+        } else if (addzeros) {
+            res.addByte(0);
         }
     }
     return res;

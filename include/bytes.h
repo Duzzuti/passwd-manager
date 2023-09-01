@@ -15,7 +15,7 @@ class Bytes {
     bool deallocate = true;  // if the bytes array should be deallocated when the object is destroyed
 
    public:
-    static Bytes fromLong(const u_int64_t l);  // sets the Bytes to the decimal representation of the given long
+    static Bytes fromLong(const u_int64_t l, const bool addzeros = false);  // sets the Bytes to the decimal representation of the given long
 
     Bytes(const int max_len);                                        // creates an empty byte array with a given maximum length
     Bytes(unsigned char* bytes, const size_t len);                   // creates a Bytes object with the given bytes and length (consumes the array)
