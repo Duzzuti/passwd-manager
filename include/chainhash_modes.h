@@ -100,7 +100,7 @@ struct ChainHash {
    public:
     ChainHash& operator=(const ChainHash& ch) {
         this->_setMode(ch.getMode());
-        this->_setIters(iters);
+        this->_setIters(ch.getIters());
         this->datablock = ch.datablock;
         this->isValid();
         return *this;

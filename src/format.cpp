@@ -22,7 +22,7 @@ std::string Format::getFormatString(const CHModes& chainhash_mode) const {
             return "8B SN 8B A 8B B 8B C";
         default:  // invalid chainhash mode, should not throw
             PLOG_FATAL << "invalid chainhash mode, implementation missing (chainhash_mode: " << chainhash_mode << ")";
-            throw std::invalid_argument("invalid chainhash mode");
+            return "error type";
     }
 }
 
@@ -41,7 +41,7 @@ std::vector<NameLen> Format::calcNameLenList(const CHModes& chainhash_mode) cons
             return std::vector<NameLen>{NameLen{"SN", 8}, NameLen{"A", 8}, NameLen{"B", 8}, NameLen{"C", 8}};
         default:  // invalid chainhash mode, should not throw
             PLOG_FATAL << "invalid chainhash mode, implementation missing (chainhash_mode: " << chainhash_mode << ")";
-            throw std::invalid_argument("invalid chainhash mode");
+            return std::vector<NameLen>();
     }
 }
 
