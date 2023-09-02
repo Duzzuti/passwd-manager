@@ -66,7 +66,7 @@ class BlockChain {
             this->salt = enc_salt;
             this->hashObj = std::move(hashObj);
         }
-        Bytes next(Bytes last_block_hash = Bytes(0)) {
+        Bytes next(Bytes last_block_hash = Bytes(255)) {
             // generates the next salt with the last block hash
             if (this->first) {
                 // if this is the first block, the last_block_hash is set to 0

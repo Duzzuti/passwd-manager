@@ -12,7 +12,7 @@ void BlockChain::addData(const Bytes& data) noexcept {
     while (true) {
         // get the data that can be added on the last block to complete it
         // it is the minimum of the free space in the last block and the length of the remaining data
-        Bytes data_part = data.copySubBytes(written, std::min<int>(this->getFreeSpaceInLastBlock(), data.getLen() - written));
+        Bytes data_part = data.copySubBytes(written, written + std::min<int>(this->getFreeSpaceInLastBlock(), data.getLen() - written));
         written += data_part.getLen();
         this->chain.back()->addData(data_part);
         // add a new block if data is left
