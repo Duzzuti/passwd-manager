@@ -17,15 +17,17 @@ void filing(std::string op, u_int64_t iters, u_int64_t avg, u_int64_t slowest) {
 
 TEST(DataHeader, calcHeaderBytes_sha256) {
     Timer timer;
-    ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
-    ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
-    chd1.generateRandomData();
-    chd2.generateRandomData();
+    std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    std::shared_ptr<ChainHashData> chd2 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    chd1->generateRandomData();
+    chd2->generateRandomData();
     DataHeader header{HASHMODE_SHA256};
     header.setFileDataMode(FILEMODE_PASSWORD);
-    header.setValidPasswordHashBytes(Bytes(32));
-    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
-    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
+    Bytes bytes(32);
+    bytes.fillrandom();
+    header.setValidPasswordHashBytes(bytes);
+    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1});
+    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2});
     timer.start();
     for (int i = 0; i < ITERS; i++) {
         header.calcHeaderBytes();
@@ -36,15 +38,17 @@ TEST(DataHeader, calcHeaderBytes_sha256) {
 
 TEST(DataHeader, setHeaderBytes_sha256) {
     Timer timer;
-    ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
-    ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
-    chd1.generateRandomData();
-    chd2.generateRandomData();
+    std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    std::shared_ptr<ChainHashData> chd2 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    chd1->generateRandomData();
+    chd2->generateRandomData();
     DataHeader header{HASHMODE_SHA256};
     header.setFileDataMode(FILEMODE_PASSWORD);
-    header.setValidPasswordHashBytes(Bytes(32));
-    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
-    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
+    Bytes bytes(32);
+    bytes.fillrandom();
+    header.setValidPasswordHashBytes(bytes);
+    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1});
+    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2});
     header.calcHeaderBytes();
     Bytes headerBytes = header.getHeaderBytes();
     timer.start();
@@ -58,15 +62,17 @@ TEST(DataHeader, setHeaderBytes_sha256) {
 
 TEST(DataHeader, calcHeaderBytes_sha384) {
     Timer timer;
-    ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
-    ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
-    chd1.generateRandomData();
-    chd2.generateRandomData();
+    std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    std::shared_ptr<ChainHashData> chd2 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    chd1->generateRandomData();
+    chd2->generateRandomData();
     DataHeader header{HASHMODE_SHA384};
     header.setFileDataMode(FILEMODE_PASSWORD);
-    header.setValidPasswordHashBytes(Bytes(48));
-    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
-    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
+    Bytes bytes(48);
+    bytes.fillrandom();
+    header.setValidPasswordHashBytes(bytes);
+    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1});
+    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2});
     timer.start();
     for (int i = 0; i < ITERS; i++) {
         header.calcHeaderBytes();
@@ -77,15 +83,17 @@ TEST(DataHeader, calcHeaderBytes_sha384) {
 
 TEST(DataHeader, setHeaderBytes_sha384) {
     Timer timer;
-    ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
-    ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
-    chd1.generateRandomData();
-    chd2.generateRandomData();
+    std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    std::shared_ptr<ChainHashData> chd2 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    chd1->generateRandomData();
+    chd2->generateRandomData();
     DataHeader header{HASHMODE_SHA384};
     header.setFileDataMode(FILEMODE_PASSWORD);
-    header.setValidPasswordHashBytes(Bytes(48));
-    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
-    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
+    Bytes bytes(48);
+    bytes.fillrandom();
+    header.setValidPasswordHashBytes(bytes);
+    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1});
+    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2});
     header.calcHeaderBytes();
     Bytes headerBytes = header.getHeaderBytes();
     timer.start();
@@ -99,15 +107,17 @@ TEST(DataHeader, setHeaderBytes_sha384) {
 
 TEST(DataHeader, calcHeaderBytes_sha512) {
     Timer timer;
-    ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
-    ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
-    chd1.generateRandomData();
-    chd2.generateRandomData();
+    std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    std::shared_ptr<ChainHashData> chd2 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    chd1->generateRandomData();
+    chd2->generateRandomData();
     DataHeader header{HASHMODE_SHA512};
     header.setFileDataMode(FILEMODE_PASSWORD);
-    header.setValidPasswordHashBytes(Bytes(64));
-    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
-    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
+    Bytes bytes(64);
+    bytes.fillrandom();
+    header.setValidPasswordHashBytes(bytes);
+    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1});
+    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2});
     timer.start();
     for (int i = 0; i < ITERS; i++) {
         header.calcHeaderBytes();
@@ -118,15 +128,17 @@ TEST(DataHeader, calcHeaderBytes_sha512) {
 
 TEST(DataHeader, setHeaderBytes_sha512) {
     Timer timer;
-    ChainHashData chd1{Format{CHAINHASH_QUADRATIC}};
-    ChainHashData chd2{Format{CHAINHASH_QUADRATIC}};
-    chd1.generateRandomData();
-    chd2.generateRandomData();
+    std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    std::shared_ptr<ChainHashData> chd2 = std::make_shared<ChainHashData>(Format{CHAINHASH_QUADRATIC});
+    chd1->generateRandomData();
+    chd2->generateRandomData();
     DataHeader header{HASHMODE_SHA512};
     header.setFileDataMode(FILEMODE_PASSWORD);
-    header.setValidPasswordHashBytes(Bytes(64));
-    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1}, chd1.getLen());
-    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2}, chd2.getLen());
+    Bytes bytes(64);
+    bytes.fillrandom();
+    header.setValidPasswordHashBytes(bytes);
+    header.setChainHash1(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd1});
+    header.setChainHash2(ChainHash{CHAINHASH_QUADRATIC, HASHITERS, chd2});
     header.calcHeaderBytes();
     Bytes headerBytes = header.getHeaderBytes();
     timer.start();
