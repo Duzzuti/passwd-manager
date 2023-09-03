@@ -15,7 +15,7 @@ struct FileDataStruct {
     std::optional<FModes> file_mode;
 
    public:
-    Bytes dec_data;
+    Bytes dec_data = Bytes(0);
 
     FileDataStruct() = default;
     FileDataStruct(FModes file_mode, Bytes dec_data) {
