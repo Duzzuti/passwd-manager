@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <fstream>
 
 #include "bytes.h"
 #include "chainhash_modes.h"
@@ -519,6 +520,7 @@ class DataHeader {
     // creates a new DataHeader object with the given header bytes
     // after this call the fileBytes are the data that is not part of the header
     static ErrorStruct<DataHeader> setHeaderBytes(Bytes& fileBytes) noexcept;
+    static ErrorStruct<DataHeader> setHeaderBytes(std::ifstream& file) noexcept;
     // creates a new DataHeader object with the given data header parts
     static ErrorStruct<DataHeader> setHeaderParts(const DataHeaderParts& dhp) noexcept;
 

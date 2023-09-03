@@ -578,6 +578,434 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     return err;
 }
 
+ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept {
+    // sets the header bytes by taking the first bytes of the file
+    // init error struct
+    auto start = file.tellg();
+    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes"};
+    // setting the header parts
+    //********************* FILEMODE *********************
+    unsigned char fmode;
+    // loading file mode
+    if(file.readsome(reinterpret_cast<char*>(&fmode), 1) != 1){
+        // readsome could not read the file mode
+        PLOG_ERROR << "not enogh data to read the file mode";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "File mode";
+        return err;
+    }
+
+    // ********************* HASH FUNCTION *********************
+    unsigned char hmode;
+    
+    // loading and setting hash mode
+    if(file.readsome(reinterpret_cast<char*>(&hmode), 1) != 1){
+        // readsome could not read the hash mode
+        PLOG_ERROR << "not enogh data to read the hash mode";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Hash mode";
+        return err;
+    }
+    try {
+        err.setReturnValue(DataHeader(HModes(hmode)));
+    } catch (const std::invalid_argument& ex) {
+        // the hash mode is invalid
+        PLOG_ERROR << "invalid hash mode found in data (hash_mode: " << +hmode << ") (error msg: " << ex.what() << ")";
+        err.errorCode = ERR_HASHMODE_INVALID;
+        err.errorInfo = hmode;
+        err.what = ex.what();
+        return err;
+    }
+
+    // setting the file data mode
+    try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
+        DataHeader& dh = err.returnRef();
+        err.success = FAIL;
+        dh.setFileDataMode(FModes(fmode));
+    } catch (const std::invalid_argument& ex) {
+        // the file mode is invalid
+        PLOG_ERROR << "invalid file mode found in data (file_mode: " << +fmode << ") (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR_FILEMODE_INVALID;
+        err.errorInfo = fmode;
+        err.what = ex.what();
+        return err;
+    }
+
+    // ********************* CHAINHASH1 *********************
+    std::shared_ptr<Format> format1 = nullptr;
+    std::shared_ptr<ChainHashData> chd1 = nullptr;
+    unsigned char ch1mode;
+    // loading and setting chainhash1 mode
+    if(file.readsome(reinterpret_cast<char*>(&ch1mode), 1) != 1){
+        // readsome could not read the hash mode
+        PLOG_ERROR << "not enogh data to read the chainhash1 mode";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Chainhash1 mode";
+        return err;
+    }
+    try {
+        format1 = std::make_shared<Format>(CHModes(ch1mode));
+        chd1 = std::make_shared<ChainHashData>(*format1);
+    } catch (const std::invalid_argument& ex) {
+        // the chainhash mode is invalid
+        PLOG_ERROR << "invalid chainhash mode 1 found in data (chainhash_mode 1: " << +ch1mode << ") (error msg: " << ex.what() << ")";
+        err.errorCode = ERR_CHAINHASHMODE_FORMAT_INVALID;
+        err.errorInfo = ch1mode;
+        err.what = ex.what();
+        return err;
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while setting up the format1 and chainhashdata1 (error msg: " << ex.what() << ")";
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while setting up the format1 and chainhashdata1";
+        err.what = ex.what();
+        return err;
+    }
+    // chainhash 1 iters
+    u_int64_t ch1iters;
+    Bytes tmp{8};
+    // loading and chainhash1 iters
+    if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8){
+        // readsome could not read the chainhash1 iters
+        PLOG_ERROR << "not enogh data to read the chainhash1 iters";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Chainhash1 iters";
+        return err;
+    }
+    try{
+        tmp.setLen(8);
+        ch1iters = tmp.toLong();
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while reading the chainhash iters 1 (error msg: " << ex.what() << ")";
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while reading the chainhash iters 1";
+        err.what = ex.what();
+        return err;
+    }
+    // chainhash 1 data block len
+    unsigned char ch1datablocklen;
+    // loading and chainhash1 blocklen
+    if(file.readsome(reinterpret_cast<char*>(&ch1datablocklen), 1) != 1){
+        // readsome could not read the chainhash1 blocklen
+        PLOG_ERROR << "not enogh data to read the chainhash1 blocklen";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Chainhash1 blocklen";
+        return err;
+    }
+    // chainhash 1 data block
+    int data_len = 0;
+    bool copied = false;
+    tmp = Bytes(255);
+    for (NameLen nl : format1->getNameLenList()) {
+        try {
+            bool copied = false;
+            if (nl.len != 0) {
+                // got a data part with set length
+                if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), nl.len) != nl.len){
+                    throw std::length_error("not enough data to read the chainhash data block 1");
+                }
+                tmp.setLen(nl.len);
+                copied = true;
+                chd1->addBytes(tmp);
+                data_len += nl.len;
+            } else {
+                // got a data parCHModest with * length (use the remaining bytes)
+                if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), ch1datablocklen - data_len) != ch1datablocklen - data_len){
+                    throw std::length_error("not enough data to read the chainhash data block 1");
+                }
+                tmp.setLen(ch1datablocklen - data_len);
+                copied = true;
+                chd1->addBytes(tmp);
+                data_len = ch1datablocklen;
+                break;
+            }
+
+        } catch (const std::length_error& ex) {
+            if (!copied) {
+                // readsome could not read the chainhash1 block
+                PLOG_ERROR << "not enough data to read the chainhash data block 1";
+                err.errorCode = ERR_NOT_ENOUGH_DATA;
+                err.errorInfo = "Chainhash data block 1";
+                return err;
+            } else {
+                // adding to much bytes
+                PLOG_ERROR << "adding to much bytes to the chainhash data block 1 (error msg: " << ex.what() << ")";
+                err.errorCode = ERR_CHAINHASH_DATABLOCK_OUTOFRANGE;
+                err.errorInfo = tmp.toHex();
+                err.what = ex.what();
+                return err;
+            }
+        } catch (const std::invalid_argument& ex) {
+            // the bytes have the wrong len
+            PLOG_ERROR << "invalid format of the chainhash data block 1 (error msg: " << ex.what() << ")";
+            err.errorCode = ERR_CHAINHASH_DATAPART_INVALID;
+            err.errorInfo = tmp.toHex();
+            err.what = ex.what();
+            return err;
+        } catch (const std::logic_error& ex) {
+            // adding but its completed
+            PLOG_ERROR << "adding bytes to the chainhash data block 1 but its already completed (error msg: " << ex.what() << ")";
+            err.errorCode = ERR_CHAINHASH_DATABLOCK_ALREADY_COMPLETED;
+            err.errorInfo = tmp.toHex();
+            err.what = ex.what();
+            return err;
+        } catch (const std::exception& ex) {
+            // some other error occurred
+            PLOG_ERROR << "An error occurred while reading the chainhash data block 1 (error msg: " << ex.what() << ")";
+            err.errorCode = ERR;
+            err.errorInfo = "An error occurred while reading the chainhash data block 1";
+            err.what = ex.what();
+            return err;
+        }
+    }
+    assert(chd1->getLen() == ch1datablocklen);
+    assert(data_len == ch1datablocklen);
+    // chainhash 1
+    try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
+        DataHeader& dh = err.returnRef();
+        err.success = FAIL;
+        dh.setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1});
+    } catch (const std::invalid_argument& ex) {
+        // the chainhash is invalid
+        PLOG_ERROR << "invalid chainhash 1 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR_CHAINHASH1_INVALID;
+        err.what = ex.what();
+        return err;
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while setting the chainhash 1 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while setting the chainhash data block 1";
+        err.what = ex.what();
+        return err;
+    }
+
+    // ********************* CHAINHASH2 *********************
+    std::shared_ptr<Format> format2 = nullptr;
+    std::shared_ptr<ChainHashData> chd2 = nullptr;
+    unsigned char ch2mode;
+    // loading and setting chainhash2 mode
+    if(file.readsome(reinterpret_cast<char*>(&ch2mode), 1) != 1){
+        // readsome could not read the hash mode
+        PLOG_ERROR << "not enogh data to read the chainhash2 mode";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Chainhash2 mode";
+        return err;
+    }
+    try {
+        format2 = std::make_shared<Format>(CHModes(ch2mode));
+        chd2 = std::make_shared<ChainHashData>(*format2);
+    } catch (const std::invalid_argument& ex) {
+        // the chainhash mode is invalid
+        PLOG_ERROR << "invalid chainhash mode 2 found in data (chainhash_mode 2: " << +ch2mode << ") (error msg: " << ex.what() << ")";
+        err.errorCode = ERR_CHAINHASHMODE_FORMAT_INVALID;
+        err.errorInfo = ch2mode;
+        err.what = ex.what();
+        return err;
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while reading the chainhash mode 2 (error msg: " << ex.what() << ")";
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while reading the chainhash mode 2";
+        err.what = ex.what();
+        return err;
+    }
+    // chainhash 2 iters
+    u_int64_t ch2iters;
+    tmp = Bytes(8);
+    // loading and chainhash2 iters
+    if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8){
+        // readsome could not read the chainhash2 iters
+        PLOG_ERROR << "not enogh data to read the chainhash2 iters";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Chainhash2 iters";
+        return err;
+    }
+    try{
+        tmp.setLen(8);
+        ch2iters = tmp.toLong();
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while reading the chainhash iters 2 (error msg: " << ex.what() << ")";
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while reading the chainhash iters 2";
+        err.what = ex.what();
+        return err;
+    }
+    // chainhash 2 data block len
+    unsigned char ch2datablocklen;
+    // loading and chainhash1 blocklen
+    if(file.readsome(reinterpret_cast<char*>(&ch2datablocklen), 1) != 1){
+        // readsome could not read the chainhash2 blocklen
+        PLOG_ERROR << "not enogh data to read the chainhash2 blocklen";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Chainhash2 blocklen";
+        return err;
+    }
+    // chainhash 2 data block
+    data_len = 0;
+    copied = false;
+    for (NameLen nl : format2->getNameLenList()) {
+        try {
+            bool copied = false;
+            if (nl.len != 0) {
+                // got a data part with set length
+                if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), nl.len) != nl.len){
+                    throw std::length_error("not enough data to read the chainhash data block 2");
+                }
+                tmp.setLen(nl.len);
+                copied = true;
+                chd2->addBytes(tmp);
+                data_len += nl.len;
+            } else {
+                // got a data parCHModest with * length (use the remaining bytes)
+                if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), ch2datablocklen - data_len) != ch2datablocklen - data_len){
+                    throw std::length_error("not enough data to read the chainhash data block 2");
+                }
+                tmp.setLen(ch2datablocklen - data_len);
+                copied = true;
+                chd2->addBytes(tmp);
+                data_len = ch2datablocklen;
+                break;
+            }
+
+        } catch (const std::length_error& ex) {
+            if (!copied) {
+                // popFirstBytes returned an empty optional
+                PLOG_ERROR << "not enough data to read the chainhash data block 2 (error msg: " << ex.what() << ")";
+                err.errorCode = ERR_NOT_ENOUGH_DATA;
+                err.errorInfo = "Chainhash data block 2";
+                err.what = ex.what();
+                return err;
+            } else {
+                // adding to much bytes
+                PLOG_ERROR << "adding to much bytes to the chainhash data block 2 (error msg: " << ex.what() << ")";
+                err.errorCode = ERR_CHAINHASH_DATABLOCK_OUTOFRANGE;
+                err.errorInfo = tmp.toHex();
+                err.what = ex.what();
+                return err;
+            }
+        } catch (const std::invalid_argument& ex) {
+            // the bytes have the wrong len
+            PLOG_ERROR << "invalid format of the chainhash data block 2 (error msg: " << ex.what() << ")";
+            err.errorCode = ERR_CHAINHASH_DATAPART_INVALID;
+            err.errorInfo = tmp.toHex();
+            err.what = ex.what();
+            return err;
+        } catch (const std::logic_error& ex) {
+            // adding but its completed
+            PLOG_ERROR << "adding bytes to the chainhash data block 2 but its already completed (error msg: " << ex.what() << ")";
+            err.errorCode = ERR_CHAINHASH_DATABLOCK_ALREADY_COMPLETED;
+            err.errorInfo = tmp.toHex();
+            err.what = ex.what();
+            return err;
+        } catch (const std::exception& ex) {
+            // some other error occurred
+            PLOG_ERROR << "An error occurred while reading the chainhash data block 2 (error msg: " << ex.what() << ")";
+            err.errorCode = ERR;
+            err.errorInfo = "An error occurred while reading the chainhash data block 2";
+            err.what = ex.what();
+            return err;
+        }
+    }
+    assert(chd2->getLen() == ch2datablocklen);
+    assert(data_len == ch2datablocklen);
+    // chainhash 2
+    try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
+        DataHeader& dh = err.returnRef();
+        err.success = FAIL;
+        dh.setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2});
+    } catch (const std::invalid_argument& ex) {
+        // the chainhash is invalid
+        PLOG_ERROR << "invalid chainhash 2 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR_CHAINHASH2_INVALID;
+        err.what = ex.what();
+        return err;
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while setting the chainhash 2 (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while setting the chainhash data block 2";
+        err.what = ex.what();
+        return err;
+    }
+
+    // password validator hash
+    try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
+        DataHeader& dh = err.returnRef();
+        err.success = FAIL;
+        Bytes tmp = Bytes(dh.hash_size);
+        if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh.hash_size) != dh.hash_size){
+            // readsome could not read the password validator hash
+            PLOG_ERROR << "not enogh data to read the password validator hash";
+            err.errorCode = ERR_NOT_ENOUGH_DATA;
+            err.errorInfo = "Password validator hash";
+            return err;
+        }
+        tmp.setLen(dh.hash_size);
+        dh.setValidPasswordHashBytes(tmp);
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while setting and reading the password validator hash (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while setting and reading the password validator hash";
+        err.what = ex.what();
+        return err;
+    }
+
+    // encrypted salt
+    try {
+        err.success = SUCCESS;
+        // need to set to success to access the return value
+        DataHeader& dh = err.returnRef();
+        err.success = FAIL;
+        Bytes tmp = Bytes(dh.hash_size);
+        if(file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh.hash_size) != dh.hash_size){
+            // readsome could not read the encrypted salt
+            PLOG_ERROR << "not enogh data to read the encrypted salt";
+            err.errorCode = ERR_NOT_ENOUGH_DATA;
+            err.errorInfo = "Encrypted salt";
+            return err;
+        }
+        tmp.setLen(dh.hash_size);
+        dh.setEncSalt(tmp);
+    } catch (const std::length_error& ex) {
+        // copySubBytes failed because the length is reached
+        PLOG_ERROR << "not enough data to read the salt hash (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Password salt hash";
+        err.what = ex.what();
+        return err;
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while setting and reading the salt hash (error msg: " << ex.what() << ")";
+        err.success = FAIL;
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while setting and reading the salt hash";
+        err.what = ex.what();
+        return err;
+    }
+    assert(start - file.tellg() == err.returnRef().getHeaderLength());
+    err.success = SUCCESS;
+    return err;
+}
+
 ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts& dhp) noexcept {
     // creating a new header by setting the header parts
     ErrorStruct<DataHeader> err{FAIL, ERR, ""};
