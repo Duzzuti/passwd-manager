@@ -1,7 +1,7 @@
 #pragma once
 
-#include <optional>
 #include <fstream>
+#include <optional>
 
 #include "bytes.h"
 #include "chainhash_modes.h"
