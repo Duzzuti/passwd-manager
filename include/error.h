@@ -53,13 +53,38 @@ enum ErrorCode {
 // used in a function that could fail, it returns a success type, a value and an error message
 template <typename T>
 struct ErrorStruct {
+   private:
+    bool moved = false;                      // true if the value was moved
+    bool input_moved = false;                // true if the input value was moved into the struct
+   public:
     SuccessType success = FAIL;              // true if the operation was successful
     ErrorCode errorCode = NO_ERROR_WAS_SET;  // error code
     std::string errorInfo;                   // some specific data about the error can be stored here
     std::string what;                        // throw message
 
+   static ErrorStruct<T> createMove(T&& value) {
+        // returns a successful ErrorStruct
+        ErrorStruct<T> err;
+        err.success = SUCCESS;
+        err.errorCode = NO_ERR;
+        err.errorInfo = "";
+        err.what = "";
+        err.returnvalue = std::move(value);
+        err.moved = false;
+        err.input_moved = true;
+        return err;
+    };
+
     // constructors
-    ErrorStruct() = default;
+    ErrorStruct(){
+        // default constructor
+        success = FAIL;
+        errorCode = NO_ERROR_WAS_SET;
+        errorInfo = "";
+        what = "";
+        moved = false;
+        input_moved = false;
+    };
     ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo, std::string what, T returnvalue)
         : success(success), errorCode(errorCode), errorInfo(errorInfo), what(what), returnvalue(returnvalue){};
     ErrorStruct(SuccessType success, ErrorCode errorCode, std::string errorInfo) : success(success), errorCode(errorCode), errorInfo(errorInfo){};
@@ -70,6 +95,14 @@ struct ErrorStruct {
     T returnValue() {
         // returns by value
         // you cannot access the return value if the function failed
+        if(moved){
+            PLOG_FATAL << "Cannot access the return value, because the value was moved.";
+            throw std::logic_error("Cannot access the return value, because the value was moved.");
+        }
+        if(input_moved){
+            PLOG_FATAL << "Cannot access the return value, because the input value was moved into the struct. Try using returnRef() or returnMove() instead";
+            throw std::logic_error("Cannot access the return value, because the input value was moved into the struct. Try using returnRef() or returnMove() instead");
+        }
         if (!isSuccess()) {
             PLOG_FATAL << "Cannot access the return value, because the struct is not successful";
             throw std::logic_error("Cannot access the return value, because the struct is not successful");
@@ -83,6 +116,10 @@ struct ErrorStruct {
     T& returnRef() {
         // returns by reference
         // you cannot access the return value if the function failed
+        if(moved){
+            PLOG_FATAL << "Cannot access the return value, because the value was moved.";
+            throw std::logic_error("Cannot access the return value, because the value was moved.");
+        }
         if (!isSuccess()) {
             PLOG_FATAL << "Cannot access the return value, because the struct is not successful";
             throw std::logic_error("Cannot access the return value, because the struct is not successful");
@@ -92,6 +129,20 @@ struct ErrorStruct {
             throw std::logic_error("Return value is not set");
         }
         return returnvalue.value();
+    };
+    T&& returnMove(){
+        // returns by move
+        // you cannot access the return value if the function failed
+        if (!isSuccess()) {
+            PLOG_FATAL << "Cannot access the return value, because the struct is not successful";
+            throw std::logic_error("Cannot access the return value, because the struct is not successful");
+        }
+        if (!returnvalue.has_value()) {
+            PLOG_ERROR << "Return value is not set";
+            throw std::logic_error("Return value is not set");
+        }
+        moved = true;
+        return std::move(returnvalue.value());
     };
     bool isSuccess() { return success == SUCCESS; };
     void setReturnValue(T value) { returnvalue = value; };

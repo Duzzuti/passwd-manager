@@ -128,7 +128,7 @@ ErrorStruct<std::ifstream> FileHandler::getData() noexcept {
     std::ifstream file(this->filepath.c_str(), std::ios::binary);
     if (header_size != 0) {
         file.seekg(header_size, std::ios::beg);
-        return ErrorStruct<std::ifstream>{std::move(file)};
+        return ErrorStruct<std::ifstream>::createMove(std::move(file));
     } else {
         ErrorStruct<DataHeader> err = DataHeader::setHeaderBytes(file);
         if (!err.isSuccess()) {
@@ -140,7 +140,7 @@ ErrorStruct<std::ifstream> FileHandler::getData() noexcept {
         header_size = err.returnValue().getHeaderLength();
         // the data header was read successfully
         // the remaining bytes are the data
-        return ErrorStruct<std::ifstream>{std::move(file)};
+        return ErrorStruct<std::ifstream>::createMove(std::move(file));
     }
 }
 
@@ -188,7 +188,7 @@ ErrorStruct<std::ofstream> FileHandler::getWriteStream() noexcept {
         // should not happen because the file was checked before
         return ErrorStruct<std::ofstream>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, this->filepath.c_str()};
     }
-    return ErrorStruct<std::ofstream>{std::move(file)};
+    return ErrorStruct<std::ofstream>::createMove(std::move(file));;
 }
 
 ErrorStruct<std::ofstream> FileHandler::getWriteStreamIfEmpty() noexcept {
