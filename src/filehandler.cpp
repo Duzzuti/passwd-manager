@@ -102,7 +102,7 @@ ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) noexcept {
     return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnValue().getDataHeaderParts().getFileDataMode())};
 }
 
-bool FileHandler::isEmtpy() const noexcept{
+bool FileHandler::isEmtpy() const noexcept {
     // checks if the file is empty
     try {
         // try to read the first byte
@@ -126,10 +126,10 @@ ErrorStruct<DataHeader> FileHandler::getDataHeader() noexcept {
 ErrorStruct<std::ifstream> FileHandler::getData() noexcept {
     // reads the data from the file (without the data header)
     std::ifstream file(this->filepath.c_str(), std::ios::binary);
-    if(header_size != 0){
+    if (header_size != 0) {
         file.seekg(header_size, std::ios::beg);
         return ErrorStruct<std::ifstream>{std::move(file)};
-    }else{
+    } else {
         ErrorStruct<DataHeader> err = DataHeader::setHeaderBytes(file);
         if (!err.isSuccess()) {
             // the data header could not be read
@@ -194,9 +194,9 @@ ErrorStruct<std::ofstream> FileHandler::getWriteStream() noexcept {
 ErrorStruct<std::ofstream> FileHandler::getWriteStreamIfEmpty() noexcept {
     // returns a write stream to the file if it is empty
     // overrides old content
-    if(this->isEmtpy()){
+    if (this->isEmtpy()) {
         return this->getWriteStream();
-    } else{
+    } else {
         PLOG_WARNING << "The file is not empty (file_path: " << this->filepath.c_str() << ")";
         return ErrorStruct<std::ofstream>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
     }
@@ -248,8 +248,10 @@ Bytes FileHandler::getFirstBytes(const size_t num) const {
         // the set encryption file does not exist on the system
         throw std::runtime_error("file cannot be opened");
     }
-    Bytes b(num);        // creates a buffer to hold the read bytes
-    if(file.readsome(reinterpret_cast<char*>(b.getBytes()), num) != num);{  // reads into the buffer
+    Bytes b(num);  // creates a buffer to hold the read bytes
+    if (file.readsome(reinterpret_cast<char*>(b.getBytes()), num) != num)
+        ;
+    {  // reads into the buffer
         // not enough characters to read (file is not long enough)
         throw std::length_error("File contains to few characters");
     }
