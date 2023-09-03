@@ -54,15 +54,15 @@ enum ErrorCode {
 template <typename T>
 struct ErrorStruct {
    private:
-    bool moved = false;                      // true if the value was moved
-    bool input_moved = false;                // true if the input value was moved into the struct
+    bool moved = false;        // true if the value was moved
+    bool input_moved = false;  // true if the input value was moved into the struct
    public:
     SuccessType success = FAIL;              // true if the operation was successful
     ErrorCode errorCode = NO_ERROR_WAS_SET;  // error code
     std::string errorInfo;                   // some specific data about the error can be stored here
     std::string what;                        // throw message
 
-   static ErrorStruct<T> createMove(T&& value) {
+    static ErrorStruct<T> createMove(T&& value) {
         // returns a successful ErrorStruct
         ErrorStruct<T> err;
         err.success = SUCCESS;
@@ -76,7 +76,7 @@ struct ErrorStruct {
     };
 
     // constructors
-    ErrorStruct(){
+    ErrorStruct() {
         // default constructor
         success = FAIL;
         errorCode = NO_ERROR_WAS_SET;
@@ -95,11 +95,11 @@ struct ErrorStruct {
     T returnValue() {
         // returns by value
         // you cannot access the return value if the function failed
-        if(moved){
+        if (moved) {
             PLOG_FATAL << "Cannot access the return value, because the value was moved.";
             throw std::logic_error("Cannot access the return value, because the value was moved.");
         }
-        if(input_moved){
+        if (input_moved) {
             PLOG_FATAL << "Cannot access the return value, because the input value was moved into the struct. Try using returnRef() or returnMove() instead";
             throw std::logic_error("Cannot access the return value, because the input value was moved into the struct. Try using returnRef() or returnMove() instead");
         }
@@ -116,7 +116,7 @@ struct ErrorStruct {
     T& returnRef() {
         // returns by reference
         // you cannot access the return value if the function failed
-        if(moved){
+        if (moved) {
             PLOG_FATAL << "Cannot access the return value, because the value was moved.";
             throw std::logic_error("Cannot access the return value, because the value was moved.");
         }
@@ -130,7 +130,7 @@ struct ErrorStruct {
         }
         return returnvalue.value();
     };
-    T&& returnMove(){
+    T&& returnMove() {
         // returns by move
         // you cannot access the return value if the function failed
         if (!isSuccess()) {

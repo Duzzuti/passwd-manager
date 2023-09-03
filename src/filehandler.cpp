@@ -188,7 +188,8 @@ ErrorStruct<std::ofstream> FileHandler::getWriteStream() noexcept {
         // should not happen because the file was checked before
         return ErrorStruct<std::ofstream>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, this->filepath.c_str()};
     }
-    return ErrorStruct<std::ofstream>::createMove(std::move(file));;
+    return ErrorStruct<std::ofstream>::createMove(std::move(file));
+    ;
 }
 
 ErrorStruct<std::ofstream> FileHandler::getWriteStreamIfEmpty() noexcept {
