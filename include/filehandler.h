@@ -21,7 +21,7 @@ class FileHandler {
     FileHandler(const std::filesystem::path& file);                                                       // sets the filepath
     ErrorStruct<bool> isDataHeader(FModes exp_file_mode) noexcept;                                        // checks if the file has a valid data header
     bool isEmtpy() const noexcept;                                                                        // checks if the file is empty
-    ErrorStruct<DataHeader> getDataHeader() noexcept;                                                     // reads the data header from the file
+    ErrorStruct<std::unique_ptr<DataHeader>> getDataHeader() noexcept;                                    // reads the data header from the file
     ErrorStruct<std::ifstream> getData() noexcept;                                                        // reads the data from the file (without the data header)
     Bytes getFirstBytes(const size_t num) const;                                                          // reads the first num Bytes from the encryption file
     Bytes getAllBytes() const;                                                                            // reads all Bytes from the given encryption file

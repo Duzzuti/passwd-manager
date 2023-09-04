@@ -88,18 +88,18 @@ FileHandler::FileHandler(const std::filesystem::path& file) : filepath(file) {
 }
 
 ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) noexcept {
-    ErrorStruct<DataHeader> err = this->getDataHeader();
+    ErrorStruct<std::unique_ptr<DataHeader>> err = this->getDataHeader();
     if (!err.isSuccess()) {
         // the data header could not be read
         PLOG_ERROR << "The data header could not be read (isDataHeader) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
         return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
-    } else if (err.returnValue().getDataHeaderParts().getFileDataMode() == exp_file_mode) {
+    } else if (err.returnRef()->getDataHeaderParts().getFileDataMode() == exp_file_mode) {
         // the data header was read successfully and the file mode is correct
         return ErrorStruct<bool>{true};
     }
     PLOG_WARNING << "The data header was read successfully but the file mode is incorrect (isDataHeader) (file path: " << this->filepath << ", expected file mode: " << +exp_file_mode
-                 << ", actual file mode: " << +err.returnValue().getDataHeaderParts().getFileDataMode() << ")";
-    return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnValue().getDataHeaderParts().getFileDataMode())};
+                 << ", actual file mode: " << +err.returnRef()->getDataHeaderParts().getFileDataMode() << ")";
+    return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnRef()->getDataHeaderParts().getFileDataMode())};
 }
 
 bool FileHandler::isEmtpy() const noexcept {
@@ -114,11 +114,11 @@ bool FileHandler::isEmtpy() const noexcept {
     return false;
 }
 
-ErrorStruct<DataHeader> FileHandler::getDataHeader() noexcept {
+ErrorStruct<std::unique_ptr<DataHeader>> FileHandler::getDataHeader() noexcept {
     // reads the data header from the file
     std::ifstream filestream(this->filepath.c_str(), std::ios::binary);
-    ErrorStruct<DataHeader> ret = DataHeader::setHeaderBytes(filestream);
-    header_size = ret.returnValue().getHeaderLength();
+    ErrorStruct<std::unique_ptr<DataHeader>> ret = DataHeader::setHeaderBytes(filestream);
+    header_size = ret.returnRef()->getHeaderLength();
     filestream.close();
     return ret;
 }
@@ -130,14 +130,14 @@ ErrorStruct<std::ifstream> FileHandler::getData() noexcept {
         file.seekg(header_size, std::ios::beg);
         return ErrorStruct<std::ifstream>::createMove(std::move(file));
     } else {
-        ErrorStruct<DataHeader> err = DataHeader::setHeaderBytes(file);
+        ErrorStruct<std::unique_ptr<DataHeader>> err = DataHeader::setHeaderBytes(file);
         if (!err.isSuccess()) {
             // the data header could not be read
             file.close();
             PLOG_ERROR << "The data header could not be read (getData) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
             return ErrorStruct<std::ifstream>{err.success, err.errorCode, err.errorInfo, err.what};
         }
-        header_size = err.returnValue().getHeaderLength();
+        header_size = err.returnRef()->getHeaderLength();
         // the data header was read successfully
         // the remaining bytes are the data
         return ErrorStruct<std::ifstream>::createMove(std::move(file));
