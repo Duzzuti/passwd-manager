@@ -284,7 +284,7 @@ int main(int argc, char* argv[]) {
         fds.returnRef().dec_data.addByte(0x02);
         fds.returnRef().dec_data.addByte(0x03);
         fds.returnRef().dec_data.addByte(0x04);
-        
+
         // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
