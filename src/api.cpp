@@ -229,7 +229,7 @@ ErrorStruct<bool> API::_select_non_empty_file(std::unique_ptr<FileHandler> file)
         auto last = files.tellg();
         files.seekg(first, std::ios::beg);
         Bytes content(last - first);
-        if(files.readsome(reinterpret_cast<char*>(content.getBytes()), content.getMaxLen()) != content.getMaxLen()){
+        if (files.readsome(reinterpret_cast<char*>(content.getBytes()), content.getMaxLen()) != content.getMaxLen()) {
             throw std::runtime_error("Could not read the data");
         }
         content.setLen(content.getMaxLen());
@@ -454,7 +454,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string& passwor
         // perform the second chain hash (passwordhash -> passwordhashhash = validation hash)
         u_int64_t new_timeout = timeout - timer.peekTime();
         timer.stop();
-        if(timeout != 0 && new_timeout <= 0){
+        if (timeout != 0 && new_timeout <= 0) {
             PLOG_WARNING << "Timeout reached after the first chainhash";
             ErrorStruct<Bytes> err;
             err.success = SuccessType::TIMEOUT;
@@ -701,7 +701,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path& file_
     }
     Bytes full_data{this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen()};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted_data.addcopyToBytes(full_data);       // adds the encrypted data
+    this->parent->encrypted_data.addcopyToBytes(full_data);        // adds the encrypted data
     ErrorStruct<bool> err = err_file.returnRef()->writeBytesIfEmpty(full_data);
     if (err.isSuccess()) {
         this->parent->current_state = std::make_unique<FINISHED>(this->parent);
@@ -717,7 +717,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // checks if the selected file exists (it could be deleted in the meantime)
     Bytes full_data{this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen()};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted_data.addcopyToBytes(full_data);       // adds the encrypted data
+    this->parent->encrypted_data.addcopyToBytes(full_data);        // adds the encrypted data
     ErrorStruct<bool> err = this->parent->selected_file->writeBytes(full_data);
     if (err.isSuccess()) {
         this->parent->current_state = std::make_unique<FINISHED>(this->parent);

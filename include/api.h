@@ -52,7 +52,7 @@ struct WorkflowDecStruct {
 // helper struct that is returned internally the API if you create a data header
 struct DataHeaderHelperStruct {
     ErrorStruct<std::unique_ptr<DataHeader>> errorStruct;  // contains the actual data header
-    DataHeaderHelperStruct(ErrorStruct<std::unique_ptr<DataHeader>> errorStruct){
+    DataHeaderHelperStruct(ErrorStruct<std::unique_ptr<DataHeader>> errorStruct) {
         this->errorStruct = ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::make_unique<DataHeader>(*errorStruct.returnRef()));
     };
     Bytes Password_hash() {
@@ -149,7 +149,9 @@ class API {
         };
         // creates data header with the current settings and password, just changes the salt
         // this call is not expensive because it does not have to chainhash the password
-        virtual ErrorStruct<std::unique_ptr<DataHeader>> changeSalt() noexcept { return ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state"}; };
+        virtual ErrorStruct<std::unique_ptr<DataHeader>> changeSalt() noexcept {
+            return ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state"};
+        };
 
         // decrypts the data
         // returns the decrypted content (without the data header)
