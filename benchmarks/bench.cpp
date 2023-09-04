@@ -72,14 +72,14 @@ TEST(Benchmark_write, small_sha256) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -106,14 +106,14 @@ TEST(Benchmark_write, small_sha384) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -140,14 +140,14 @@ TEST(Benchmark_write, small_sha512) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -174,14 +174,14 @@ TEST(Benchmark_write, medium_sha256) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_MEDIUM));
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -208,14 +208,14 @@ TEST(Benchmark_write, medium_sha384) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_MEDIUM));
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -242,14 +242,14 @@ TEST(Benchmark_write, medium_sha512) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_MEDIUM));
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -276,14 +276,14 @@ TEST(Benchmark_write, large_sha256) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_LARGE));
+    Bytes data(DATA_SIZE_LARGE);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -310,14 +310,14 @@ TEST(Benchmark_write, large_sha384) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_LARGE));
+    Bytes data(DATA_SIZE_LARGE);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -344,37 +344,29 @@ TEST(Benchmark_write, large_sha512) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_LARGE));
+    Bytes data(DATA_SIZE_LARGE);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < 1; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
-        std::cout << file << std::endl;
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        std::cout << "created data header" << std::endl;
         FileDataStruct fds = api.getFileData().returnValue();
         fds.dec_data = data;
-        std::cout << "got file data" << std::endl;
         api.getEncryptedData(fds);
-        std::cout << "got encrypted data" << std::endl;
         api.writeToFile();
-        std::cout << "wrote to file" << std::endl;
         api.logout();
-        std::cout << "logged out" << std::endl;
         if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
     timer.stop();
-    std::cout << "stopped timer" << std::endl;
     _terminateMeasurementThread = true;
     memoryThread.join();
-    std::cout << "joined thread" << std::endl;
     filing("large_sha512", CITERS, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
@@ -386,14 +378,14 @@ TEST(Benchmark_write, small_sha256_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -420,14 +412,14 @@ TEST(Benchmark_write, small_sha384_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -454,14 +446,14 @@ TEST(Benchmark_write, small_sha512_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -488,14 +480,14 @@ TEST(Benchmark_write, medium_sha256_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_MEDIUM));
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -522,14 +514,14 @@ TEST(Benchmark_write, medium_sha384_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_MEDIUM));
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -556,14 +548,14 @@ TEST(Benchmark_write, medium_sha512_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_MEDIUM));
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -590,14 +582,14 @@ TEST(Benchmark_write, large_sha256_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_LARGE));
+    Bytes data(DATA_SIZE_LARGE);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -624,14 +616,14 @@ TEST(Benchmark_write, large_sha384_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_LARGE));
+    Bytes data(DATA_SIZE_LARGE);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < ITERS; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
@@ -658,37 +650,29 @@ TEST(Benchmark_write, large_sha512_nochain) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS_SMALL);
     ds.setChainHash2Iters(CITERS_SMALL);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_LARGE));
+    Bytes data(DATA_SIZE_LARGE);
+    data.fillrandom();
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
     for (u_int64_t i = 0; i < 1; i++) {
         API api{FILEMODE_PASSWORD};
-        std::filesystem::path file = charVecToString(RNG::get_random_bytes(5)) + ".enc";
-        std::cout << file << std::endl;
+        std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        std::cout << "created data header" << std::endl;
         FileDataStruct fds = api.getFileData().returnValue();
         fds.dec_data = data;
-        std::cout << "got file data" << std::endl;
         api.getEncryptedData(fds);
-        std::cout << "got encrypted data" << std::endl;
         api.writeToFile();
-        std::cout << "wrote to file" << std::endl;
         api.logout();
-        std::cout << "logged out" << std::endl;
         if (i != ITERS - 1) {
             timer.recordTime();
         }
     }
     timer.stop();
-    std::cout << "stopped timer" << std::endl;
     _terminateMeasurementThread = true;
     memoryThread.join();
-    std::cout << "joined thread" << std::endl;
     filing("large_sha512_nochain", CITERS_SMALL, DATA_SIZE_LARGE_MB, timer.getAverageTime(), timer.getSlowest());
 }
 
@@ -704,8 +688,8 @@ TEST(Benchmark_read1, sha256) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(1);
     ds.setChainHash2Iters(1);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     for (u_int64_t i = 0; i < FILES; i++) {
         std::cout << i << std::endl;
         API api{FILEMODE_PASSWORD};
@@ -753,8 +737,8 @@ TEST(Benchmark_read1, sha384) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(1);
     ds.setChainHash2Iters(1);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     for (u_int64_t i = 0; i < FILES; i++) {
         std::cout << i << std::endl;
         API api{FILEMODE_PASSWORD};
@@ -802,8 +786,8 @@ TEST(Benchmark_read1, sha512) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(1);
     ds.setChainHash2Iters(1);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_SMALL));
+    Bytes data(DATA_SIZE_SMALL);
+    data.fillrandom();
     for (u_int64_t i = 0; i < FILES; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = files[i];
@@ -845,8 +829,8 @@ TEST(Benchmark_read2, sha256) {
     ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
     ds.setChainHash1Iters(CITERS);
     ds.setChainHash2Iters(CITERS);
-    Bytes data;
-    data.setBytes(RNG::get_random_bytes_large(DATA_SIZE_MEDIUM));
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
 
     API api{FILEMODE_PASSWORD};
     std::filesystem::path file = RNG::get_random_string(10) + ".enc";
@@ -874,4 +858,82 @@ TEST(Benchmark_read2, sha256) {
     _terminateMeasurementThread = true;
     memoryThread.join();
     filing("read_medium_sha256", CITERS, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(Benchmark_read2, sha384) {
+    DataHeaderSettingsIters ds;
+    ds.setFileDataMode(FILEMODE_PASSWORD);
+    ds.setHashMode(HASHMODE_SHA384);
+    ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
+    ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
+    ds.setChainHash1Iters(CITERS);
+    ds.setChainHash2Iters(CITERS);
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
+
+    API api{FILEMODE_PASSWORD};
+    std::filesystem::path file = RNG::get_random_string(10) + ".enc";
+    api.createFile(file);
+    api.selectFile(file);
+    api.createDataHeader(password, ds);
+    FileDataStruct fds = api.getFileData().returnValue();
+    fds.dec_data = data;
+    api.getEncryptedData(fds);
+    api.writeToFile();
+    api.logout();
+
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+
+    API api2{FILEMODE_PASSWORD};
+    api2.selectFile(file);
+    api2.verifyPassword(password);
+    fds = api2.getDecryptedData().returnValue();
+    assert(fds.dec_data == data);
+    api2.logout();
+
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    filing("read_medium_sha384", CITERS, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(Benchmark_read2, sha512) {
+    DataHeaderSettingsIters ds;
+    ds.setFileDataMode(FILEMODE_PASSWORD);
+    ds.setHashMode(HASHMODE_SHA512);
+    ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
+    ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
+    ds.setChainHash1Iters(CITERS);
+    ds.setChainHash2Iters(CITERS);
+    Bytes data(DATA_SIZE_MEDIUM);
+    data.fillrandom();
+
+    API api{FILEMODE_PASSWORD};
+    std::filesystem::path file = RNG::get_random_string(10) + ".enc";
+    api.createFile(file);
+    api.selectFile(file);
+    api.createDataHeader(password, ds);
+    FileDataStruct fds = api.getFileData().returnValue();
+    fds.dec_data = data;
+    api.getEncryptedData(fds);
+    api.writeToFile();
+    api.logout();
+
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+
+    API api2{FILEMODE_PASSWORD};
+    api2.selectFile(file);
+    api2.verifyPassword(password);
+    fds = api2.getDecryptedData().returnValue();
+    assert(fds.dec_data == data);
+    api2.logout();
+
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    filing("read_medium_sha512", CITERS, DATA_SIZE_MEDIUM_MB, timer.getAverageTime(), timer.getSlowest());
 }
