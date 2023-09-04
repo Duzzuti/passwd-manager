@@ -156,10 +156,11 @@ DataHeaderParts DataHeader::getDataHeaderParts() const {
     return this->dh;
 }
 
-ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
+ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     // sets the header bytes by taking the first bytes of the file
     // init error struct
-    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes"};
+    ErrorStruct<std::unique_ptr<DataHeader>> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes"};
+    std::unique_ptr<DataHeader> dh = nullptr;
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
@@ -182,7 +183,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     try {
         // loading and setting hash mode
         hmode = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
-        err.setReturnValue(DataHeader(HModes(hmode)));
+        dh = std::make_unique<DataHeader>(HModes(hmode));
     } catch (const std::length_error& ex) {
         // copySubBytes failed because the length is reached
         PLOG_ERROR << "not enough data to read the hash mode (error msg: " << ex.what() << ")";
@@ -202,11 +203,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // setting the file data mode
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setFileDataMode(FModes(fmode));
+        dh->setFileDataMode(FModes(fmode));
     } catch (const std::invalid_argument& ex) {
         // the file mode is invalid
         PLOG_ERROR << "invalid file mode found in data (file_mode: " << +fmode << ") (error msg: " << ex.what() << ")";
@@ -348,11 +345,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     assert(data_len == ch1datablocklen);
     // chainhash 1
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1});
+        dh->setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1});
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         PLOG_ERROR << "invalid chainhash 1 (error msg: " << ex.what() << ")";
@@ -500,11 +493,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
     assert(data_len == ch2datablocklen);
     // chainhash 2
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2});
+        dh->setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2});
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         PLOG_ERROR << "invalid chainhash 2 (error msg: " << ex.what() << ")";
@@ -524,12 +513,8 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // password validator hash
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setValidPasswordHashBytes(fileBytes.copySubBytes(index, index + dh.hash_size));
-        index += dh.hash_size;
+        dh->setValidPasswordHashBytes(fileBytes.copySubBytes(index, index + dh->hash_size));
+        index += dh->hash_size;
     } catch (const std::length_error& ex) {
         // copySubBytes fauiled because the length is reached
         PLOG_ERROR << "not enough data to read the password validator hash (error msg: " << ex.what() << ")";
@@ -550,12 +535,8 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
 
     // encrypted salt
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setEncSalt(fileBytes.copySubBytes(index, index + dh.hash_size));
-        index += dh.hash_size;
+        dh->setEncSalt(fileBytes.copySubBytes(index, index + dh->hash_size));
+        index += dh->hash_size;
     } catch (const std::length_error& ex) {
         // copySubBytes failed because the length is reached
         PLOG_ERROR << "not enough data to read the salt hash (error msg: " << ex.what() << ")";
@@ -574,15 +555,15 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(Bytes& fileBytes) noexcept {
         return err;
     }
     assert(index == fileBytes.getLen());
-    err.success = SUCCESS;
-    return err;
+    return ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::move(dh));
 }
 
-ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept {
+ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstream& file) noexcept {
     // sets the header bytes by taking the first bytes of the file
     // init error struct
     auto start = file.tellg();
-    ErrorStruct<DataHeader> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes"};
+    ErrorStruct<std::unique_ptr<DataHeader>> err{FAIL, ERR, "An error occurred while reading the header", "setHeaderBytes"};
+    std::unique_ptr<DataHeader> dh = nullptr;
     // setting the header parts
     //********************* FILEMODE *********************
     unsigned char fmode;
@@ -607,7 +588,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept
         return err;
     }
     try {
-        err.setReturnValue(DataHeader(HModes(hmode)));
+        dh = std::make_unique<DataHeader>(HModes(hmode));
     } catch (const std::invalid_argument& ex) {
         // the hash mode is invalid
         PLOG_ERROR << "invalid hash mode found in data (hash_mode: " << +hmode << ") (error msg: " << ex.what() << ")";
@@ -619,11 +600,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept
 
     // setting the file data mode
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setFileDataMode(FModes(fmode));
+        dh->setFileDataMode(FModes(fmode));
     } catch (const std::invalid_argument& ex) {
         // the file mode is invalid
         PLOG_ERROR << "invalid file mode found in data (file_mode: " << +fmode << ") (error msg: " << ex.what() << ")";
@@ -766,11 +743,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept
     assert(data_len == ch1datablocklen);
     // chainhash 1
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1});
+        dh->setChainHash1(ChainHash{CHModes(ch1mode), ch1iters, chd1});
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         PLOG_ERROR << "invalid chainhash 1 (error msg: " << ex.what() << ")";
@@ -920,11 +893,7 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept
     assert(data_len == ch2datablocklen);
     // chainhash 2
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        dh.setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2});
+        dh->setChainHash2(ChainHash{CHModes(ch2mode), ch2iters, chd2});
     } catch (const std::invalid_argument& ex) {
         // the chainhash is invalid
         PLOG_ERROR << "invalid chainhash 2 (error msg: " << ex.what() << ")";
@@ -944,20 +913,16 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept
 
     // password validator hash
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        Bytes tmp = Bytes(dh.hash_size);
-        if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh.hash_size) != dh.hash_size) {
+        Bytes tmp = Bytes(dh->hash_size);
+        if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh->hash_size) != dh->hash_size) {
             // readsome could not read the password validator hash
             PLOG_ERROR << "not enogh data to read the password validator hash";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Password validator hash";
             return err;
         }
-        tmp.setLen(dh.hash_size);
-        dh.setValidPasswordHashBytes(tmp);
+        tmp.setLen(dh->hash_size);
+        dh->setValidPasswordHashBytes(tmp);
     } catch (const std::exception& ex) {
         // some other error occurred
         PLOG_ERROR << "An error occurred while setting and reading the password validator hash (error msg: " << ex.what() << ")";
@@ -970,20 +935,16 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept
 
     // encrypted salt
     try {
-        err.success = SUCCESS;
-        // need to set to success to access the return value
-        DataHeader& dh = err.returnRef();
-        err.success = FAIL;
-        Bytes tmp = Bytes(dh.hash_size);
-        if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh.hash_size) != dh.hash_size) {
+        Bytes tmp = Bytes(dh->hash_size);
+        if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh->hash_size) != dh->hash_size) {
             // readsome could not read the encrypted salt
             PLOG_ERROR << "not enogh data to read the encrypted salt";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Encrypted salt";
             return err;
         }
-        tmp.setLen(dh.hash_size);
-        dh.setEncSalt(tmp);
+        tmp.setLen(dh->hash_size);
+        dh->setEncSalt(tmp);
     } catch (const std::length_error& ex) {
         // copySubBytes failed because the length is reached
         PLOG_ERROR << "not enough data to read the salt hash (error msg: " << ex.what() << ")";
@@ -1001,28 +962,25 @@ ErrorStruct<DataHeader> DataHeader::setHeaderBytes(std::ifstream& file) noexcept
         err.what = ex.what();
         return err;
     }
-    assert(start - file.tellg() == err.returnRef().getHeaderLength());
-    err.success = SUCCESS;
-    return err;
+    assert(start - file.tellg() == dh->getHeaderLength());
+    return ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::move(dh));
 }
 
-ErrorStruct<DataHeader> DataHeader::setHeaderParts(const DataHeaderParts& dhp) noexcept {
+ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderParts(const DataHeaderParts& dhp) noexcept {
     // creating a new header by setting the header parts
-    ErrorStruct<DataHeader> err{FAIL, ERR, ""};
+    ErrorStruct<std::unique_ptr<DataHeader>> err{FAIL, ERR, ""};
     try {
         // these methods throw exceptions if the data is invalid
-        DataHeader dh{dhp.getHashMode()};                          // setting the hash mode
-        dh.setFileDataMode(dhp.getFileDataMode());                 // setting the file data mode
-        dh.setChainHash1(dhp.chainhash1);                          // setting the chainhash 1
-        dh.setChainHash2(dhp.chainhash2);                          // setting the chainhash 2
-        dh.setValidPasswordHashBytes(dhp.getValidPasswordHash());  // setting the password validator hash
+        std::unique_ptr<DataHeader> dh = std::make_unique<DataHeader>(dhp.getHashMode());     // setting the hash mode
+        dh->setFileDataMode(dhp.getFileDataMode());                 // setting the file data mode
+        dh->setChainHash1(dhp.chainhash1);                          // setting the chainhash 1
+        dh->setChainHash2(dhp.chainhash2);                          // setting the chainhash 2
+        dh->setValidPasswordHashBytes(dhp.getValidPasswordHash());  // setting the password validator hash
         if (dhp.isEncSaltSet())                                    // enc salt is not necessary
-            dh.setEncSalt(dhp.getEncSalt());                       // setting the encrypted salt
+            dh->setEncSalt(dhp.getEncSalt());                       // setting the encrypted salt
 
         // success
-        err.setReturnValue(dh);
-        err.success = SUCCESS;
-        return err;
+        return ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::move(dh));
 
     } catch (const std::exception& ex) {
         // some error occurred
