@@ -971,13 +971,13 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderParts(const DataHe
     ErrorStruct<std::unique_ptr<DataHeader>> err{FAIL, ERR, ""};
     try {
         // these methods throw exceptions if the data is invalid
-        std::unique_ptr<DataHeader> dh = std::make_unique<DataHeader>(dhp.getHashMode());     // setting the hash mode
-        dh->setFileDataMode(dhp.getFileDataMode());                 // setting the file data mode
-        dh->setChainHash1(dhp.chainhash1);                          // setting the chainhash 1
-        dh->setChainHash2(dhp.chainhash2);                          // setting the chainhash 2
-        dh->setValidPasswordHashBytes(dhp.getValidPasswordHash());  // setting the password validator hash
-        if (dhp.isEncSaltSet())                                    // enc salt is not necessary
-            dh->setEncSalt(dhp.getEncSalt());                       // setting the encrypted salt
+        std::unique_ptr<DataHeader> dh = std::make_unique<DataHeader>(dhp.getHashMode());  // setting the hash mode
+        dh->setFileDataMode(dhp.getFileDataMode());                                        // setting the file data mode
+        dh->setChainHash1(dhp.chainhash1);                                                 // setting the chainhash 1
+        dh->setChainHash2(dhp.chainhash2);                                                 // setting the chainhash 2
+        dh->setValidPasswordHashBytes(dhp.getValidPasswordHash());                         // setting the password validator hash
+        if (dhp.isEncSaltSet())                                                            // enc salt is not necessary
+            dh->setEncSalt(dhp.getEncSalt());                                              // setting the encrypted salt
 
         // success
         return ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::move(dh));
