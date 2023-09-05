@@ -125,7 +125,7 @@ TEST(RNGClass, gen_byte_io) {
             EXPECT_THROW(RNG::get_random_byte(lower, upper, buffer), std::logic_error);
         } else {
             // should run correctly, checks if the result is in the given range
-            EXPECT_NO_THROW(byte = RNG::get_random_byte(lower, upper, buffer));
+            byte = RNG::get_random_byte(lower, upper, buffer);
             EXPECT_LE(lower, byte);
             EXPECT_GE(upper, byte);
         }

@@ -20,7 +20,7 @@ Bytes Bytes::fromLong(const u_int64_t l, const bool addzeros) {
     return res;
 }
 
-Bytes::Bytes(const int max_len) {
+Bytes::Bytes(const int64_t max_len) {
     // creates an empty byte array with a given maximum length
     if (max_len < 0) {
         // invalid length given
@@ -106,7 +106,7 @@ void Bytes::fillrandom() noexcept {
     this->len = this->max_len;
 }
 
-void Bytes::addrandom(const int num) {
+void Bytes::addrandom(const int64_t num) {
     // adds random bytes to the byte array (num is the number of bytes that will be added)
     if (this->len + num > this->max_len) {
         PLOG_FATAL << "cannot add " << num << " random bytes, because there is only space for " << this->max_len - this->len;

@@ -17,14 +17,14 @@ class Bytes {
    public:
     static Bytes fromLong(const u_int64_t l, const bool addzeros = false);  // sets the Bytes to the decimal representation of the given long
 
-    Bytes(const int max_len);                                        // creates an empty byte array with a given maximum length
+    Bytes(const int64_t max_len);                                    // creates an empty byte array with a given maximum length
     Bytes(unsigned char* bytes, const size_t len);                   // creates a Bytes object with the given bytes and length (consumes the array)
     Bytes(const Bytes& other, const size_t extra_len);               // creates a new Bytes object with the bytes of the other Bytes object and adds extra_len bytes at the end
     Bytes(const Bytes& other);                                       // copy constructor
     Bytes& operator=(const Bytes& other);                            // copy assignment
     void setDeallocate(const bool deallocate) noexcept;              // setter for the deallocate variable
     void fillrandom() noexcept;                                      // fills the byte array with random bytes
-    void addrandom(const int num);                                   // adds random bytes to the byte array (num is the number of bytes that will be added)
+    void addrandom(const int64_t num);                               // adds random bytes to the byte array (num is the number of bytes that will be added)
     void setBytes(const unsigned char* bytes, const size_t len);     // set the bytes to a given value
     void addBytes(const unsigned char* bytes, const size_t len);     // adds the bytes to the current value
     void consumeBytes(unsigned char* bytes, const size_t len);       // consumes the bytes from the current value

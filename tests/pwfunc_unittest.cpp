@@ -247,7 +247,6 @@ TEST(PWFUNCClass, consistency) {
                 hash = std::make_unique<sha512>();
                 break;
         }
-        int hash_size = hash->getHashSize();
         PwFunc pwf = PwFunc(std::move(hash));
 
         for (int i = 0; i < TEST_MAX_PW_LEN; i++) {
@@ -430,18 +429,9 @@ TEST(PWFUNCClass, timedIters) {
         // create same random salt
         std::string s = RNG::get_random_string(100);
 
-        Bytes rand_b(8);
-        RNG::fill_random_bytes(rand_b, 2);
-        u_int64_t l1 = rand_b.toLong() / 6;
-
-        // cap the number of iterations
-        if (MIN_ITERATIONS > l1) {
-            l1 = MIN_ITERATIONS;
-        } else if (MAX_ITERATIONS < l1) {
-            l1 = TEST_MAX_PW_ITERS;
-        }
-
         // generating random arguments
+        Bytes rand_b(8);
+        
         RNG::fill_random_bytes(rand_b, 8);
         u_int64_t l2 = rand_b.toLong();
         RNG::fill_random_bytes(rand_b, 8);

@@ -264,8 +264,10 @@ TEST(BytesClass, consumeBytesArray) {
     unsigned char* bytes7 = new unsigned char[11]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     Bytes b5(10);
     EXPECT_THROW(b5.consumeBytes(bytes5, 11), std::length_error);
+    delete[] bytes5;
     Bytes b6(0);
     EXPECT_THROW(b6.consumeBytes(bytes6, 11), std::length_error);
+    delete[] bytes6;
     Bytes b7(11);
     EXPECT_NO_THROW(b7.consumeBytes(bytes7, 11));
     Bytes b8(11);
@@ -796,7 +798,6 @@ TEST(BytesClass, copyAssignmentconstructor) {
     b11.addrandom(5);
     b11.addrandom(6);
     EXPECT_NO_THROW(Bytes b27 = b11);
-    EXPECT_NO_THROW(Bytes b28 = b28);
 }
 
 TEST(BytesClass, copyAssignment) {

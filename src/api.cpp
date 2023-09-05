@@ -699,7 +699,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path& file_
         PLOG_ERROR << "The provided file path is invalid (writeToFile) (errorCode: " << +err_file.errorCode << ", errorInfo: " << err_file.errorInfo << ", what: " << err_file.what << ")";
         return ErrorStruct<bool>{err_file.success, err_file.errorCode, err_file.errorInfo, err_file.what};
     }
-    Bytes full_data{this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen()};
+    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen())};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
     this->parent->encrypted_data.addcopyToBytes(full_data);        // adds the encrypted data
     ErrorStruct<bool> err = err_file.returnRef()->writeBytesIfEmpty(full_data);
@@ -715,7 +715,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
     PLOG_VERBOSE << "Writing to selected file (file_path: " << this->parent->selected_file->getPath().c_str() << ")";
     // checks if the selected file exists (it could be deleted in the meantime)
-    Bytes full_data{this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen()};
+    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen())};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
     this->parent->encrypted_data.addcopyToBytes(full_data);        // adds the encrypted data
     ErrorStruct<bool> err = this->parent->selected_file->writeBytes(full_data);
