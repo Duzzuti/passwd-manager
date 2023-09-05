@@ -24,11 +24,11 @@ DataHeaderHelperStruct API::_createDataHeaderIters(const std::string& password, 
     // creates a DataHeader with the given settings (helper function for createDataHeader)
     if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
-        DataHeaderHelperStruct dhhs{ErrorStruct<std::unique_ptr<DataHeader>>{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""}};
+        DataHeaderHelperStruct dhhs = DataHeaderHelperStruct::createMove(ErrorStruct<std::unique_ptr<DataHeader>>{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""});
         return dhhs;
     }
     PLOG_VERBOSE << "Creating data header with iter settings (" << ds << ", timeout: " << timeout << ")";
-    DataHeaderHelperStruct dhhs{ErrorStruct<std::unique_ptr<DataHeader>>{SuccessType::FAIL, ErrorCode::ERR, ""}};
+    DataHeaderHelperStruct dhhs = DataHeaderHelperStruct::createMove(ErrorStruct<std::unique_ptr<DataHeader>>{SuccessType::FAIL, ErrorCode::ERR, ""});
     if (ds.getFileDataMode() != this->file_data_struct.getFileMode()) {
         // the file mode does not match with the file data mode
         PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.getFileMode() << ")";

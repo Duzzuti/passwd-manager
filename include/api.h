@@ -51,9 +51,20 @@ struct WorkflowDecStruct {
 
 // helper struct that is returned internally the API if you create a data header
 struct DataHeaderHelperStruct {
+   private:
+    DataHeaderHelperStruct(){
+        this->errorStruct = ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_API_STATE_INVALID, "DataHeaderHelperStruct should not be created without error struct"};
+    }
+   public:
     ErrorStruct<std::unique_ptr<DataHeader>> errorStruct;  // contains the actual data header
+   
     DataHeaderHelperStruct(ErrorStruct<std::unique_ptr<DataHeader>> errorStruct) {
         this->errorStruct = ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::make_unique<DataHeader>(*errorStruct.returnRef()));
+    };
+    static DataHeaderHelperStruct createMove(ErrorStruct<std::unique_ptr<DataHeader>>&& errorStruct) {
+        DataHeaderHelperStruct dhhs;
+        dhhs.errorStruct = std::move(errorStruct);
+        return dhhs;
     };
     Bytes Password_hash() {
         // returns the password hash if the chainhash was successful
