@@ -431,7 +431,7 @@ TEST(PWFUNCClass, timedIters) {
 
         // generating random arguments
         Bytes rand_b(8);
-        
+
         RNG::fill_random_bytes(rand_b, 8);
         u_int64_t l2 = rand_b.toLong();
         RNG::fill_random_bytes(rand_b, 8);
