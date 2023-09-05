@@ -1,7 +1,9 @@
 #include "sha256.h"
 
 #include <gtest/gtest.h>
+#include <openssl/sha.h>
 
+#include "rng.h"
 #include "test_settings.cpp"
 #include "utility.h"
 
@@ -10,8 +12,10 @@ TEST(SHA256Class, returnTypes) {
     sha256 shaObj = sha256();
     EXPECT_EQ(SHA256_DIGEST_LENGTH, shaObj.getHashSize());
     EXPECT_EQ(typeid(int), typeid(shaObj.getHashSize()));
-    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes())));
     EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes(10))));
+    Bytes b(10);
+    b.fillrandom();
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(b)));
     EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("")));
     EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("sadfasd .-fsa")));
 }
@@ -22,7 +26,7 @@ TEST(SHA256Class, att_strings) {
     sha256 shaObj = sha256();
     for (int len = 4; len < TEST_HASH_MAX_LEN; len++) {
         for (u_int64_t num = 0; num < TEST_HASH_ITERS; num++) {
-            std::string tmpstr = charVecToString(Bytes(len).getBytes());
+            std::string tmpstr = RNG::get_random_string(len);
             Bytes tmp = shaObj.hash(tmpstr);
             EXPECT_EQ(tmp, shaObj.hash(tmpstr));
             hashv.push_back(tmp);
@@ -51,7 +55,7 @@ TEST(SHA256Class, exact_strings) {
     for (int i = 0; i < strings.size(); i++) {
         EXPECT_EQ(sha256().hash(strings[i]), sha256().hash(strings[i]));
         for (auto& c : hashs[i]) c = toupper(c);
-        EXPECT_EQ(hashs[i], toHex(sha256().hash(strings[i])));
+        EXPECT_EQ(hashs[i], sha256().hash(strings[i]).toHex());
     }
 }
 
@@ -62,6 +66,7 @@ TEST(SHA256Class, att_bytes) {
     for (int len = 4; len < TEST_HASH_MAX_LEN; len++) {
         for (u_int64_t num = 0; num < TEST_HASH_ITERS; num++) {
             Bytes tmpbytes = Bytes(len);
+            tmpbytes.fillrandom();
             Bytes tmp = shaObj.hash(tmpbytes);
             EXPECT_EQ(tmp, shaObj.hash(tmpbytes));
             hashv.push_back(tmp);
@@ -85,9 +90,7 @@ TEST(SHA256Class, exact_bytes) {
     std::vector<std::string> strings = {"jad", "", "z", "opjwdofiasasdf", "iou32894e934zh83", "öül34.ö23-42,.34,-23.4m23oi4z239o4hz239847z2", "asoizdfh8790qazf9up984u89auwrfsaf fjas pflsa .,4nmrt4"};
     std::vector<Bytes> bytes;
     for (std::string str : strings) {
-        bytes.emplace_back();
-        std::vector<unsigned char> data(str.begin(), str.end());
-        bytes.back().setBytes(data);
+        bytes.push_back(stringToBytes(str));
     }
     std::vector<std::string> hashs = {"65ebae8e077a037d81231c1bde91b721bf23bc3dd92baebdcdbe295ade66b79f", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
                                       "594e519ae499312b29433b7dd8a97ff068defcba9755b6d5d00e84c524d67b06", "794f3b75cb2279f380c2db0f749187b2d7df799a2d17c7060381cc1a24c5acf7",
@@ -96,6 +99,6 @@ TEST(SHA256Class, exact_bytes) {
     for (int i = 0; i < bytes.size(); i++) {
         EXPECT_EQ(sha256().hash(bytes[i]), sha256().hash(bytes[i]));
         for (auto& c : hashs[i]) c = toupper(c);
-        EXPECT_EQ(hashs[i], toHex(sha256().hash(bytes[i])));
+        EXPECT_EQ(hashs[i], sha256().hash(bytes[i]).toHex());
     }
 }

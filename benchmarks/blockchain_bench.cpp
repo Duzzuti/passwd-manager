@@ -61,6 +61,9 @@ TEST(BlockChain, encrypt_sha256) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -82,6 +85,9 @@ TEST(BlockChain, encrypt_sha384) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -103,6 +109,9 @@ TEST(BlockChain, encrypt_sha512) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -124,6 +133,9 @@ TEST(BlockChain, decrypt_sha256) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -145,6 +157,9 @@ TEST(BlockChain, decrypt_sha384) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -166,6 +181,9 @@ TEST(BlockChain, decrypt_sha512) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -187,6 +205,9 @@ TEST(BlockChain, codec_sha256) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -211,6 +232,9 @@ TEST(BlockChain, codec_sha384) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);
@@ -235,6 +259,9 @@ TEST(BlockChain, codec_sha512) {
     Bytes pwhash{hash->getHashSize()};
     Bytes enc_salt{hash->getHashSize()};
     Bytes data{NUM_BYTES};
+    pwhash.fillrandom();
+    enc_salt.fillrandom();
+    data.fillrandom();
     Timer timer;
 
     std::thread memory_thread(MemoryThread);

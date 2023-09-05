@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <optional>
 
 #include "bytes.h"
@@ -121,7 +122,7 @@ struct DataHeaderParts {
     bool isComplete(const unsigned char hash_size) const noexcept {
         // checks if everything is set correctly
         try {
-            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->getHashSize() == hash_size)
+            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->isHashModeSet() && this->getHashSize() == hash_size)
                 return true;  // everything is set correctly
         } catch (std::exception& e) {
             PLOG_WARNING << "isComplete thrown: " << e.what();
@@ -136,8 +137,8 @@ struct DataHeaderParts {
         return os << "[DataHeaderParts] "
                   << "file_mode: " << (dhp.isFileDataModeSet() ? std::to_string(+dhp.getFileDataMode()) : "not set") << ", "
                   << "hash_mode: " << (dhp.isHashModeSet() ? std::to_string(+dhp.getHashMode()) : "not set") << ", "
-                  << "valid_hash: " << (dhp.isValidPasswordHashSet() ? toHex(dhp.getValidPasswordHash()) : "not set") << ", "
-                  << "enc_salt: " << (dhp.isEncSaltSet() ? toHex(dhp.getEncSalt()) : "not set") << ", "
+                  << "valid_hash: " << (dhp.isValidPasswordHashSet() ? dhp.getValidPasswordHash().toHex() : "not set") << ", "
+                  << "enc_salt: " << (dhp.isEncSaltSet() ? dhp.getEncSalt().toHex() : "not set") << ", "
                   << "chainhash1: " << dhp.chainhash1 << ", "
                   << "chainhash2: " << dhp.chainhash2;
     }
@@ -491,14 +492,14 @@ class DataHeader {
     more information about the header: docs/dataheader.md
     */
    private:
-    DataHeaderParts dh;       // saves every part of the header
-    unsigned char hash_size;  // the size of the hash provided by the hash function (in Bytes)
-    Bytes header_bytes;       // bytes that are in the header
+    DataHeaderParts dh;                           // saves every part of the header
+    unsigned char hash_size;                      // the size of the hash provided by the hash function (in Bytes)
+    Bytes header_bytes = Bytes(MAX_HEADER_SIZE);  // bytes that are in the header
 
    private:
     // checks if all data is set correctly
     bool isComplete() const noexcept;
-    void setEncSalt(const Bytes salt);  // sets the salt
+    void setEncSalt(const Bytes& salt);  // sets the salt
 
    public:
     // sets up the data header with a hash mode which is necessary to
@@ -508,19 +509,20 @@ class DataHeader {
     void setFileDataMode(const FModes file_mode);  // sets the file data mode (semantic of content)
     // setter for the chainhashes, takes a mode, number of iters, a datablock length (to verify datablock) and the datablock
     // which contains data for the chainhash
-    void setChainHash1(const ChainHash chainhash, const unsigned char len);
-    void setChainHash2(const ChainHash chainhash, const unsigned char len);
-    void setValidPasswordHashBytes(const Bytes validBytes);  // sets the passwordhashhash to validate the password hash
+    void setChainHash1(const ChainHash chainhash);
+    void setChainHash2(const ChainHash chainhash);
+    void setValidPasswordHashBytes(const Bytes& validBytes);  // sets the passwordhashhash to validate the password hash
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
-    void calcHeaderBytes(const Bytes passwordhash = Bytes());
+    void calcHeaderBytes(const Bytes& passwordhash = Bytes(0));
     Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overwrites this variable
 
     // creates a new DataHeader object with the given header bytes
     // after this call the fileBytes are the data that is not part of the header
-    static ErrorStruct<DataHeader> setHeaderBytes(Bytes& fileBytes) noexcept;
+    static ErrorStruct<std::unique_ptr<DataHeader>> setHeaderBytes(Bytes& fileBytes) noexcept;
+    static ErrorStruct<std::unique_ptr<DataHeader>> setHeaderBytes(std::ifstream& file) noexcept;
     // creates a new DataHeader object with the given data header parts
-    static ErrorStruct<DataHeader> setHeaderParts(const DataHeaderParts dhp) noexcept;
+    static ErrorStruct<std::unique_ptr<DataHeader>> setHeaderParts(const DataHeaderParts& dhp) noexcept;
 
     // gets the length of the currently set header bytes, if its not currently set, we try to calculate the expected len
     // all set data, such as chainhash data etc. are used to calculate this expected len. If the data is not enough we return 0

@@ -1,7 +1,9 @@
 #include "sha512.h"
 
 #include <gtest/gtest.h>
+#include <openssl/sha.h>
 
+#include "rng.h"
 #include "test_settings.cpp"
 #include "utility.h"
 
@@ -10,8 +12,10 @@ TEST(SHA512Class, returnTypes) {
     sha512 shaObj = sha512();
     EXPECT_EQ(SHA512_DIGEST_LENGTH, shaObj.getHashSize());
     EXPECT_EQ(typeid(int), typeid(shaObj.getHashSize()));
-    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes())));
     EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(Bytes(10))));
+    Bytes b(10);
+    b.fillrandom();
+    EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash(b)));
     EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("")));
     EXPECT_EQ(typeid(Bytes), typeid(shaObj.hash("sadfasd .-fsa")));
 }
@@ -22,7 +26,7 @@ TEST(SHA512Class, att_strings) {
     sha512 shaObj = sha512();
     for (int len = 4; len < TEST_HASH_MAX_LEN; len++) {
         for (u_int64_t num = 0; num < TEST_HASH_ITERS; num++) {
-            std::string tmpstr = charVecToString(Bytes(len).getBytes());
+            std::string tmpstr = RNG::get_random_string(len);
             Bytes tmp = shaObj.hash(tmpstr);
             EXPECT_EQ(tmp, shaObj.hash(tmpstr));
             hashv.push_back(tmp);
@@ -54,7 +58,7 @@ TEST(SHA512Class, exact_strings) {
     for (int i = 0; i < strings.size(); i++) {
         EXPECT_EQ(sha512().hash(strings[i]), sha512().hash(strings[i]));
         for (auto& c : hashs[i]) c = toupper(c);
-        EXPECT_EQ(hashs[i], toHex(sha512().hash(strings[i])));
+        EXPECT_EQ(hashs[i], sha512().hash(strings[i]).toHex());
     }
 }
 
@@ -64,7 +68,8 @@ TEST(SHA512Class, att_bytes) {
     sha512 shaObj = sha512();
     for (int len = 4; len < TEST_HASH_MAX_LEN; len++) {
         for (u_int64_t num = 0; num < TEST_HASH_ITERS; num++) {
-            Bytes tmpbytes = Bytes(len);
+            Bytes tmpbytes(len);
+            tmpbytes.fillrandom();
             Bytes tmp = shaObj.hash(tmpbytes);
             EXPECT_EQ(tmp, shaObj.hash(tmpbytes));
             hashv.push_back(tmp);
@@ -88,9 +93,7 @@ TEST(SHA512Class, exact_bytes) {
     std::vector<std::string> strings = {"jad", "", "z", "opjwdofiasasdf", "iou32894e934zh83", "öül34.ö23-42,.34,-23.4m23oi4z239o4hz239847z2", "asoizdfh8790qazf9up984u89auwrfsaf fjas pflsa .,4nmrt4"};
     std::vector<Bytes> bytes;
     for (std::string str : strings) {
-        bytes.emplace_back();
-        std::vector<unsigned char> data(str.begin(), str.end());
-        bytes.back().setBytes(data);
+        bytes.push_back(stringToBytes(str));
     }
     std::vector<std::string> hashs = {"d490d8705c47cc9e57e2388362ce1495474e0047709bf4b1f169a9ff9c0e594bb4ec8245e3374deafb59581af1d0618c86e66b68b758a5a91750f3411dfb742d",
                                       "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
@@ -102,6 +105,6 @@ TEST(SHA512Class, exact_bytes) {
     for (int i = 0; i < bytes.size(); i++) {
         EXPECT_EQ(sha512().hash(bytes[i]), sha512().hash(bytes[i]));
         for (auto& c : hashs[i]) c = toupper(c);
-        EXPECT_EQ(hashs[i], toHex(sha512().hash(bytes[i])));
+        EXPECT_EQ(hashs[i], sha512().hash(bytes[i]).toHex());
     }
 }

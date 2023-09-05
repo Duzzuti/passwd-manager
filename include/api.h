@@ -51,8 +51,20 @@ struct WorkflowDecStruct {
 
 // helper struct that is returned internally the API if you create a data header
 struct DataHeaderHelperStruct {
-    ErrorStruct<DataHeader> errorStruct;  // contains the actual data header
-    DataHeaderHelperStruct(const ErrorStruct<DataHeader> errorStruct) : errorStruct(errorStruct){};
+   private:
+    DataHeaderHelperStruct() { this->errorStruct = ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_API_STATE_INVALID, "DataHeaderHelperStruct should not be created without error struct"}; }
+
+   public:
+    ErrorStruct<std::unique_ptr<DataHeader>> errorStruct;  // contains the actual data header
+
+    DataHeaderHelperStruct(ErrorStruct<std::unique_ptr<DataHeader>> errorStruct) {
+        this->errorStruct = ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::make_unique<DataHeader>(*errorStruct.returnRef()));
+    };
+    static DataHeaderHelperStruct createMove(ErrorStruct<std::unique_ptr<DataHeader>>&& errorStruct) {
+        DataHeaderHelperStruct dhhs;
+        dhhs.errorStruct = std::move(errorStruct);
+        return dhhs;
+    };
     Bytes Password_hash() {
         // returns the password hash if the chainhash was successful
         if (!this->errorStruct.isSuccess()) {
@@ -67,7 +79,7 @@ struct DataHeaderHelperStruct {
     };
 
    private:
-    Bytes password_hash;  // contains the password hash
+    Bytes password_hash = Bytes(0);  // contains the password hash
 };
 
 class API {
@@ -83,34 +95,34 @@ class API {
         // after this call, the API object is in the same state as after the constructor call
        public:
         void logout(const FModes file_mode) noexcept {
-            parent->correct_password_hash = Bytes();
-            parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
-            parent->encrypted_data = Bytes();
-            parent->selected_file = {};
-            parent->file_data_struct = FileDataStruct{file_mode, Bytes()};
+            parent->correct_password_hash = Bytes(0);
+            parent->dh = nullptr;
+            parent->encrypted_data = Bytes(0);
+            parent->selected_file = nullptr;
+            parent->file_data_struct = FileDataStruct{file_mode, Bytes(0)};
             parent->current_state = std::make_unique<INIT>(parent);
         }
         // this logout preserves the file mode
         void logout() noexcept {
-            parent->correct_password_hash = Bytes();
-            parent->dh = DataHeader(HModes(STANDARD_HASHMODE));
-            parent->encrypted_data = Bytes();
-            parent->selected_file = {};
-            parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes()};
+            parent->correct_password_hash = Bytes(0);
+            parent->dh = nullptr;
+            parent->encrypted_data = Bytes(0);
+            parent->selected_file = nullptr;
+            parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes(0)};
             parent->current_state = std::make_unique<INIT>(parent);
         }
 
         // holds all non static functionality of the api
         // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
-        virtual ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept {
+        virtual ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path& dir) noexcept {
             return ErrorStruct<std::vector<std::string>>{FAIL, ERR_API_STATE_INVALID, "getRelevantFileNames is only available in the INIT state"};
         };
         // creates a new .enc file at the given path (path contains the name of the file)
-        virtual ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept {
+        virtual ErrorStruct<bool> createFile(const std::filesystem::path& file_path) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "createEncFile is only available in the INIT state"};
         };
         // selects a file (this is now the working file)
-        virtual ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept {
+        virtual ErrorStruct<bool> selectFile(const std::filesystem::path& file_path) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "selectFile is only available in the INIT state"};
         };
 
@@ -119,7 +131,7 @@ class API {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "isFileEmpty is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"};
         };
 
-        // deletes the given .enc file
+        // deletes the selected .enc file
         virtual ErrorStruct<bool> deleteFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "deleteEncFile is only available in the FILE_SELECTED or EMPTY_FILE_SELECTED state"}; };
         // gets the content of the selected file
         // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
@@ -132,22 +144,24 @@ class API {
         // This call is expensive
         // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
         // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
-        virtual ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept {
+        virtual ErrorStruct<Bytes> verifyPassword(const std::string& password, const u_int64_t timeout = 0) noexcept {
             return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "verifyPassword is only available in the FILE_SELECTED state"};
         };
         // creates a data header for a given password and settings by randomizing the salt and chainhash data
         // This call is expensive because it has to chainhash the password twice to generate a validator.
         // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
         // you can specify the iterations or the time (the chainhash runs until the time is reached to get the iterations)
-        virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept {
-            return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the EMPTY_FILE_SELECTED or DECRYPT state"};
+        virtual ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout = 0) noexcept {
+            return ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the EMPTY_FILE_SELECTED or DECRYPT state"};
         };
-        virtual ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
-            return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the EMPTY_FILE_SELECTED or DECRYPTED state"};
+        virtual ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept {
+            return ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_API_STATE_INVALID, "createDataHeader is only available in the EMPTY_FILE_SELECTED or DECRYPTED state"};
         };
         // creates data header with the current settings and password, just changes the salt
         // this call is not expensive because it does not have to chainhash the password
-        virtual ErrorStruct<DataHeader> changeSalt() noexcept { return ErrorStruct<DataHeader>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state"}; };
+        virtual ErrorStruct<std::unique_ptr<DataHeader>> changeSalt() noexcept {
+            return ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state"};
+        };
 
         // decrypts the data
         // returns the decrypted content (without the data header)
@@ -166,7 +180,7 @@ class API {
         // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
         virtual ErrorStruct<bool> writeToFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "writeToFile is only available in the ENCRYPTED state"}; };
         // writes encrypted data to a file adds the dataheader, uses the encrypted data from getEncryptedData
-        virtual ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept {
+        virtual ErrorStruct<bool> writeToFile(const std::filesystem::path& file_path) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "writeToFile is only available in the ENCRYPTED state"};
         };
 
@@ -177,9 +191,9 @@ class API {
     class INIT : public WorkflowState {
        public:
         INIT(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to INIT"; };
-        ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept override;
-        ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept override;
-        ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept override;
+        ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path& dir) noexcept override;
+        ErrorStruct<bool> createFile(const std::filesystem::path& file_path) noexcept override;
+        ErrorStruct<bool> selectFile(const std::filesystem::path& file_path) noexcept override;
     };
 
     class FILE_SELECTED : public WorkflowState {
@@ -189,7 +203,7 @@ class API {
         ErrorStruct<bool> deleteFile() noexcept override;
         ErrorStruct<Bytes> getFileContent() noexcept override;
         ErrorStruct<bool> unselectFile() noexcept override;
-        ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept override;
+        ErrorStruct<Bytes> verifyPassword(const std::string& password, const u_int64_t timeout = 0) noexcept override;
     };
 
     class EMPTY_FILE_SELECTED : public WorkflowState {
@@ -199,8 +213,8 @@ class API {
         ErrorStruct<bool> deleteFile() noexcept override;
         ErrorStruct<Bytes> getFileContent() noexcept override;
         ErrorStruct<bool> unselectFile() noexcept override;
-        ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept override;
-        ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept override;
+        ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout = 0) noexcept override;
+        ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept override;
     };
 
     class PASSWORD_VERIFIED : public WorkflowState {
@@ -214,15 +228,15 @@ class API {
         DECRYPTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to DECRYPTED"; };
         ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept override;
         ErrorStruct<FileDataStruct> getFileData() noexcept override;
-        ErrorStruct<DataHeader> changeSalt() noexcept override;
-        ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept override;
-        ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept override;
+        ErrorStruct<std::unique_ptr<DataHeader>> changeSalt() noexcept override;
+        ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout = 0) noexcept override;
+        ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept override;
     };
 
     class ENCRYPTED : public WorkflowState {
        public:
         ENCRYPTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to ENCRYPTED"; };
-        ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept override;
+        ErrorStruct<bool> writeToFile(const std::filesystem::path& file_path) noexcept override;
         ErrorStruct<bool> writeToFile() noexcept override;
     };
 
@@ -237,26 +251,26 @@ class API {
     FileDataStruct file_data_struct;  // the user can construct a file data object from this struct
     Bytes correct_password_hash;      // the correct password hash for the dataheader
     // setting standard data header
-    DataHeader dh;  // the data header for the correct password
+    std::unique_ptr<DataHeader> dh;  // the data header for the correct password
     // stores the file content that was encrypted by the algorithm
     // only this file content is valid to write to a file
     Bytes encrypted_data;
     // stores the handler to the working file
-    std::optional<FileHandler> selected_file;
+    std::unique_ptr<FileHandler> selected_file;
 
     // utility functions
     // gets the file handler for the given file path
-    ErrorStruct<FileHandler> _getFileHandler(const std::filesystem::path file_path) const noexcept;
+    ErrorStruct<std::unique_ptr<FileHandler>> _getFileHandler(const std::filesystem::path& file_path) const noexcept;
 
     // does the most work for creating a new dataheader from DataHeaderSettingsIters
-    DataHeaderHelperStruct _createDataHeaderIters(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) const noexcept;
+    DataHeaderHelperStruct _createDataHeaderIters(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout = 0) const noexcept;
 
     // does the most work for creating a new dataheader from DataHeaderSettingsTime
-    DataHeaderHelperStruct _createDataHeaderTime(const std::string password, const DataHeaderSettingsTime ds) const noexcept;
+    DataHeaderHelperStruct _createDataHeaderTime(const std::string& password, const DataHeaderSettingsTime& ds) const noexcept;
 
-    ErrorStruct<bool> _select_empty_file(const FileHandler file) noexcept;
+    ErrorStruct<bool> _select_empty_file(std::unique_ptr<FileHandler> file) noexcept;
 
-    ErrorStruct<bool> _select_non_empty_file(const FileHandler file) noexcept;
+    ErrorStruct<bool> _select_non_empty_file(std::unique_ptr<FileHandler> file) noexcept;
 
     ErrorStruct<bool> _deleteFile() noexcept;
 
@@ -293,23 +307,23 @@ class API {
     static ErrorStruct<std::filesystem::path> getEncDirPath() noexcept;
 
     // gets the names of all .enc files in the given directory
-    static ErrorStruct<std::vector<std::string>> getAllEncFileNames(const std::filesystem::path dir) noexcept;
+    static ErrorStruct<std::vector<std::string>> getAllEncFileNames(const std::filesystem::path& dir) noexcept;
 
     // gets the names of all .enc files in the given directory which are storing the wished file data (file mode) or are empty
-    ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path dir) noexcept {
+    ErrorStruct<std::vector<std::string>> getRelevantFileNames(const std::filesystem::path& dir) noexcept {
         PLOG_DEBUG << "API call made (getRelevantFileNames) with dir: " << dir;
         return this->current_state->getRelevantFileNames(dir);
     }
 
     // creates a new .enc file at the given path (path contains the name of the file)
-    ErrorStruct<bool> createFile(const std::filesystem::path file_path) noexcept {
+    ErrorStruct<bool> createFile(const std::filesystem::path& file_path) noexcept {
         PLOG_DEBUG << "API call made (createFile) with file_path: " << file_path;
         return this->current_state->createFile(file_path);
     }
 
     // selects the file that should be worked with
     // fails if the file contains data that is not encrypted by the algorithm or does not belong to the given file data type
-    ErrorStruct<bool> selectFile(const std::filesystem::path file_path) noexcept {
+    ErrorStruct<bool> selectFile(const std::filesystem::path& file_path) noexcept {
         PLOG_DEBUG << "API call made (selectFile) with file_path: " << file_path;
         return this->current_state->selectFile(file_path);
     }
@@ -343,7 +357,7 @@ class API {
     // This call is expensive
     // because it has to hash the password twice. A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // NOTE that if the timeout is reached, the function will return with a TIMEOUT SuccessType, but the password could be valid
-    ErrorStruct<Bytes> verifyPassword(const std::string password, const u_int64_t timeout = 0) noexcept {
+    ErrorStruct<Bytes> verifyPassword(const std::string& password, const u_int64_t timeout = 0) noexcept {
         PLOG_DEBUG << "API call made (verifyPassword) with timeout: " << timeout;
         return this->current_state->verifyPassword(password, timeout);
     }
@@ -352,18 +366,18 @@ class API {
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations or the time (the chainhash runs until the time is reached to get the iterations)
-    ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsIters ds, const u_int64_t timeout = 0) noexcept {
+    ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout = 0) noexcept {
         if (!ds.isComplete()) {
             PLOG_ERROR << "API call made (createDataHeader) with incomplete DataHeaderSettingsIters";
-            return ErrorStruct<DataHeader>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsIters"};
+            return ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsIters"};
         }
         PLOG_DEBUG << "API call made (createDataHeader) with timeout: " << timeout << " and Iterations: " << ds.getChainHash1Iters() << " and " << ds.getChainHash2Iters();
         return this->current_state->createDataHeader(password, ds, timeout);
     }
-    ErrorStruct<DataHeader> createDataHeader(const std::string password, const DataHeaderSettingsTime ds) noexcept {
+    ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept {
         if (!ds.isComplete()) {
             PLOG_ERROR << "API call made (createDataHeader) with incomplete DataHeaderSettingsTime";
-            return ErrorStruct<DataHeader>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsTime"};
+            return ErrorStruct<std::unique_ptr<DataHeader>>{FAIL, ERR_DATAHEADERSETTINGS_INCOMPLETE, "API call made (createDataHeader) with incomplete DataHeaderSettingsTime"};
         }
         PLOG_DEBUG << "API call made (createDataHeader) with Time: " << ds.getChainHash1Time() << " and " << ds.getChainHash2Time();
         return this->current_state->createDataHeader(password, ds);
@@ -371,7 +385,7 @@ class API {
 
     // creates data header with the current settings and password, just changes the salt
     // this call is not expensive because it does not have to chainhash the password
-    ErrorStruct<DataHeader> changeSalt() noexcept {
+    ErrorStruct<std::unique_ptr<DataHeader>> changeSalt() noexcept {
         PLOG_DEBUG << "API call made (changeSalt)";
         return this->current_state->changeSalt();
     }
@@ -404,7 +418,7 @@ class API {
         PLOG_DEBUG << "API call made (writeToFile)";
         return this->current_state->writeToFile();
     }
-    ErrorStruct<bool> writeToFile(const std::filesystem::path file_path) noexcept {
+    ErrorStruct<bool> writeToFile(const std::filesystem::path& file_path) noexcept {
         // writes to file at file_path (has to be empty)
         PLOG_DEBUG << "API call made (writeToFile) with file_path: " << file_path;
         return this->current_state->writeToFile(file_path);

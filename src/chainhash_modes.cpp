@@ -8,7 +8,7 @@ contains the implementations for the chainhashModes class
 #include "rng.h"
 #include "utility.h"
 
-std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
+std::string ChainHashModes::getInfo(const CHModes& chainhash_mode) {
     // gets some information about the given chainhash mode
     std::stringstream msg{};
     msg << "The chainhash mode " << +chainhash_mode << " corresponds to a chainhash ";
@@ -35,7 +35,7 @@ std::string ChainHashModes::getInfo(const CHModes chainhash_mode) {
     return msg.str();
 }
 
-std::string ChainHashModes::getShortInfo(const CHModes chainhash_mode) {
+std::string ChainHashModes::getShortInfo(const CHModes& chainhash_mode) {
     switch (chainhash_mode) {
         case CHAINHASH_NORMAL:  // normal chainhash
             return "normal";
@@ -53,12 +53,12 @@ std::string ChainHashModes::getShortInfo(const CHModes chainhash_mode) {
     }
 }
 
-bool ChainHashModes::isModeValid(const CHModes chainhash_mode) noexcept {
+bool ChainHashModes::isModeValid(const CHModes& chainhash_mode) noexcept {
     // checks whether the chainhash mode is in the range of valid modes
     return (1 <= chainhash_mode && chainhash_mode <= MAX_CHAINHASHMODE_NUMBER);
 }
 
-ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const Bytes data, const u_int64_t timeout) {
+ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash& chainh, std::shared_ptr<Hash> hash, const Bytes& data, const u_int64_t timeout) {
     // performs a chainhash on bytes
     PLOG_VERBOSE << "performing chainhash (mode: " << +chainh.getMode() << ", iterations: " << chainh.getIters() << ", timeout " << timeout << ")";
     PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
@@ -71,20 +71,20 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
         case CHAINHASH_NORMAL:                                                                                          // normal chainhash
             return pwf.chainhash(data, chainh.getIters(), timeout);                                                     // just use the iterations
         case CHAINHASH_CONSTANT_SALT:                                                                                   // constant salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                         // get the salt from the datablock
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                     // get the salt from the datablock
             return pwf.chainhashWithConstantSalt(data, chainh.getIters(), constant_salt, timeout);                      // use the iterations and the constant salt
         case CHAINHASH_COUNT_SALT:                                                                                      // count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                               // get the start number of the salt
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                             // get the start number of the salt
             return pwf.chainhashWithCountSalt(data, chainh.getIters(), count_salt, timeout);                            // use the iterations and the count salt
         case CHAINHASH_CONSTANT_COUNT_SALT:                                                                             // constant + count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                               // get the start number of the salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                         // get the salt from the datablock
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                             // get the start number of the salt
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                     // get the salt from the datablock
             return pwf.chainhashWithCountAndConstantSalt(data, chainh.getIters(), count_salt, constant_salt, timeout);  // use the count and constant salt
         case CHAINHASH_QUADRATIC:                                                                                       // Quadratic count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                               // get the count salt (start number)
-            a = toLong(chainh.getChainHashData().getPart("A"));                                                         // get the a number
-            b = toLong(chainh.getChainHashData().getPart("B"));                                                         // get the b number
-            c = toLong(chainh.getChainHashData().getPart("C"));                                                         // get the c number
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                             // get the count salt (start number)
+            a = chainh.getChainHashData()->getPart("A").toLong();                                                       // get the a number
+            b = chainh.getChainHashData()->getPart("B").toLong();                                                       // get the b number
+            c = chainh.getChainHashData()->getPart("C").toLong();                                                       // get the c number
             return pwf.chainhashWithQuadraticCountSalt(data, chainh.getIters(), count_salt, a, b, c, timeout);          // use the count salt and a,b,c
         default:                                                                                                        // invalid chainhash mode
             PLOG_FATAL << "invalid chainhash mode provided (" << +chainh.getMode() << ")";
@@ -92,7 +92,7 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
     }
 }
 
-ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std::shared_ptr<Hash> hash, const std::string data, const u_int64_t timeout) {
+ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash& chainh, std::shared_ptr<Hash> hash, const std::string& data, const u_int64_t timeout) {
     // performs a chainhash on a string
     PLOG_VERBOSE << "performing chainhash (mode: " << +chainh.getMode() << ", iterations: " << chainh.getIters() << ", timeout " << timeout << ")";
     PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
@@ -105,20 +105,20 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
         case CHAINHASH_NORMAL:                                                                                          // normal chainhash
             return pwf.chainhash(data, chainh.getIters(), timeout);                                                     // just use the iterations
         case CHAINHASH_CONSTANT_SALT:                                                                                   // constant salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                         // get the salt from the datablock
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                     // get the salt from the datablock
             return pwf.chainhashWithConstantSalt(data, chainh.getIters(), constant_salt, timeout);                      // use the iterations and the constant salt
         case CHAINHASH_COUNT_SALT:                                                                                      // count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                               // get the start number of the salt
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                             // get the start number of the salt
             return pwf.chainhashWithCountSalt(data, chainh.getIters(), count_salt, timeout);                            // use the iterations and the count salt
         case CHAINHASH_CONSTANT_COUNT_SALT:                                                                             // constant + count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                               // get the start number of the salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                         // get the salt from the datablock
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                             // get the start number of the salt
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                     // get the salt from the datablock
             return pwf.chainhashWithCountAndConstantSalt(data, chainh.getIters(), count_salt, constant_salt, timeout);  // use the count and constant salt
         case CHAINHASH_QUADRATIC:                                                                                       // Quadratic count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                               // get the start number of the count salt
-            a = toLong(chainh.getChainHashData().getPart("A"));                                                         // get the a number
-            b = toLong(chainh.getChainHashData().getPart("B"));                                                         // get the b number
-            c = toLong(chainh.getChainHashData().getPart("C"));                                                         // get the c number
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                             // get the start number of the count salt
+            a = chainh.getChainHashData()->getPart("A").toLong();                                                       // get the a number
+            b = chainh.getChainHashData()->getPart("B").toLong();                                                       // get the b number
+            c = chainh.getChainHashData()->getPart("C").toLong();                                                       // get the c number
             return pwf.chainhashWithQuadraticCountSalt(data, chainh.getIters(), count_salt, a, b, c, timeout);          // use the count salt and a,b,c
         default:                                                                                                        // invalid chainhash mode
             PLOG_FATAL << "invalid chainhash mode provided (" << +chainh.getMode() << ")";
@@ -126,7 +126,7 @@ ErrorStruct<Bytes> ChainHashModes::performChainHash(const ChainHash chainh, std:
     }
 }
 
-ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const Bytes data) {
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed& chainh, std::shared_ptr<Hash> hash, const Bytes& data) {
     // performs a timed chainhash on bytes
     PLOG_VERBOSE << "performing chainhash timed (mode: " << +chainh.getMode() << ", runtime: " << chainh.getRunTime() << ")";
     PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
@@ -140,20 +140,20 @@ ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTim
         case CHAINHASH_NORMAL:                                                                                      // normal chainhash
             tr = pwf.chainhashTimed(data, chainh.getRunTime());                                                     // just use the run time
         case CHAINHASH_CONSTANT_SALT:                                                                               // constant salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                     // get the salt from the datablock
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                 // get the salt from the datablock
             tr = pwf.chainhashWithConstantSaltTimed(data, chainh.getRunTime(), constant_salt);                      // use the run time and the constant salt
         case CHAINHASH_COUNT_SALT:                                                                                  // count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                           // get the start number of the salt
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                         // get the start number of the salt
             tr = pwf.chainhashWithCountSaltTimed(data, chainh.getRunTime(), count_salt);                            // use the run time and the count salt
         case CHAINHASH_CONSTANT_COUNT_SALT:                                                                         // constant + count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                           // get the start number of the salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                     // get the salt from the datablock
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                         // get the start number of the salt
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                 // get the salt from the datablock
             tr = pwf.chainhashWithCountAndConstantSaltTimed(data, chainh.getRunTime(), count_salt, constant_salt);  // use the count and constant salt
         case CHAINHASH_QUADRATIC:                                                                                   // Quadratic count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                           // get the count salt (start number)
-            a = toLong(chainh.getChainHashData().getPart("A"));                                                     // get the a number
-            b = toLong(chainh.getChainHashData().getPart("B"));                                                     // get the b number
-            c = toLong(chainh.getChainHashData().getPart("C"));                                                     // get the c number
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                         // get the count salt (start number)
+            a = chainh.getChainHashData()->getPart("A").toLong();                                                   // get the a number
+            b = chainh.getChainHashData()->getPart("B").toLong();                                                   // get the b number
+            c = chainh.getChainHashData()->getPart("C").toLong();                                                   // get the c number
             tr = pwf.chainhashWithQuadraticCountSaltTimed(data, chainh.getRunTime(), count_salt, a, b, c);          // use the count salt and a,b,c
         default:                                                                                                    // invalid chainhash mode
             PLOG_FATAL << "invalid chainhash mode provided (" << +chainh.getMode() << ")";
@@ -163,7 +163,7 @@ ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTim
     return ErrorStruct<ChainHashResult>(ChainHashResult{ChainHash{chainh.getMode(), tr.iterations, chainh.getChainHashData()}, tr.result});
 }
 
-ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed chainh, std::shared_ptr<Hash> hash, const std::string data) {
+ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTimed& chainh, std::shared_ptr<Hash> hash, const std::string& data) {
     // performs a timed chainhash on a string
     PLOG_VERBOSE << "performing chainhash timed (mode: " << +chainh.getMode() << ", runtime: " << chainh.getRunTime() << ")";
     PwFunc pwf = PwFunc(std::move(hash));  // init the pwfunc object with the given hash function
@@ -177,20 +177,20 @@ ErrorStruct<ChainHashResult> ChainHashModes::performChainHash(const ChainHashTim
         case CHAINHASH_NORMAL:                                                                                      // normal chainhash
             tr = pwf.chainhashTimed(data, chainh.getRunTime());                                                     // just use the run time
         case CHAINHASH_CONSTANT_SALT:                                                                               // constant salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                     // get the salt from the datablock
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                 // get the salt from the datablock
             tr = pwf.chainhashWithConstantSaltTimed(data, chainh.getRunTime(), constant_salt);                      // use the run time and the constant salt
         case CHAINHASH_COUNT_SALT:                                                                                  // count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                           // get the start number of the salt
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                         // get the start number of the salt
             tr = pwf.chainhashWithCountSaltTimed(data, chainh.getRunTime(), count_salt);                            // use the run time and the count salt
         case CHAINHASH_CONSTANT_COUNT_SALT:                                                                         // constant + count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                           // get the start number of the salt
-            constant_salt = charVecToString(chainh.getChainHashData().getPart("S").getBytes());                     // get the salt from the datablock
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                         // get the start number of the salt
+            constant_salt = bytesToString(chainh.getChainHashData()->getPart("S"));                                 // get the salt from the datablock
             tr = pwf.chainhashWithCountAndConstantSaltTimed(data, chainh.getRunTime(), count_salt, constant_salt);  // use the count and constant salt
         case CHAINHASH_QUADRATIC:                                                                                   // Quadratic count salt
-            count_salt = toLong(chainh.getChainHashData().getPart("SN"));                                           // get the count salt (start number)
-            a = toLong(chainh.getChainHashData().getPart("A"));                                                     // get the a number
-            b = toLong(chainh.getChainHashData().getPart("B"));                                                     // get the b number
-            c = toLong(chainh.getChainHashData().getPart("C"));                                                     // get the c number
+            count_salt = chainh.getChainHashData()->getPart("SN").toLong();                                         // get the count salt (start number)
+            a = chainh.getChainHashData()->getPart("A").toLong();                                                   // get the a number
+            b = chainh.getChainHashData()->getPart("B").toLong();                                                   // get the b number
+            c = chainh.getChainHashData()->getPart("C").toLong();                                                   // get the c number
             tr = pwf.chainhashWithQuadraticCountSaltTimed(data, chainh.getRunTime(), count_salt, a, b, c);          // use the count salt and a,b,c
         default:                                                                                                    // invalid chainhash mode
             PLOG_FATAL << "invalid chainhash mode provided (" << +chainh.getMode() << ")";

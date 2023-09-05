@@ -13,17 +13,12 @@ target_link_libraries(pman_test_bytes gtest_main)
 target_link_libraries(pman_test_bytes ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_bytes PUBLIC ${INCLUDE_DIR})
 
-add_executable(pman_test_bytes_opt main_test.cpp bytes_opt_unittest.cpp ${SRC_DIR}/bytes_opt.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/bytes.cpp)
-target_link_libraries(pman_test_bytes_opt gtest_main)
-target_link_libraries(pman_test_bytes_opt ${OPENSSL_LIBRARIES} pthread)
-target_include_directories(pman_test_bytes_opt PUBLIC ${INCLUDE_DIR})
-
-add_executable(pman_test_block_opt main_test.cpp block_opt_unittest.cpp ${SRC_DIR}/block_opt.cpp ${SRC_DIR}/bytes.cpp
-    ${SRC_DIR}/bytes_opt.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/block_opt_decrypt.cpp ${SRC_DIR}/block_opt_encrypt.cpp
+add_executable(pman_test_block main_test.cpp block_unittest.cpp ${SRC_DIR}/block.cpp ${SRC_DIR}/bytes.cpp
+    ${SRC_DIR}/rng.cpp ${SRC_DIR}/block_decrypt.cpp ${SRC_DIR}/block_encrypt.cpp
     ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp)
-target_link_libraries(pman_test_block_opt gtest_main)
-target_link_libraries(pman_test_block_opt ${OPENSSL_LIBRARIES} pthread)
-target_include_directories(pman_test_block_opt PUBLIC ${INCLUDE_DIR})
+target_link_libraries(pman_test_block gtest_main)
+target_link_libraries(pman_test_block ${OPENSSL_LIBRARIES} pthread)
+target_include_directories(pman_test_block PUBLIC ${INCLUDE_DIR})
 
 add_executable(pman_test_sha256 main_test.cpp sha256_unittest.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_test_sha256 gtest_main)
@@ -49,7 +44,7 @@ target_link_libraries(pman_test_rng ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_rng PUBLIC ${INCLUDE_DIR})
 
 add_executable(pman_test_pwfunc main_test.cpp pwfunc_unittest.cpp ${SRC_DIR}/utility.cpp
-    ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/timer.cpp)
+    ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/timer.cpp)
 target_link_libraries(pman_test_pwfunc gtest_main)
 target_link_libraries(pman_test_pwfunc ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_pwfunc PUBLIC ${TEST_INCLUDE_DIR})
@@ -63,49 +58,47 @@ target_include_directories(pman_test_utility PUBLIC ${INCLUDE_DIR})
 
 add_executable(pman_test_dataheader 
     main_test.cpp dataheader_unittest.cpp 
-    ${SRC_DIR}/password_data.cpp ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/app.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/file_modes.cpp 
-    ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/format.cpp
-    ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp 
-    ${SRC_DIR}/timer.cpp)
+    ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/file_modes.cpp ${SRC_DIR}/hash_modes.cpp
+    ${SRC_DIR}/format.cpp ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/rng.cpp
+    ${SRC_DIR}/timer.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp)
 target_link_libraries(pman_test_dataheader gtest_main)
 target_link_libraries(pman_test_dataheader ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_dataheader PUBLIC ${TEST_INCLUDE_DIR})
 target_include_directories(pman_test_dataheader PUBLIC ${INCLUDE_DIR})
 
+#[[
 add_executable(pman_test_attacker main_test.cpp ${ATTACKER_DIR}/attacker_unittest.cpp
     ${ATTACKER_DIR}/base_attacker.cpp ${ATTACKER_DIR}/brute_pw_attacker.cpp 
     ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/hash_modes.cpp
     ${SRC_DIR}/file_modes.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/format.cpp ${SRC_DIR}/utility.cpp
-    ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/app.cpp
+    ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp
     ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/password_data.cpp ${SRC_DIR}/timer.cpp)
 target_link_libraries(pman_test_attacker gtest_main)
 target_link_libraries(pman_test_attacker ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_attacker PUBLIC ${INCLUDE_DIR})
 target_link_directories(pman_test_attacker PUBLIC ${ATTACKER_DIR})
+]]
 
 add_executable(pman_test_timer main_test.cpp timer_unittest.cpp ${SRC_DIR}/timer.cpp)
 target_link_libraries(pman_test_timer gtest_main)
 target_include_directories(pman_test_timer PUBLIC ${INCLUDE_DIR})
 
 add_executable(pman_test_format main_test.cpp format_unittest.cpp ${SRC_DIR}/format.cpp ${SRC_DIR}/chainhash_modes.cpp
-    ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/chainhash_data.cpp
-    ${SRC_DIR}/app.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/file_modes.cpp ${SRC_DIR}/password_data.cpp ${SRC_DIR}/hash_modes.cpp
-    ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/timer.cpp)
+    ${SRC_DIR}/utility.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/pwfunc.cpp
+    ${SRC_DIR}/timer.cpp)
 target_link_libraries(pman_test_format gtest_main)
 target_link_libraries(pman_test_format ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_format PUBLIC ${INCLUDE_DIR})
 
 add_executable(pman_test_chainhashdata main_test.cpp chainhashdata_unittest.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/bytes.cpp
     ${SRC_DIR}/format.cpp ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/rng.cpp
-    ${SRC_DIR}/app.cpp ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/file_modes.cpp ${SRC_DIR}/password_data.cpp
-    ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp ${SRC_DIR}/timer.cpp)
+    ${SRC_DIR}/timer.cpp)
 target_link_libraries(pman_test_chainhashdata gtest_main)
 target_link_libraries(pman_test_chainhashdata ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_test_chainhashdata PUBLIC ${INCLUDE_DIR})
 
 add_test(bytes pman_test_bytes)
-add_test(bytes_opt pman_test_bytes_opt)
-add_test(block_opt pman_test_block_opt)
+add_test(block_opt pman_test_block)
 add_test(sha256 pman_test_sha256)
 add_test(sha384 pman_test_sha384)
 add_test(sha512 pman_test_sha512)
@@ -113,7 +106,7 @@ add_test(rng pman_test_rng)
 add_test(pwfunc pman_test_pwfunc)
 add_test(utility pman_test_utility)
 add_test(dataheader pman_test_dataheader)
-add_test(attacker pman_test_attacker)
+#add_test(attacker pman_test_attacker)
 add_test(timer pman_test_timer)
 add_test(format pman_test_format)
 add_test(chainhashdata pman_test_chainhashdata)

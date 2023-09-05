@@ -36,48 +36,36 @@ TEST(UtilityClass, endswith) {
     EXPECT_FALSE(endsWith(s3, e33));
 }
 
-TEST(UtilityClass, Longtocharvec) {
-    u_int64_t l1 = 0;
-    u_int64_t l2 = 1;
-    u_int64_t l3 = -1;
-    u_int64_t l4 = -2;
-    u_int64_t l5 = l3 / 256;
-    u_int64_t l6 = l3 / 256 - 1;
-    u_int64_t l7 = l3 / 256 + 1;
-    std::vector<unsigned char> v1;
-    std::vector<unsigned char> v2;
-    std::vector<unsigned char> v3;
-    std::vector<unsigned char> v4;
-    std::vector<unsigned char> v5;
-    std::vector<unsigned char> v6;
-    std::vector<unsigned char> v7;
-    v5.push_back(0);
-    v6.push_back(0);
-    v7.push_back(1);
-    for (int i = 0; i < 6; i++) {
-        v6.push_back(255);
+TEST(UtilityClass, stringToBytes) {
+    Bytes b1(10);
+    for (u_int64_t i = 0; i < 1000; i++) {
+        std::string str = RNG::get_random_string(10);
+        b1.setBytes(reinterpret_cast<const unsigned char*>(str.c_str()), str.length());
+        EXPECT_EQ(b1, stringToBytes(str));
     }
-    v6.push_back(254);
-    for (int i = 0; i < 7; i++) {
-        v1.push_back(0);
-        v2.push_back(0);
-        v3.push_back(255);
-        v4.push_back(255);
-        v5.push_back(255);
-        v7.push_back(0);
-    }
-    v1.push_back(0);
-    v2.push_back(1);
-    v3.push_back(255);
-    v4.push_back(254);
+    std::string s1 = "moin";
+    Bytes b2(4);
+    b2.addByte('m');
+    b2.addByte('o');
+    b2.addByte('i');
+    b2.addByte('n');
+    EXPECT_EQ(b2, stringToBytes(s1));
+}
 
-    EXPECT_EQ(v1, LongToCharVec(l1));
-    EXPECT_EQ(v2, LongToCharVec(l2));
-    EXPECT_EQ(v3, LongToCharVec(l3));
-    EXPECT_EQ(v4, LongToCharVec(l4));
-    EXPECT_EQ(v5, LongToCharVec(l5));
-    EXPECT_EQ(v6, LongToCharVec(l6));
-    EXPECT_EQ(v7, LongToCharVec(l7));
+TEST(UtilityClass, bytesTostr) {
+    Bytes b1(10);
+    for (u_int64_t i = 0; i < 1000; i++) {
+        std::string str = RNG::get_random_string(10);
+        b1.setBytes(reinterpret_cast<const unsigned char*>(str.c_str()), str.length());
+        EXPECT_EQ(str, bytesToString(b1));
+    }
+    Bytes b2(4);
+    b2.addByte('m');
+    b2.addByte('o');
+    b2.addByte('i');
+    b2.addByte('n');
+    std::string s1 = "moin";
+    EXPECT_EQ(s1, bytesToString(b2));
 }
 
 TEST(UtilityClass, getLongLen) {
@@ -105,13 +93,79 @@ TEST(UtilityClass, getLongLen) {
     EXPECT_EQ(4, getLongLen(l11));
 }
 
-TEST(UtilityClass, stringToBytes) {
-    Bytes b1;
-    for (u_int64_t i = 0; i < 1000; i++) {
-        b1.setBytes(RNG::get_random_bytes(10));
-        EXPECT_EQ(b1, stringToBytes(charVecToString(b1.getBytes())));
-    }
-    std::string s1 = "moin";
-    b1.setBytes(std::vector<unsigned char>(s1.begin(), s1.end()));
-    EXPECT_EQ(b1, stringToBytes(s1));
+TEST(UtilityClass, isValidNumber) {
+    std::string s1 = "0";
+    std::string s2 = "";
+    std::string s3 = "102131231421";
+    std::string s4 = "-131";
+    std::string s5 = "0.0";
+    std::string s6 = "0,0";
+    std::string s7 = ".5";
+    std::string s8 = "0.";
+    std::string s9 = "-1-23";
+    std::string s10 = "0.5";
+    std::string s11 = "00000";
+    std::string s12 = "-0000";
+    std::string s13 = "0000.0";
+    std::string s14 = "1 5";
+    std::string s15 = " 15";
+    std::string s16 = "15 ";
+
+    EXPECT_TRUE(isValidNumber(s1));
+    EXPECT_TRUE(isValidNumber(s1, true));
+    EXPECT_TRUE(isValidNumber(s1, true, 0, 1));
+    EXPECT_TRUE(isValidNumber(s1, true, 0, 0));
+    EXPECT_FALSE(isValidNumber(s1, true, 1));
+
+    EXPECT_FALSE(isValidNumber(s2));
+    EXPECT_TRUE(isValidNumber(s2, true));
+    EXPECT_TRUE(isValidNumber(s2, true, 0, 1));
+    EXPECT_FALSE(isValidNumber(s2, false, 0, 256));
+
+    EXPECT_TRUE(isValidNumber(s3));
+    EXPECT_TRUE(isValidNumber(s3, true));
+    EXPECT_TRUE(isValidNumber(s3, true, 0, 102131231421));
+    EXPECT_FALSE(isValidNumber(s3, true, 0, 102131231420));
+
+    EXPECT_FALSE(isValidNumber(s4));
+    EXPECT_FALSE(isValidNumber(s4, true));
+
+    EXPECT_FALSE(isValidNumber(s5));
+    EXPECT_FALSE(isValidNumber(s5, true));
+
+    EXPECT_FALSE(isValidNumber(s6));
+    EXPECT_FALSE(isValidNumber(s6, true));
+
+    EXPECT_FALSE(isValidNumber(s7));
+    EXPECT_FALSE(isValidNumber(s7, true));
+
+    EXPECT_FALSE(isValidNumber(s8));
+    EXPECT_FALSE(isValidNumber(s8, true));
+
+    EXPECT_FALSE(isValidNumber(s9));
+    EXPECT_FALSE(isValidNumber(s9, true));
+
+    EXPECT_FALSE(isValidNumber(s10));
+    EXPECT_FALSE(isValidNumber(s10, true));
+
+    EXPECT_TRUE(isValidNumber(s11));
+    EXPECT_TRUE(isValidNumber(s11, true));
+    EXPECT_TRUE(isValidNumber(s11, true, 0, 1));
+    EXPECT_TRUE(isValidNumber(s11, true, 0, 0));
+    EXPECT_FALSE(isValidNumber(s11, true, 1));
+
+    EXPECT_FALSE(isValidNumber(s12));
+    EXPECT_FALSE(isValidNumber(s12, true));
+
+    EXPECT_FALSE(isValidNumber(s13));
+    EXPECT_FALSE(isValidNumber(s13, true));
+
+    EXPECT_FALSE(isValidNumber(s14));
+    EXPECT_FALSE(isValidNumber(s14, true));
+
+    EXPECT_FALSE(isValidNumber(s15));
+    EXPECT_FALSE(isValidNumber(s15, true));
+
+    EXPECT_FALSE(isValidNumber(s16));
+    EXPECT_FALSE(isValidNumber(s16, true));
 }

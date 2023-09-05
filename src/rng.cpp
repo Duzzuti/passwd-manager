@@ -2,21 +2,8 @@
 
 #include "bytes.h"
 #include "logger.h"
-
-std::vector<unsigned char> RNG::get_random_bytes(const unsigned int num) {
-    unsigned char rand_bytes[num];  // creates a new buffer with the given length
-    std::vector<unsigned char> ret{};
-    if (RAND_bytes(rand_bytes, sizeof(rand_bytes)) == 1) {  // generates the random bytes
-        for (int i = 0; i < sizeof(rand_bytes); i++) {
-            ret.push_back(rand_bytes[i]);  // turns the buffer into a vector
-        }
-        return ret;
-    } else {
-        // some error in openssl occurred (maybe the given entropy was too low)
-        PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
-        throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
-    }
-}
+#include "openssl/err.h"
+#include "openssl/rand.h"
 
 std::string RNG::get_random_string(const unsigned int num) {
     // gets a random string with the given length
@@ -50,31 +37,25 @@ std::string RNG::get_random_string(const unsigned int num) {
     }
 }
 
-std::vector<unsigned char> RNG::get_random_bytes_large(const u_int64_t num) {
-    unsigned char* rand_bytes = new unsigned char[num];  // creates a new buffer with the given length
-    std::vector<unsigned char> ret{};
-    if (RAND_bytes(rand_bytes, sizeof(unsigned char) * num) == 1) {  // generates the random bytes
-        for (int i = 0; i < sizeof(unsigned char) * num; i++) {
-            ret.push_back(rand_bytes[i]);  // turns the buffer into a vector
-        }
-        delete[] rand_bytes;
-        return ret;
-    } else {
-        // some error in openssl occurred (maybe the given entropy was too low)
-        if (rand_bytes != nullptr) {
-            delete[] rand_bytes;
-        }
-        PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
-        throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
-    }
-}
-
 void RNG::fill_random_bytes(unsigned char* bytes, const unsigned int num) {
     if (RAND_bytes(bytes, num) != 1) {
         // some error in openssl occurred (maybe the given entropy was too low)
         PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
         throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
     }
+}
+
+void RNG::fill_random_bytes(Bytes& bytes, const unsigned int num) {
+    if (bytes.getMaxLen() < num) {
+        PLOG_FATAL << "bytes length cannot be smaller than num";
+        throw std::logic_error("bytes length cannot be smaller than num");
+    }
+    if (RAND_bytes(bytes.getBytes(), num) != 1) {
+        // some error in openssl occurred (maybe the given entropy was too low)
+        PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();
+        throw std::runtime_error("Error occurred in get_random_bytes: " + std::to_string(ERR_get_error()));
+    }
+    bytes.setLen(num);
 }
 
 unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned char upper, const unsigned int buffer_size) {
@@ -96,13 +77,10 @@ unsigned char RNG::get_random_byte(const unsigned char lower, const unsigned cha
         }
     }
 
-    unsigned char rand_bytes[buffer_size];  // creates a new buffer with a given length
-    Bytes tmp_bytes{};
-    if (RAND_bytes(rand_bytes, sizeof(rand_bytes)) == 1) {
-        for (int i = 0; i < sizeof(rand_bytes); i++) {
-            tmp_bytes.addByte(rand_bytes[i]);
-        }
-        return (toLong(tmp_bytes) % (upper - lower)) + lower;
+    Bytes tmp_bytes(buffer_size);  // creates a new buffer with a given length
+    if (RAND_bytes(tmp_bytes.getBytes(), buffer_size) == 1) {
+        tmp_bytes.setLen(buffer_size);
+        return (tmp_bytes.toLong() % (upper - lower)) + lower;
     } else {
         // some error in openssl occurred (maybe the given entropy was too low)
         PLOG_FATAL << "Error occurred while getting random bytes from openssl. OpenSSL errorcode: " << ERR_get_error();

@@ -19,7 +19,7 @@ target_link_libraries(pman_bench_bytes gtest_main)
 target_link_libraries(pman_bench_bytes ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_bench_bytes PUBLIC ${INCLUDE_DIR})
 
-add_executable(pman_bench_opt_bytes main_bench.cpp opt_bytes_bench.cpp ${SRC_DIR}/bytes_opt.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/rng.cpp)
+add_executable(pman_bench_opt_bytes main_bench.cpp opt_bytes_bench.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/rng.cpp)
 target_link_libraries(pman_bench_opt_bytes gtest_main)
 target_link_libraries(pman_bench_opt_bytes ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_bench_opt_bytes PUBLIC ${INCLUDE_DIR})
@@ -46,7 +46,7 @@ target_link_libraries(pman_bench_dataheader ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_bench_dataheader PUBLIC ${INCLUDE_DIR})
 
 add_executable(pman_bench main_bench.cpp bench.cpp 
-    ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/bytes_opt.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/format.cpp ${SRC_DIR}/api.cpp
+    ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/format.cpp ${SRC_DIR}/api.cpp
     ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/file_modes.cpp
     ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp
     ${SRC_DIR}/blockchain.cpp ${SRC_DIR}/blockchain_decrypt.cpp ${SRC_DIR}/blockchain_encrypt.cpp ${SRC_DIR}/block.cpp ${SRC_DIR}/block_encrypt.cpp ${SRC_DIR}/block_decrypt.cpp)

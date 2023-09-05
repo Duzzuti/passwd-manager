@@ -96,8 +96,8 @@ int main(int argc, char* argv[]) {
         }
         // sleep(sleepTime);
         // FILE_SELECTED
-        Bytes phash;
-        DataHeader dh{HASHMODE_SHA256};
+        Bytes phash(0);
+        std::unique_ptr<DataHeader> dh;
         ErrorStruct<Bytes> temp;
 
         switch (ACT2) {
@@ -125,18 +125,18 @@ int main(int argc, char* argv[]) {
                 if (temp.isSuccess()) {
                     PLOG_DEBUG << "Verified password successfully";
                     phash = temp.returnValue();
-                    PLOG_DEBUG << "Password hash: " << toHex(phash);
+                    PLOG_DEBUG << "Password hash: " << phash.toHex();
                 } else
                     PLOG_WARNING << "Failed to verify password: " << getErrorMessage(temp);
                 break;
 
             case CREATEDH:
                 PLOG_DEBUG << "Creating data header";
-                ErrorStruct<DataHeader> temp = api.createDataHeader(PASS, dsi);
+                ErrorStruct<std::unique_ptr<DataHeader>> temp = api.createDataHeader(PASS, dsi);
                 if (temp.isSuccess()) {
                     PLOG_DEBUG << "Created data header successfully";
-                    dh = temp.returnValue();
-                    PLOG_DEBUG << "DataHeader: " << dh.getDataHeaderParts() << "\n Hex: " << toHex(dh.getHeaderBytes());
+                    dh = temp.returnMove();
+                    PLOG_DEBUG << "DataHeader: " << dh->getDataHeaderParts() << "\n Hex: " << dh->getHeaderBytes().toHex();
                 } else
                     PLOG_WARNING << "Failed to create data header";
                 break;
@@ -144,22 +144,26 @@ int main(int argc, char* argv[]) {
 
         // DECRYPTED
         FileDataStruct fds = api.getFileData().returnValue();
-        PLOG_INFO << "Constructing file data: " << toHex(fds.dec_data);
+        PLOG_INFO << "Constructing file data: " << fds.dec_data.toHex();
         // PasswordData pd;
         // if(!pd.constructFileData(fds).isSuccess())
         //     PLOG_ERROR << "Failed to construct password data";
         // else
         //     PLOG_DEBUG << "Constructed password data successfully";
 
-        Bytes b;
-        b.setBytes(std::vector<unsigned char>{0x00, 0x01, 0x02, 0x03, 0x04});
+        Bytes b(5);
+        b.addByte(0x00);
+        b.addByte(0x01);
+        b.addByte(0x02);
+        b.addByte(0x03);
+        b.addByte(0x04);
         fds.dec_data = b;
         // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
         ErrorStruct<Bytes> enc_err = api.getEncryptedData(fds);
         if (enc_err.isSuccess())
-            PLOG_DEBUG << "Encrypted data successfully: " << toHex(enc_err.returnValue());
+            PLOG_DEBUG << "Encrypted data successfully: " << enc_err.returnRef().toHex();
         else
             PLOG_ERROR << "Failed to encrypt data: " << getErrorMessage(enc_err);
 
@@ -181,7 +185,7 @@ int main(int argc, char* argv[]) {
         std::filesystem::path dir = api.getEncDirPath().returnValue();
         PLOG_DEBUG << "Getting enc dir path: " << dir;
         ErrorStruct<std::vector<std::string>> paths = api.getAllEncFileNames(dir);
-        PLOG_DEBUG << "Getting all enc file names: " << paths.returnValue().size();
+        PLOG_DEBUG << "Getting all enc file names: " << paths.returnRef().size();
         for (auto& path : paths.returnValue()) {
             PLOG_DEBUG << path;
         }
@@ -215,8 +219,8 @@ int main(int argc, char* argv[]) {
         }
         // sleep(sleepTime);
         // FILE_SELECTED
-        Bytes phash;
-        DataHeader dh{HASHMODE_SHA256};
+        Bytes phash(0);
+        std::unique_ptr<DataHeader> dh;
         ErrorStruct<Bytes> temp;
 
         switch (ACT2) {
@@ -244,18 +248,18 @@ int main(int argc, char* argv[]) {
                 if (temp.isSuccess()) {
                     PLOG_DEBUG << "Verified password successfully";
                     phash = temp.returnValue();
-                    PLOG_DEBUG << "Password hash: " << toHex(phash);
+                    PLOG_DEBUG << "Password hash: " << phash.toHex();
                 } else
                     PLOG_WARNING << "Failed to verify password: " << getErrorMessage(temp);
                 break;
 
             case CREATEDH:
                 PLOG_DEBUG << "Creating data header";
-                ErrorStruct<DataHeader> temp = api.createDataHeader(PASS, dsi);
+                ErrorStruct<std::unique_ptr<DataHeader>> temp = api.createDataHeader(PASS, dsi);
                 if (temp.isSuccess()) {
                     PLOG_DEBUG << "Created data header successfully";
-                    dh = temp.returnValue();
-                    PLOG_DEBUG << "DataHeader: " << dh.getDataHeaderParts() << "\n Hex: " << toHex(dh.getHeaderBytes());
+                    dh = temp.returnMove();
+                    PLOG_DEBUG << "DataHeader: " << dh->getDataHeaderParts() << "\n Hex: " << dh->getHeaderBytes().toHex();
                 } else
                     PLOG_WARNING << "Failed to create data header";
                 break;
@@ -264,7 +268,7 @@ int main(int argc, char* argv[]) {
         // DECRYPTED
         ErrorStruct<FileDataStruct> fds = api.getDecryptedData();
         if (fds.isSuccess())
-            PLOG_DEBUG << "Got decrypted data successfully: " << toHex(fds.returnValue().dec_data);
+            PLOG_DEBUG << "Got decrypted data successfully: " << fds.returnRef().dec_data.toHex();
         else
             PLOG_ERROR << "Failed to get decrypted data: " << getErrorMessage(fds);
         // PasswordData pd;
@@ -273,15 +277,20 @@ int main(int argc, char* argv[]) {
         // else
         //     PLOG_DEBUG << "Constructed password data successfully";
 
-        Bytes b;
-        b.setBytes(std::vector<unsigned char>{0x00, 0x01, 0x02, 0x03, 0x04});
-        fds.returnRef().dec_data.addBytes(b);
+        Bytes b(fds.returnRef().dec_data.getLen() + 5);
+        fds.returnRef().dec_data = b;
+        fds.returnRef().dec_data.addByte(0x00);
+        fds.returnRef().dec_data.addByte(0x01);
+        fds.returnRef().dec_data.addByte(0x02);
+        fds.returnRef().dec_data.addByte(0x03);
+        fds.returnRef().dec_data.addByte(0x04);
+
         // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
         ErrorStruct<Bytes> enc_err = api.getEncryptedData(fds.returnRef());
         if (enc_err.isSuccess())
-            PLOG_DEBUG << "Encrypted data successfully: " << toHex(enc_err.returnValue());
+            PLOG_DEBUG << "Encrypted data successfully: " << enc_err.returnRef().toHex();
         else
             PLOG_ERROR << "Failed to encrypt data: " << getErrorMessage(enc_err);
 

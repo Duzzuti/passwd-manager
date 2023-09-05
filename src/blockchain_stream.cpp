@@ -1,12 +1,12 @@
 #include "blockchain_stream.h"
 
-BlockChainStream::BlockChainStream(std::shared_ptr<Hash> hash, const BytesOpt passwordhash, const BytesOpt enc_salt) : hash_size(hash->getHashSize()), last_block_hash(hash_size) {
+BlockChainStream::BlockChainStream(std::shared_ptr<Hash> hash, const Bytes& passwordhash, const Bytes& enc_salt) : hash_size(hash->getHashSize()), last_block_hash(hash_size) {
     // initialize the salt generator (iterator)
     this->salt_iter.init(passwordhash, enc_salt, std::move(hash));
 }
 
 void BlockChainStream::enc_stream(std::ifstream in, std::ofstream out) noexcept {
-    if (!this->current_block.has_value()) this->setBlock();
+    if (!this->current_block.has_value() || this->getFreeSpaceInLastBlock() == 0) this->setBlock();
     while (true) {
         // get the number of bytes that were already written to the block
         size_t written = this->hash_size - this->getFreeSpaceInLastBlock();
@@ -16,7 +16,7 @@ void BlockChainStream::enc_stream(std::ifstream in, std::ofstream out) noexcept 
         int readsize = in.readsome(reinterpret_cast<char*>(buffer), this->getFreeSpaceInLastBlock());
 
         // create a Bytes object from the data
-        BytesOpt data(readsize);
+        Bytes data(readsize);
         data.addBytes(buffer, readsize);
 
         // add the data to the last block

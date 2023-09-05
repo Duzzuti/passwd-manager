@@ -1,31 +1,20 @@
 #include "sha384.h"
 
-Bytes sha384::hash(const Bytes& bytes) const {
-    unsigned char bytesin[bytes.getLen()];        // input buffer with length of the input
-    unsigned char bytesout[this->getHashSize()];  // output buffer with hashsize length
-    auto inpbytes = bytes.getBytes();
-    std::copy(inpbytes.begin(), inpbytes.end(), bytesin);                                       // copy the data into the input buffer
-    SHA384(bytesin, bytes.getLen(), bytesout);                                                  // performs the hash
-    std::vector<unsigned char> v(bytesout, bytesout + sizeof(bytesout) / sizeof(bytesout[0]));  // turns the output buffer into a vector
-    Bytes ret;
-    ret.setBytes(v);  // sets the output vector as new bytes in the Bytes object
+#include <openssl/sha.h>
+
+int sha384::getHashSize() const noexcept { return SHA384_DIGEST_LENGTH; }
+
+Bytes sha384::hash(const Bytes& bytes, const u_int32_t extra_space) const {
+    Bytes ret(this->getHashSize() + extra_space);              // output buffer with hashsize length and extra_space
+    SHA384(bytes.getBytes(), bytes.getLen(), ret.getBytes());  // performs the hash
+    ret.setLen(this->getHashSize());                           // sets the length of the output buffer to the hashsize
     return ret;
 }
 
-BytesOpt sha384::hash(const BytesOpt& bytes) const {
-    unsigned char bytesout[this->getHashSize()];         // output buffer with hashsize length
-    SHA384(bytes.getBytes(), bytes.getLen(), bytesout);  // performs the hash
-    BytesOpt ret(this->getHashSize());
-    ret.setBytes(bytesout, this->getHashSize());  // sets the output vector as new bytes in the Bytes object
-    return ret;
-}
-
-Bytes sha384::hash(const std::string& str) const {
-    const unsigned char* bytesin = reinterpret_cast<const unsigned char*>(str.c_str());         // input buffer with length of the input
-    unsigned char bytesout[this->getHashSize()];                                                // output buffer with hashsize length
-    SHA384(bytesin, str.length(), bytesout);                                                    // performs the hash
-    std::vector<unsigned char> v(bytesout, bytesout + sizeof(bytesout) / sizeof(bytesout[0]));  // turns the output buffer into a vector
-    Bytes ret;
-    ret.setBytes(v);  // sets the output vector as new bytes in the Bytes object
+Bytes sha384::hash(const std::string& str, const u_int32_t extra_space) const {
+    const unsigned char* bytesin = reinterpret_cast<const unsigned char*>(str.c_str());  // input buffer with length of the input
+    Bytes ret(this->getHashSize() + extra_space);                                        // output buffer with hashsize length and extra_space
+    SHA384(bytesin, str.length(), ret.getBytes());                                       // performs the hash
+    ret.setLen(this->getHashSize());                                                     // sets the length of the output buffer to the hashsize
     return ret;
 }

@@ -1,6 +1,6 @@
 #include "blockchain_stream_encrypt.h"
 
-#include "block_opt_encrypt.h"
+#include "block_encrypt.h"
 
 bool EncryptBlockChainStream::setBlock() noexcept {
     if (this->getFreeSpaceInLastBlock() != 0) {
@@ -10,16 +10,16 @@ bool EncryptBlockChainStream::setBlock() noexcept {
     }
 
     // get the next block salt
-    BytesOpt next_salt(this->hash_size);
+    Bytes next_salt(this->hash_size);
     if (this->current_block.has_value())
         // hashes the last block and use it to generate the next salt
-        next_salt = salt_iter.next(this->current_block.value()->getHash());
+        next_salt = this->salt_iter.next(this->current_block.value()->getHash());
     else
         // no previous block, generate the next salt without a last block hash
         next_salt = this->salt_iter.next();
 
     // create the new block
-    std::unique_ptr<BlockOpt> new_block = std::make_unique<EncryptBlockOpt>(this->salt_iter.hashObj, next_salt);
+    std::unique_ptr<Block> new_block = std::make_unique<EncryptBlock>(this->salt_iter.hashObj, next_salt);
 
     // add the new block to the chain
     this->current_block = std::move(new_block);
