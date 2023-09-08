@@ -1,7 +1,7 @@
 #pragma once
 
-#include <optional>
 #include <memory>
+#include <optional>
 
 #include "bytes.h"
 #include "error.h"
