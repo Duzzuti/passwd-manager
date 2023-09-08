@@ -43,7 +43,7 @@ void MemoryThread() {
     while (!_terminateMeasurementThread) {
         memory = getPhysicalMem();
         if (verbose) {
-            std::cout << "memory: " << memory/1024 << "MB" << std::endl;
+            std::cout << "memory: " << memory / 1024 << "MB" << std::endl;
         }
         memory_sum += memory;
         memory_count++;
