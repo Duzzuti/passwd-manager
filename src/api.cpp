@@ -594,12 +594,12 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(std::unique_ptr<FileDataStru
     }
 }
 
-ErrorStruct<std::unique_ptr<FileDataStruct>> API::DECRYPTED::getFileData() noexcept { 
-    if(this->parent->file_data_struct == nullptr) {
+ErrorStruct<std::unique_ptr<FileDataStruct>> API::DECRYPTED::getFileData() noexcept {
+    if (this->parent->file_data_struct == nullptr) {
         PLOG_ERROR << "The file data struct is null (getFileData)";
         return ErrorStruct<std::unique_ptr<FileDataStruct>>{SuccessType::FAIL, ErrorCode::ERR_FILEDATASTRUCT_NULL, ""};
     }
-    return ErrorStruct<std::unique_ptr<FileDataStruct>>::createMove(std::move(this->parent->file_data_struct)); 
+    return ErrorStruct<std::unique_ptr<FileDataStruct>>::createMove(std::move(this->parent->file_data_struct));
 }
 
 ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::changeSalt() noexcept {
@@ -689,7 +689,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path& file_
     }
     Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted->addcopyToBytes(full_data);        // adds the encrypted data
+    this->parent->encrypted->addcopyToBytes(full_data);            // adds the encrypted data
     ErrorStruct<bool> err = err_file.returnRef()->writeBytesIfEmpty(full_data);
     if (err.isSuccess()) {
         this->parent->encrypted.reset();
@@ -706,7 +706,7 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // checks if the selected file exists (it could be deleted in the meantime)
     Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted->addcopyToBytes(full_data);        // adds the encrypted data
+    this->parent->encrypted->addcopyToBytes(full_data);            // adds the encrypted data
     ErrorStruct<bool> err = this->parent->selected_file->writeBytes(full_data);
     if (err.isSuccess()) {
         this->parent->encrypted.reset();

@@ -21,8 +21,8 @@ struct WorkflowDecStruct {
                                     // only contains value if no error occurred
    private:
     std::unique_ptr<FileDataStruct> file_data = nullptr;  // file data struct that contains the decrypted content
-    std::optional<DataHeader> dh;             // data header of the file
-    bool moved = false;                       // if the ptr was moved out
+    std::optional<DataHeader> dh;                         // data header of the file
+    bool moved = false;                                   // if the ptr was moved out
    public:
     void setFileData(std::unique_ptr<FileDataStruct>&& file_data) {
         // sets the file data struct
@@ -38,7 +38,7 @@ struct WorkflowDecStruct {
             PLOG_FATAL << "trying to get file data struct while error occurred";
             throw std::logic_error("cannot get file data struct if error occurred");
         }
-        if(this->moved){
+        if (this->moved) {
             PLOG_FATAL << "trying to get file data struct while it is already moved";
             throw std::logic_error("cannot get file data struct if it is already moved");
         }
@@ -55,7 +55,7 @@ struct WorkflowDecStruct {
             PLOG_FATAL << "trying to get file data struct while error occurred";
             throw std::logic_error("cannot get file data struct if error occurred");
         }
-        if(this->moved){
+        if (this->moved) {
             PLOG_FATAL << "trying to get file data struct while it is already moved";
             throw std::logic_error("cannot get file data struct if it is already moved");
         }
@@ -200,7 +200,7 @@ class API {
         // gets the file data struct
         // it stores the file mode as well as the decrypted file content
         virtual ErrorStruct<std::unique_ptr<FileDataStruct>> getFileData() noexcept {
-            return ErrorStruct<std::unique_ptr<FileDataStruct>>{FAIL, ERR_API_STATE_INVALID, "getFileData is only available in the DECRYPTED state"}; 
+            return ErrorStruct<std::unique_ptr<FileDataStruct>>{FAIL, ERR_API_STATE_INVALID, "getFileData is only available in the DECRYPTED state"};
         };
         // encrypts the data and returns the encrypted data
         // uses the password and data header that were passed to verifyPassword
@@ -277,9 +277,9 @@ class API {
 
     // the current state of the API (makes sure that the API is used correctly)
     std::unique_ptr<WorkflowState> current_state;
-    FModes file_mode;   // the file mode that should be used for the file
+    FModes file_mode;                                  // the file mode that should be used for the file
     std::unique_ptr<FileDataStruct> file_data_struct;  // the user can construct a file data object from this struct
-    Bytes correct_password_hash;      // the correct password hash for the dataheader
+    Bytes correct_password_hash;                       // the correct password hash for the dataheader
     std::unique_ptr<Bytes> encrypted;
     // setting standard data header
     std::unique_ptr<DataHeader> dh;  // the data header for the correct password
