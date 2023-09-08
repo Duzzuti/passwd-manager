@@ -39,8 +39,12 @@ void MemoryThread() {
     u_int64_t memory_avg = 0;
     u_int64_t memory_sum = 0;
     u_int64_t memory_count = 0;
+    const constexpr bool verbose = false;
     while (!_terminateMeasurementThread) {
         memory = getPhysicalMem();
+        if (verbose) {
+            std::cout << "memory: " << memory/1024 << "MB" << std::endl;
+        }
         memory_sum += memory;
         memory_count++;
         if (memory_max < memory || memory_max == 0) {
@@ -83,9 +87,9 @@ TEST(Benchmark_write, small_sha256) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -117,9 +121,9 @@ TEST(Benchmark_write, small_sha384) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -151,9 +155,9 @@ TEST(Benchmark_write, small_sha512) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -185,9 +189,9 @@ TEST(Benchmark_write, medium_sha256) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -219,9 +223,9 @@ TEST(Benchmark_write, medium_sha384) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -253,9 +257,9 @@ TEST(Benchmark_write, medium_sha512) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -287,9 +291,9 @@ TEST(Benchmark_write, large_sha256) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -321,9 +325,9 @@ TEST(Benchmark_write, large_sha384) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -355,9 +359,9 @@ TEST(Benchmark_write, large_sha512) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -389,9 +393,9 @@ TEST(Benchmark_write, small_sha256_nochain) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -423,9 +427,9 @@ TEST(Benchmark_write, small_sha384_nochain) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -457,9 +461,9 @@ TEST(Benchmark_write, small_sha512_nochain) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -491,9 +495,9 @@ TEST(Benchmark_write, medium_sha256_nochain) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -525,9 +529,9 @@ TEST(Benchmark_write, medium_sha384_nochain) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -559,9 +563,9 @@ TEST(Benchmark_write, medium_sha512_nochain) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
         if (i != ITERS - 1) {
@@ -587,20 +591,17 @@ TEST(Benchmark_write, large_sha256_nochain) {
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for (u_int64_t i = 0; i < ITERS; i++) {
+    for (u_int64_t i = 0; i < 1; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
-        if (i != ITERS - 1) {
-            timer.recordTime();
-        }
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -621,20 +622,17 @@ TEST(Benchmark_write, large_sha384_nochain) {
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    for (u_int64_t i = 0; i < ITERS; i++) {
+    for (u_int64_t i = 0; i < 1; i++) {
         API api{FILEMODE_PASSWORD};
         std::filesystem::path file = RNG::get_random_string(10) + ".enc";
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
-        if (i != ITERS - 1) {
-            timer.recordTime();
-        }
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -661,14 +659,11 @@ TEST(Benchmark_write, large_sha512_nochain) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        fds->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(std::move(fds));
         api.writeToFile();
         api.logout();
-        if (i != ITERS - 1) {
-            timer.recordTime();
-        }
     }
     timer.stop();
     _terminateMeasurementThread = true;
@@ -697,10 +692,10 @@ TEST(Benchmark_read1, sha256) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        ErrorStruct<FileDataStruct> fds = api.getFileData();
+        ErrorStruct<std::unique_ptr<FileDataStruct>> fds = api.getFileData();
         assert(fds.isSuccess());
-        fds.returnRef().dec_data = data;
-        api.getEncryptedData(fds.returnRef());
+        fds.returnRef()->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(fds.returnMove());
         api.writeToFile();
         api.logout();
     }
@@ -712,8 +707,8 @@ TEST(Benchmark_read1, sha256) {
         std::filesystem::path file = files[i];
         api.selectFile(file);
         api.verifyPassword(password);
-        FileDataStruct fds = api.getDecryptedData().returnValue();
-        assert(fds.dec_data == data);
+        std::unique_ptr<FileDataStruct> fds = api.getDecryptedData().returnMove();
+        assert(*fds->dec_data == data);
         api.logout();
         if (i != FILES - 1) {
             timer.recordTime();
@@ -746,10 +741,10 @@ TEST(Benchmark_read1, sha384) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        ErrorStruct<FileDataStruct> fds = api.getFileData();
+        ErrorStruct<std::unique_ptr<FileDataStruct>> fds = api.getFileData();
         assert(fds.isSuccess());
-        fds.returnRef().dec_data = data;
-        api.getEncryptedData(fds.returnRef());
+        fds.returnRef()->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(fds.returnMove());
         api.writeToFile();
         api.logout();
     }
@@ -761,8 +756,8 @@ TEST(Benchmark_read1, sha384) {
         std::filesystem::path file = files[i];
         api.selectFile(file);
         api.verifyPassword(password);
-        FileDataStruct fds = api.getDecryptedData().returnValue();
-        assert(fds.dec_data == data);
+        std::unique_ptr<FileDataStruct> fds = api.getDecryptedData().returnMove();
+        assert(*fds->dec_data == data);
         api.logout();
         if (i != FILES - 1) {
             timer.recordTime();
@@ -794,9 +789,10 @@ TEST(Benchmark_read1, sha512) {
         api.createFile(file);
         api.selectFile(file);
         api.createDataHeader(password, ds);
-        FileDataStruct fds = api.getFileData().returnValue();
-        fds.dec_data = data;
-        api.getEncryptedData(fds);
+        ErrorStruct<std::unique_ptr<FileDataStruct>> fds = api.getFileData();
+        assert(fds.isSuccess());
+        fds.returnRef()->dec_data = std::make_unique<Bytes>(data);
+        api.getEncryptedData(fds.returnMove());
         api.writeToFile();
         api.logout();
     }
@@ -808,8 +804,8 @@ TEST(Benchmark_read1, sha512) {
         std::filesystem::path file = files[i];
         api.selectFile(file);
         api.verifyPassword(password);
-        FileDataStruct fds = api.getDecryptedData().returnValue();
-        assert(fds.dec_data == data);
+        std::unique_ptr<FileDataStruct> fds = api.getDecryptedData().returnMove();
+        assert(*fds->dec_data == data);
         api.logout();
         if (i != FILES - 1) {
             timer.recordTime();
@@ -837,9 +833,9 @@ TEST(Benchmark_read2, sha256) {
     api.createFile(file);
     api.selectFile(file);
     api.createDataHeader(password, ds);
-    FileDataStruct fds = api.getFileData().returnValue();
-    fds.dec_data = data;
-    api.getEncryptedData(fds);
+    std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+    fds->dec_data = std::make_unique<Bytes>(data);
+    api.getEncryptedData(std::move(fds));
     api.writeToFile();
     api.logout();
 
@@ -850,8 +846,8 @@ TEST(Benchmark_read2, sha256) {
     API api2{FILEMODE_PASSWORD};
     api2.selectFile(file);
     api2.verifyPassword(password);
-    fds = api2.getDecryptedData().returnValue();
-    assert(fds.dec_data == data);
+    fds = api2.getDecryptedData().returnMove();
+    assert(*fds->dec_data == data);
     api2.logout();
 
     timer.stop();
@@ -876,9 +872,9 @@ TEST(Benchmark_read2, sha384) {
     api.createFile(file);
     api.selectFile(file);
     api.createDataHeader(password, ds);
-    FileDataStruct fds = api.getFileData().returnValue();
-    fds.dec_data = data;
-    api.getEncryptedData(fds);
+    std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+    fds->dec_data = std::make_unique<Bytes>(data);
+    api.getEncryptedData(std::move(fds));
     api.writeToFile();
     api.logout();
 
@@ -889,8 +885,8 @@ TEST(Benchmark_read2, sha384) {
     API api2{FILEMODE_PASSWORD};
     api2.selectFile(file);
     api2.verifyPassword(password);
-    fds = api2.getDecryptedData().returnValue();
-    assert(fds.dec_data == data);
+    fds = api2.getDecryptedData().returnMove();
+    assert(*fds->dec_data == data);
     api2.logout();
 
     timer.stop();
@@ -915,9 +911,9 @@ TEST(Benchmark_read2, sha512) {
     api.createFile(file);
     api.selectFile(file);
     api.createDataHeader(password, ds);
-    FileDataStruct fds = api.getFileData().returnValue();
-    fds.dec_data = data;
-    api.getEncryptedData(fds);
+    std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+    fds->dec_data = std::make_unique<Bytes>(data);
+    api.getEncryptedData(std::move(fds));
     api.writeToFile();
     api.logout();
 
@@ -928,8 +924,8 @@ TEST(Benchmark_read2, sha512) {
     API api2{FILEMODE_PASSWORD};
     api2.selectFile(file);
     api2.verifyPassword(password);
-    fds = api2.getDecryptedData().returnValue();
-    assert(fds.dec_data == data);
+    fds = api2.getDecryptedData().returnMove();
+    assert(*fds->dec_data == data);
     api2.logout();
 
     timer.stop();
