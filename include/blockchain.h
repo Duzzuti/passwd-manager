@@ -94,13 +94,15 @@ class BlockChain {
             return this->hashObj->hash(this->hash + this->salt);
         }
     };
-    std::vector<std::unique_ptr<Block>> chain;  // the chain of blocks
+    std::unique_ptr<Block> current_block = nullptr;       // the current block that is being filled
+    std::unique_ptr<Bytes> result = nullptr;              // the result data of the blockchain
     SaltIterator salt_iter;                     // the salt iterator that is used to generate the salts
     size_t hash_size;                           // the byte size of the hash function
+    size_t chain_height = 0;                    // the height of the chain
 
    protected:
     // adds a new block to the chain
-    virtual bool addBlock() noexcept = 0;
+    virtual bool addBlock() = 0;
     // returns the free space in the last block
     unsigned char getFreeSpaceInLastBlock() const noexcept;
 
@@ -112,13 +114,15 @@ class BlockChain {
     BlockChain() = delete;
 
     // adds new data to the blockchain
-    void addData(const Bytes& data) noexcept;
+    void addData(const Bytes& data);
+    void addData(std::ifstream&& filestream, const size_t stream_len);
+    void addData(std::unique_ptr<Bytes>&& data);
 
     // returns the result data of the blockchain
-    Bytes getResult() const;
+    std::unique_ptr<Bytes> getResult();
 
     // returns the number of blocks in the chain
-    size_t getHeight() const noexcept { return this->chain.size(); };
+    size_t getHeight() const noexcept { return this->chain_height; };
 
     // returns the size of the data in the chain (in Bytes)
     size_t getDataSize() const noexcept { return this->getHeight() * this->hash_size - this->getFreeSpaceInLastBlock(); };
