@@ -94,11 +94,11 @@ class BlockChain {
             return this->hashObj->hash(this->hash + this->salt);
         }
     };
-    std::unique_ptr<Block> current_block = nullptr;       // the current block that is being filled
-    std::unique_ptr<Bytes> result = nullptr;              // the result data of the blockchain
-    SaltIterator salt_iter;                     // the salt iterator that is used to generate the salts
-    size_t hash_size;                           // the byte size of the hash function
-    size_t chain_height = 0;                    // the height of the chain
+    std::unique_ptr<Block> current_block = nullptr;  // the current block that is being filled
+    std::unique_ptr<Bytes> result = nullptr;         // the result data of the blockchain
+    SaltIterator salt_iter;                          // the salt iterator that is used to generate the salts
+    size_t hash_size;                                // the byte size of the hash function
+    size_t chain_height = 0;                         // the height of the chain
 
    protected:
     // adds a new block to the chain

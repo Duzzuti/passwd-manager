@@ -11,11 +11,11 @@ bool DecryptBlockChain::addBlock() {
 
     // get the next block salt
     Bytes next_salt(this->hash_size);
-    if (this->current_block != nullptr){
+    if (this->current_block != nullptr) {
         // hashes the last block and use it to generate the next salt
         next_salt = this->salt_iter.next(this->current_block->getHash());
         this->current_block->getResult().addcopyToBytes(this->result);
-    }else
+    } else
         // no previous block, generate the next salt without a last block hash
         next_salt = this->salt_iter.next();
 
