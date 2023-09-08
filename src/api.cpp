@@ -29,9 +29,9 @@ DataHeaderHelperStruct API::_createDataHeaderIters(const std::string& password, 
     }
     PLOG_VERBOSE << "Creating data header with iter settings (" << ds << ", timeout: " << timeout << ")";
     DataHeaderHelperStruct dhhs = DataHeaderHelperStruct::createMove(ErrorStruct<std::unique_ptr<DataHeader>>{SuccessType::FAIL, ErrorCode::ERR, ""});
-    if (ds.getFileDataMode() != this->file_data_struct.getFileMode()) {
+    if (ds.getFileDataMode() != this->file_mode) {
         // the file mode does not match with the file data mode
-        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.getFileMode() << ")";
+        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_mode << ")";
         dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
@@ -128,9 +128,9 @@ DataHeaderHelperStruct API::_createDataHeaderTime(const std::string& password, c
     PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
     DataHeaderHelperStruct dhhs{ErrorStruct<std::unique_ptr<DataHeader>>{SuccessType::FAIL, ErrorCode::ERR, "", ""}};
 
-    if (ds.getFileDataMode() != this->file_data_struct.getFileMode()) {
+    if (ds.getFileDataMode() != this->file_mode) {
         // the file mode does not match with the file data mode
-        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_data_struct.getFileMode() << ")";
+        PLOG_ERROR << "The provided file mode does not match with selected file (file_mode: " << +ds.getFileDataMode() << ", selected file file_mode: " << +this->file_mode << ")";
         dhhs.errorStruct.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         dhhs.errorStruct.errorInfo = "The file mode does not match with the file data mode";
         return dhhs;
@@ -204,9 +204,8 @@ DataHeaderHelperStruct API::_createDataHeaderTime(const std::string& password, c
     return dhhs;
 }
 
-ErrorStruct<bool> API::_select_empty_file(std::unique_ptr<FileHandler> file) noexcept {
+ErrorStruct<bool> API::_select_empty_file(std::unique_ptr<FileHandler>&& file) noexcept {
     // select an empty file (no need to set a dataheader etc)
-    this->encrypted_data = Bytes(0);
     PLOG_INFO << "File selected (file_path: " << file->getPath() << ")";
     // set the selected file
     this->selected_file = std::move(file);
@@ -214,30 +213,13 @@ ErrorStruct<bool> API::_select_empty_file(std::unique_ptr<FileHandler> file) noe
     return ErrorStruct<bool>{true};
 }
 
-ErrorStruct<bool> API::_select_non_empty_file(std::unique_ptr<FileHandler> file) noexcept {
+ErrorStruct<bool> API::_select_non_empty_file(std::unique_ptr<FileHandler>&& file) noexcept {
     // sets the file data
     ErrorStruct<std::unique_ptr<DataHeader>> err_dataheader = file->getDataHeader();
     if (!err_dataheader.isSuccess()) {
         // the data header could not be read
         PLOG_ERROR << "The data header could not be read (errorCode: " << +err_dataheader.errorCode << ", errorInfo: " << err_dataheader.errorInfo << ", what: " << err_dataheader.what << ")";
         return ErrorStruct<bool>{err_dataheader.success, err_dataheader.errorCode, err_dataheader.errorInfo, err_dataheader.what};
-    }
-    try {
-        std::ifstream files = file->getData().returnMove();
-        auto first = files.tellg();
-        files.seekg(0, std::ios::end);
-        auto last = files.tellg();
-        files.seekg(first, std::ios::beg);
-        Bytes content(last - first);
-        if (files.readsome(reinterpret_cast<char*>(content.getBytes()), content.getMaxLen()) != content.getMaxLen()) {
-            throw std::runtime_error("Could not read the data");
-        }
-        content.setLen(content.getMaxLen());
-        this->encrypted_data = content;
-    } catch (std::exception& e) {
-        // the data could not be read
-        PLOG_ERROR << "The data could not be read (what: " << e.what() << ")";
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_READ, file->getPath().c_str(), e.what()};
     }
     this->dh = err_dataheader.returnMove();
     PLOG_INFO << "File selected (file_path: " << file->getPath().c_str() << ")";
@@ -262,19 +244,19 @@ ErrorStruct<bool> API::_unselectFile() noexcept {
     // unselects the working file
     this->selected_file = nullptr;
     this->dh = nullptr;
-    this->encrypted_data = Bytes(0);
     this->current_state = std::make_unique<INIT>(this);
     return ErrorStruct<bool>{true};
 }
 
-API::API(const FModes file_mode) : current_state(std::make_unique<INIT>(this)), encrypted_data(Bytes(0)), correct_password_hash(Bytes(0)) {
+API::API(const FModes file_mode) : current_state(std::make_unique<INIT>(this)), file_mode(file_mode), correct_password_hash(Bytes(0)) {
     // constructs the API in a given workflow mode and initializes the private variables
     PLOG_VERBOSE << "API object created (file_mode: " << +file_mode << ")";
     if (!FileModes::isModeValid(file_mode)) {
         PLOG_ERROR << "Invalid file mode passed to API constructor (file_mode: " << +file_mode << ")";
         throw std::invalid_argument("Invalid file mode");
     }
-    this->file_data_struct = FileDataStruct{file_mode, Bytes(0)};
+    this->file_data_struct = nullptr;
+    this->encrypted = nullptr;
     this->selected_file = nullptr;
     this->dh = nullptr;
 }
@@ -352,7 +334,7 @@ ErrorStruct<std::vector<std::string>> API::INIT::getRelevantFileNames(const std:
         // checks if the file data mode matches with the file mode of the file is empty
         ErrorStruct<std::unique_ptr<FileHandler>> err2 = this->parent->_getFileHandler(fp);
         if (err2.isSuccess()) {
-            if (err2.returnRef()->isEmtpy() || err2.returnRef()->isDataHeader(this->parent->file_data_struct.getFileMode()).isSuccess()) {
+            if (err2.returnRef()->isEmtpy() || err2.returnRef()->isDataHeader(this->parent->file_mode).isSuccess()) {
                 // dataheader is valid or file is empty
                 // we include the file to the relevant files
                 std::vector<std::string> tmp = ret.returnRef();
@@ -516,7 +498,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::EMPTY_FILE_SELECTED::createDataHea
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = std::make_unique<DataHeader>(*(dhhs.errorStruct.returnRef()));
-    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes(0)};
+    this->parent->file_data_struct = std::make_unique<FileDataStruct>(this->parent->file_mode, std::make_unique<Bytes>(0));
     this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
     return std::move(dhhs.errorStruct);
 }
@@ -543,12 +525,12 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::EMPTY_FILE_SELECTED::createDataHea
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
     this->parent->dh = std::make_unique<DataHeader>(*(dhhs.errorStruct.returnRef()));
-    this->parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes(0)};
+    this->parent->file_data_struct = std::make_unique<FileDataStruct>(this->parent->file_mode, std::make_unique<Bytes>(0));
     this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
     return std::move(dhhs.errorStruct);
 }
 
-ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept {
+ErrorStruct<std::unique_ptr<FileDataStruct>> API::PASSWORD_VERIFIED::getDecryptedData() noexcept {
     // decrypts the data (requires successful verifyPassword or createDataHeader run)
     // returns the decrypted content (without the data header)
     // uses the password and data header that were passed to verifyPassword (or createDataHeader for new files)
@@ -557,34 +539,34 @@ ErrorStruct<FileDataStruct> API::PASSWORD_VERIFIED::getDecryptedData() noexcept 
         // construct the blockchain
         DecryptBlockChain dbc{HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
-        dbc.addData(this->parent->encrypted_data);
+        dbc.addData(this->parent->selected_file->getData().returnMove(), this->parent->selected_file->getDataLen());
         // get the decrypted data
-        FileDataStruct result{this->parent->file_data_struct.getFileMode(), dbc.getResult()};
-        this->parent->file_data_struct = result;
+        std::unique_ptr<FileDataStruct> result = std::make_unique<FileDataStruct>(this->parent->file_mode, std::move(dbc.getResult()));
+        this->parent->file_data_struct = result->getCopy();
         // changes the state
         this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
-        return ErrorStruct<FileDataStruct>{std::move(result)};
+        return ErrorStruct<std::unique_ptr<FileDataStruct>>::createMove(std::move(result));
     } catch (const std::exception& e) {
         // something went wrong inside of one of these functions, read what message for more information
         PLOG_ERROR << "Something went wrong while decrypting the data (getDecryptedData) (what: " << e.what() << ")";
-        return ErrorStruct<FileDataStruct>{SuccessType::FAIL, ErrorCode::ERR, "In getDecryptedData: Something went wrong while decrypting the data", e.what()};
+        return ErrorStruct<std::unique_ptr<FileDataStruct>>{SuccessType::FAIL, ErrorCode::ERR, "In getDecryptedData: Something went wrong while decrypting the data", e.what()};
     }
 }
 
-ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_data) noexcept {
+ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(std::unique_ptr<FileDataStruct>&& file_data) noexcept {
     // encrypts the data and returns the encrypted data
     // uses the password and data header that were passed to verifyPassword
     PLOG_VERBOSE << "Getting encrypted data";
-    if (!file_data.isComplete()) {
+    if (!file_data->isComplete()) {
         PLOG_ERROR << "The given FileDataStruct is not complete";
         ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR_FILEDATASTRUCT_INCOMPLETE, ""};
         return err;
     }
     ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, ""};
-    if (file_data.getFileMode() != this->parent->file_data_struct.getFileMode()) {
+    if (file_data->getFileMode() != this->parent->file_mode) {
         // the user wants to encrypt data with a different file mode
-        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (getEncryptedData) (provided file mode: " << +file_data.getFileMode()
-                   << ", selected file mode: " << +this->parent->file_data_struct.getFileMode() << ")";
+        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (getEncryptedData) (provided file mode: " << +file_data->getFileMode()
+                   << ", selected file mode: " << +this->parent->file_mode << ")";
         err.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
         err.errorInfo = " In getEncryptedData: The provided file mode does not match with the given file data mode";
         return err;
@@ -593,16 +575,16 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
         // construct the blockchain
         EncryptBlockChain ebc{HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
-        ebc.addData(file_data.dec_data);
+        ebc.addData(std::move(file_data->dec_data));
         // get the encrypted data
-        Bytes encrypted = ebc.getResult();
+        this->parent->encrypted = std::move(ebc.getResult());
 
-        this->parent->file_data_struct = file_data;
-        this->parent->encrypted_data = encrypted;
+        this->parent->file_data_struct = std::move(file_data);
         // change the state
+        ErrorStruct<Bytes> err{*(this->parent->encrypted)};
         this->parent->current_state = std::make_unique<ENCRYPTED>(this->parent);
         // returns the result
-        return ErrorStruct<Bytes>{std::move(encrypted)};
+        return err;
     } catch (const std::exception& e) {
         // something went wrong inside of one of these functions, read what message for more information
         PLOG_ERROR << "Something went wrong while encrypting the data (getEncryptedData) (what: " << e.what() << ")";
@@ -612,7 +594,13 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(const FileDataStruct file_da
     }
 }
 
-ErrorStruct<FileDataStruct> API::DECRYPTED::getFileData() noexcept { return ErrorStruct<FileDataStruct>{this->parent->file_data_struct}; }
+ErrorStruct<std::unique_ptr<FileDataStruct>> API::DECRYPTED::getFileData() noexcept { 
+    if(this->parent->file_data_struct == nullptr) {
+        PLOG_ERROR << "The file data struct is null (getFileData)";
+        return ErrorStruct<std::unique_ptr<FileDataStruct>>{SuccessType::FAIL, ErrorCode::ERR_FILEDATASTRUCT_NULL, ""};
+    }
+    return ErrorStruct<std::unique_ptr<FileDataStruct>>::createMove(std::move(this->parent->file_data_struct)); 
+}
 
 ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::changeSalt() noexcept {
     // creates data header with the current settings and password, just changes the salt
@@ -699,11 +687,12 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path& file_
         PLOG_ERROR << "The provided file path is invalid (writeToFile) (errorCode: " << +err_file.errorCode << ", errorInfo: " << err_file.errorInfo << ", what: " << err_file.what << ")";
         return ErrorStruct<bool>{err_file.success, err_file.errorCode, err_file.errorInfo, err_file.what};
     }
-    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen())};
+    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted_data.addcopyToBytes(full_data);        // adds the encrypted data
+    this->parent->encrypted->addcopyToBytes(full_data);        // adds the encrypted data
     ErrorStruct<bool> err = err_file.returnRef()->writeBytesIfEmpty(full_data);
     if (err.isSuccess()) {
+        this->parent->encrypted.reset();
         this->parent->current_state = std::make_unique<FINISHED>(this->parent);
     } else {
         PLOG_ERROR << "Some error occurred while writing to the file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
@@ -715,11 +704,12 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
     PLOG_VERBOSE << "Writing to selected file (file_path: " << this->parent->selected_file->getPath().c_str() << ")";
     // checks if the selected file exists (it could be deleted in the meantime)
-    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted_data.getLen())};
+    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
     this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted_data.addcopyToBytes(full_data);        // adds the encrypted data
+    this->parent->encrypted->addcopyToBytes(full_data);        // adds the encrypted data
     ErrorStruct<bool> err = this->parent->selected_file->writeBytes(full_data);
     if (err.isSuccess()) {
+        this->parent->encrypted.reset();
         this->parent->current_state = std::make_unique<FINISHED>(this->parent);
     } else {
         PLOG_FATAL << "Some error occurred while writing to the selected file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";

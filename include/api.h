@@ -20,25 +20,53 @@ struct WorkflowDecStruct {
     ErrorStruct<bool> errorStruct;  // information about the success of the decoding
                                     // only contains value if no error occurred
    private:
-    std::optional<FileDataStruct> file_data;  // file data struct that contains the decrypted content
+    std::unique_ptr<FileDataStruct> file_data = nullptr;  // file data struct that contains the decrypted content
     std::optional<DataHeader> dh;             // data header of the file
+    bool moved = false;                       // if the ptr was moved out
    public:
-    void setFileData(const FileDataStruct file_data) {
+    void setFileData(std::unique_ptr<FileDataStruct>&& file_data) {
         // sets the file data struct
-        this->file_data = file_data;
+        this->file_data = std::move(file_data);
     };
     void setDataHeader(const DataHeader dh) {
         // sets the data header
         this->dh = dh;
     };
-    FileDataStruct getFileData() {
+    FileDataStruct& getFileDataRef() {
         // returns the file data struct
         if (!this->errorStruct.isSuccess()) {
             PLOG_FATAL << "trying to get file data struct while error occurred";
             throw std::logic_error("cannot get file data struct if error occurred");
         }
-        return this->file_data.value();
+        if(this->moved){
+            PLOG_FATAL << "trying to get file data struct while it is already moved";
+            throw std::logic_error("cannot get file data struct if it is already moved");
+        }
+        if (this->file_data == nullptr) {
+            PLOG_FATAL << "trying to get file data struct while it is not set";
+            throw std::logic_error("cannot get file data struct if it is not set");
+        }
+        return *(this->file_data);
     };
+
+    std::unique_ptr<FileDataStruct> getFileData() {
+        // returns the file data struct
+        if (!this->errorStruct.isSuccess()) {
+            PLOG_FATAL << "trying to get file data struct while error occurred";
+            throw std::logic_error("cannot get file data struct if error occurred");
+        }
+        if(this->moved){
+            PLOG_FATAL << "trying to get file data struct while it is already moved";
+            throw std::logic_error("cannot get file data struct if it is already moved");
+        }
+        if (this->file_data == nullptr) {
+            PLOG_FATAL << "trying to get file data struct while it is not set";
+            throw std::logic_error("cannot get file data struct if it is not set");
+        }
+        this->moved = true;
+        return std::move(this->file_data);
+    };
+
     DataHeader getDataHeader() {
         // returns the data header
         if (!this->errorStruct.isSuccess()) {
@@ -97,18 +125,18 @@ class API {
         void logout(const FModes file_mode) noexcept {
             parent->correct_password_hash = Bytes(0);
             parent->dh = nullptr;
-            parent->encrypted_data = Bytes(0);
+            parent->encrypted = nullptr;
             parent->selected_file = nullptr;
-            parent->file_data_struct = FileDataStruct{file_mode, Bytes(0)};
+            parent->file_data_struct = nullptr;
             parent->current_state = std::make_unique<INIT>(parent);
         }
         // this logout preserves the file mode
         void logout() noexcept {
             parent->correct_password_hash = Bytes(0);
             parent->dh = nullptr;
-            parent->encrypted_data = Bytes(0);
+            parent->encrypted = nullptr;
             parent->selected_file = nullptr;
-            parent->file_data_struct = FileDataStruct{this->parent->file_data_struct.getFileMode(), Bytes(0)};
+            parent->file_data_struct = nullptr;
             parent->current_state = std::make_unique<INIT>(parent);
         }
 
@@ -166,15 +194,17 @@ class API {
         // decrypts the data
         // returns the decrypted content (without the data header)
         // uses the password and data header that were passed to verifyPassword
-        virtual ErrorStruct<FileDataStruct> getDecryptedData() noexcept {
-            return ErrorStruct<FileDataStruct>{FAIL, ERR_API_STATE_INVALID, "getDecryptedData is only available in the PASSWORD_VERIFIED state"};
+        virtual ErrorStruct<std::unique_ptr<FileDataStruct>> getDecryptedData() noexcept {
+            return ErrorStruct<std::unique_ptr<FileDataStruct>>{FAIL, ERR_API_STATE_INVALID, "getDecryptedData is only available in the PASSWORD_VERIFIED state"};
         };
         // gets the file data struct
         // it stores the file mode as well as the decrypted file content
-        virtual ErrorStruct<FileDataStruct> getFileData() noexcept { return ErrorStruct<FileDataStruct>{FAIL, ERR_API_STATE_INVALID, "getFileData is only available in the DECRYPTED state"}; }
+        virtual ErrorStruct<std::unique_ptr<FileDataStruct>> getFileData() noexcept {
+            return ErrorStruct<std::unique_ptr<FileDataStruct>>{FAIL, ERR_API_STATE_INVALID, "getFileData is only available in the DECRYPTED state"}; 
+        };
         // encrypts the data and returns the encrypted data
         // uses the password and data header that were passed to verifyPassword
-        virtual ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept {
+        virtual ErrorStruct<Bytes> getEncryptedData(std::unique_ptr<FileDataStruct>&& file_data) noexcept {
             return ErrorStruct<Bytes>{FAIL, ERR_API_STATE_INVALID, "getEncryptedData is only available in the DECRYPTED state"};
         };
         // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
@@ -220,14 +250,14 @@ class API {
     class PASSWORD_VERIFIED : public WorkflowState {
        public:
         PASSWORD_VERIFIED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to PASSWORD_VERIFIED"; };
-        ErrorStruct<FileDataStruct> getDecryptedData() noexcept override;
+        ErrorStruct<std::unique_ptr<FileDataStruct>> getDecryptedData() noexcept override;
     };
 
     class DECRYPTED : public WorkflowState {
        public:
         DECRYPTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to DECRYPTED"; };
-        ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept override;
-        ErrorStruct<FileDataStruct> getFileData() noexcept override;
+        ErrorStruct<Bytes> getEncryptedData(std::unique_ptr<FileDataStruct>&& file_data) noexcept override;
+        ErrorStruct<std::unique_ptr<FileDataStruct>> getFileData() noexcept override;
         ErrorStruct<std::unique_ptr<DataHeader>> changeSalt() noexcept override;
         ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout = 0) noexcept override;
         ErrorStruct<std::unique_ptr<DataHeader>> createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept override;
@@ -247,14 +277,12 @@ class API {
 
     // the current state of the API (makes sure that the API is used correctly)
     std::unique_ptr<WorkflowState> current_state;
-    // the file mode that should be used for the file is stored in the FileDataStruct
-    FileDataStruct file_data_struct;  // the user can construct a file data object from this struct
+    FModes file_mode;   // the file mode that should be used for the file
+    std::unique_ptr<FileDataStruct> file_data_struct;  // the user can construct a file data object from this struct
     Bytes correct_password_hash;      // the correct password hash for the dataheader
+    std::unique_ptr<Bytes> encrypted;
     // setting standard data header
     std::unique_ptr<DataHeader> dh;  // the data header for the correct password
-    // stores the file content that was encrypted by the algorithm
-    // only this file content is valid to write to a file
-    Bytes encrypted_data;
     // stores the handler to the working file
     std::unique_ptr<FileHandler> selected_file;
 
@@ -268,9 +296,9 @@ class API {
     // does the most work for creating a new dataheader from DataHeaderSettingsTime
     DataHeaderHelperStruct _createDataHeaderTime(const std::string& password, const DataHeaderSettingsTime& ds) const noexcept;
 
-    ErrorStruct<bool> _select_empty_file(std::unique_ptr<FileHandler> file) noexcept;
+    ErrorStruct<bool> _select_empty_file(std::unique_ptr<FileHandler>&& file) noexcept;
 
-    ErrorStruct<bool> _select_non_empty_file(std::unique_ptr<FileHandler> file) noexcept;
+    ErrorStruct<bool> _select_non_empty_file(std::unique_ptr<FileHandler>&& file) noexcept;
 
     ErrorStruct<bool> _deleteFile() noexcept;
 
@@ -393,23 +421,23 @@ class API {
     // decrypts the data (requires successful verifyPassword run)
     // returns the decrypted content (without the data header)
     // uses the password and data header from verifyPassword
-    ErrorStruct<FileDataStruct> getDecryptedData() noexcept {
+    ErrorStruct<std::unique_ptr<FileDataStruct>> getDecryptedData() noexcept {
         PLOG_DEBUG << "API call made (getDecryptedData)";
         return this->current_state->getDecryptedData();
     }
 
     // gets the file data struct
     // it stores the file mode as well as the decrypted file content
-    ErrorStruct<FileDataStruct> getFileData() noexcept {
+    ErrorStruct<std::unique_ptr<FileDataStruct>> getFileData() noexcept {
         PLOG_DEBUG << "API call made (getFileData)";
         return this->current_state->getFileData();
     }
 
     // encrypts the data (requires successful getDecryptedData or createDataHeader run) returns the encrypted data
     // uses the password and data header from verifyPassword or createDataHeader
-    ErrorStruct<Bytes> getEncryptedData(const FileDataStruct file_data) noexcept {
+    ErrorStruct<Bytes> getEncryptedData(std::unique_ptr<FileDataStruct>&& file_data) noexcept {
         PLOG_DEBUG << "API call made (getEncryptedData)";
-        return this->current_state->getEncryptedData(file_data);
+        return this->current_state->getEncryptedData(std::move(file_data));
     }
 
     // writes encrypted data to a file adds the dataheader (requires successful getEncryptedData run)
