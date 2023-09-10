@@ -217,7 +217,7 @@ TEST(BlockChain, codec_sha256) {
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
         dbc.addData(ebc.getResult());
-        Bytes res = dbc.getResult();
+        std::unique_ptr<Bytes> res = dbc.getResult();
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
@@ -244,7 +244,7 @@ TEST(BlockChain, codec_sha384) {
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
         dbc.addData(ebc.getResult());
-        Bytes res = dbc.getResult();
+        std::unique_ptr<Bytes> res = dbc.getResult();
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();
@@ -271,7 +271,7 @@ TEST(BlockChain, codec_sha512) {
         DecryptBlockChain dbc{std::move(HashModes::getHash(hmode)), pwhash, enc_salt};
         ebc.addData(data);
         dbc.addData(ebc.getResult());
-        Bytes res = dbc.getResult();
+        std::unique_ptr<Bytes> res = dbc.getResult();
         if (i != ITERS - 1) timer.recordTime();
     }
     timer.stop();

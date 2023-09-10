@@ -143,8 +143,8 @@ int main(int argc, char* argv[]) {
         }
 
         // DECRYPTED
-        FileDataStruct fds = api.getFileData().returnValue();
-        PLOG_INFO << "Constructing file data: " << fds.dec_data.toHex();
+        std::unique_ptr<FileDataStruct> fds = api.getFileData().returnMove();
+        PLOG_INFO << "Constructing file data: " << fds->dec_data->toHex();
         // PasswordData pd;
         // if(!pd.constructFileData(fds).isSuccess())
         //     PLOG_ERROR << "Failed to construct password data";
@@ -157,11 +157,11 @@ int main(int argc, char* argv[]) {
         b.addByte(0x02);
         b.addByte(0x03);
         b.addByte(0x04);
-        fds.dec_data = b;
+        fds->dec_data = std::move(std::make_unique<Bytes>(b));
         // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
-        ErrorStruct<Bytes> enc_err = api.getEncryptedData(fds);
+        ErrorStruct<Bytes> enc_err = api.getEncryptedData(std::move(fds));
         if (enc_err.isSuccess())
             PLOG_DEBUG << "Encrypted data successfully: " << enc_err.returnRef().toHex();
         else
@@ -266,9 +266,9 @@ int main(int argc, char* argv[]) {
         }
 
         // DECRYPTED
-        ErrorStruct<FileDataStruct> fds = api.getDecryptedData();
+        ErrorStruct<std::unique_ptr<FileDataStruct>> fds = std::move(api.getDecryptedData());
         if (fds.isSuccess())
-            PLOG_DEBUG << "Got decrypted data successfully: " << fds.returnRef().dec_data.toHex();
+            PLOG_DEBUG << "Got decrypted data successfully: " << fds.returnRef()->dec_data->toHex();
         else
             PLOG_ERROR << "Failed to get decrypted data: " << getErrorMessage(fds);
         // PasswordData pd;
@@ -277,18 +277,19 @@ int main(int argc, char* argv[]) {
         // else
         //     PLOG_DEBUG << "Constructed password data successfully";
 
-        Bytes b(fds.returnRef().dec_data.getLen() + 5);
-        fds.returnRef().dec_data = b;
-        fds.returnRef().dec_data.addByte(0x00);
-        fds.returnRef().dec_data.addByte(0x01);
-        fds.returnRef().dec_data.addByte(0x02);
-        fds.returnRef().dec_data.addByte(0x03);
-        fds.returnRef().dec_data.addByte(0x04);
+        Bytes b(fds.returnRef()->dec_data->getLen() + 5);
+        fds.returnRef()->dec_data->addcopyToBytes(b);
+        fds.returnRef()->dec_data = std::move(std::make_unique<Bytes>(b));
+        fds.returnRef()->dec_data->addByte(0x00);
+        fds.returnRef()->dec_data->addByte(0x01);
+        fds.returnRef()->dec_data->addByte(0x02);
+        fds.returnRef()->dec_data->addByte(0x03);
+        fds.returnRef()->dec_data->addByte(0x04);
 
         // change salt
         PLOG_DEBUG << "Changing salt";
         api.changeSalt();
-        ErrorStruct<Bytes> enc_err = api.getEncryptedData(fds.returnRef());
+        ErrorStruct<Bytes> enc_err = api.getEncryptedData(fds.returnMove());
         if (enc_err.isSuccess())
             PLOG_DEBUG << "Encrypted data successfully: " << enc_err.returnRef().toHex();
         else

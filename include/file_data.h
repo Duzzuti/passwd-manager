@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 
 #include "bytes.h"
@@ -15,13 +16,19 @@ struct FileDataStruct {
     std::optional<FModes> file_mode;
 
    public:
-    Bytes dec_data = Bytes(0);
+    std::unique_ptr<Bytes> dec_data;
 
     FileDataStruct() = default;
-    FileDataStruct(FModes file_mode, Bytes dec_data) {
+    FileDataStruct(const FileDataStruct& other) = delete;
+    FileDataStruct operator=(const FileDataStruct& other) = delete;
+    FileDataStruct(FModes file_mode, std::unique_ptr<Bytes>&& dec_data) {
         // constructs the FileDataStruct object
         this->setFileMode(file_mode);
-        this->dec_data = dec_data;
+        this->dec_data = std::move(dec_data);
+    }
+    std::unique_ptr<FileDataStruct> getCopy() const {
+        // returns a copy of the FileDataStruct object
+        return std::make_unique<FileDataStruct>(this->getFileMode(), std::make_unique<Bytes>(*this->dec_data));
     }
     bool isFileModeSet() const noexcept {
         // checks if the file mode is set

@@ -9,7 +9,7 @@ class EncryptBlockChainStream : public BlockChainStream {
     it is used to encrypt data, its one type of BlockChainStream
     */
    public:
-    EncryptBlockChainStream(std::unique_ptr<Hash> hash, const Bytes& passwordhash, const Bytes& enc_salt) : BlockChainStream(std::move(hash), passwordhash, enc_salt) {
+    EncryptBlockChainStream(std::unique_ptr<Hash>&& hash, const Bytes& passwordhash, const Bytes& enc_salt) : BlockChainStream(std::move(hash), passwordhash, enc_salt) {
         PLOG_VERBOSE << "created new EncryptBlockChainStream";
     };
 

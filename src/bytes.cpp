@@ -65,13 +65,24 @@ Bytes::Bytes(const Bytes& other) {
         return;
     }
     this->max_len = other.max_len;
-    this->bytes = new unsigned char[max_len];
+    this->bytes = new unsigned char[this->max_len];
     if (other.bytes == nullptr) {
         PLOG_FATAL << "cannot copy nullptr";
         throw std::invalid_argument("cannot copy nullptr");
     }
     std::memcpy(this->bytes, other.bytes, other.len);
     this->len = other.len;
+}
+
+Bytes::Bytes(Bytes&& other) noexcept {
+    if (this == &other) {
+        // self assignment
+        return;
+    }
+    this->max_len = other.max_len;
+    this->bytes = other.bytes;
+    this->len = other.len;
+    other.setDeallocate(false);
 }
 
 Bytes& Bytes::operator=(const Bytes& other) {
@@ -218,6 +229,16 @@ void Bytes::addcopyToBytes(Bytes& b) const {
     b.len += this->len;
 }
 
+void Bytes::addcopyToBytes(std::unique_ptr<Bytes>& b) const {
+    // adds the bytes to the given Bytes object
+    if (b->max_len < this->len + b->len) {
+        PLOG_FATAL << "given Bytes object is too short to add copy to (given: " << b->max_len << ", needed: " << this->len + b->len << ")";
+        throw std::length_error("given Bytes object is too short to add copy to (given: " + std::to_string(b->max_len) + ", needed: " + std::to_string(this->len + b->len) + ")");
+    }
+    std::memcpy(b->bytes + b->len, this->bytes, this->len);
+    b->len += this->len;
+}
+
 Bytes Bytes::copySubBytes(const size_t start, const size_t end) const {
     // returns a Bytes object that is a copy of the bytes from start to end
     if (start > end) {
@@ -242,6 +263,15 @@ size_t Bytes::getLen() const noexcept {
 size_t Bytes::getMaxLen() const noexcept {
     // getter for the maximum length in bytes
     return this->max_len;
+}
+
+void Bytes::addSize(const size_t size) noexcept {
+    // increase the max length of the bytes object by size
+    this->max_len += size;
+    unsigned char* new_bytes = new unsigned char[this->max_len];
+    std::memcpy(new_bytes, this->bytes, this->len);
+    delete[] this->bytes;
+    this->bytes = new_bytes;
 }
 
 void Bytes::addByte(const unsigned char byte) {

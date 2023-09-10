@@ -47,7 +47,8 @@ enum ErrorCode {
     ERR_API_STATE_INVALID,
     ERR_DATAHEADERSETTINGS_INCOMPLETE,
     ERR_FILEDATASTRUCT_INCOMPLETE,
-    ERR_FILEDATA_INVALID
+    ERR_FILEDATA_INVALID,
+    ERR_FILEDATASTRUCT_NULL
 };
 
 // used in a function that could fail, it returns a success type, a value and an error message
@@ -153,7 +154,7 @@ struct ErrorStruct {
 
 // returns an error message based on the error code and the error info
 template <typename T>
-std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noexcept {
+std::string getErrorMessage(ErrorStruct<T>& err, bool verbose_err_msg = true) noexcept {
     // verbose_err_msg triggers the return of a more detailed error message
     //  returns an error message based on the error code and the error info
     if (err.isSuccess()) {
@@ -291,6 +292,9 @@ std::string getErrorMessage(ErrorStruct<T> err, bool verbose_err_msg = true) noe
 
         case ERR_FILEDATA_INVALID:
             return "FileData is invalid: " + err.errorInfo + err_msg;
+
+        case ERR_FILEDATASTRUCT_NULL:
+            return "FileDataStruct is null. It was moved previously" + err_msg;
 
         case ERR:
             if (err.errorInfo.empty()) return "An error occurred" + err_msg;

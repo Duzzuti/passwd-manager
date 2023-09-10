@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 
 class Bytes {
     /*
@@ -21,6 +22,7 @@ class Bytes {
     Bytes(unsigned char* bytes, const size_t len);                   // creates a Bytes object with the given bytes and length (consumes the array)
     Bytes(const Bytes& other, const size_t extra_len);               // creates a new Bytes object with the bytes of the other Bytes object and adds extra_len bytes at the end
     Bytes(const Bytes& other);                                       // copy constructor
+    Bytes(Bytes&& other) noexcept;                                   // move constructor
     Bytes& operator=(const Bytes& other);                            // copy assignment
     void setDeallocate(const bool deallocate) noexcept;              // setter for the deallocate variable
     void fillrandom() noexcept;                                      // fills the byte array with random bytes
@@ -34,9 +36,11 @@ class Bytes {
     void copyToArray(unsigned char* array, const size_t len) const;  // copys the bytes to the given array
     void copyToBytes(Bytes& b) const;                                // copys the bytes to the given Bytes object
     void addcopyToBytes(Bytes& b) const;                             // adds the bytes to the given Bytes object
+    void addcopyToBytes(std::unique_ptr<Bytes>& b) const;            // adds the bytes to the given Bytes object
     Bytes copySubBytes(const size_t start, const size_t end) const;  // returns a Bytes object that is a copy of the bytes from start to end
     size_t getLen() const noexcept;                                  // getter for the length in bytes
     size_t getMaxLen() const noexcept;                               // getter for the maximum length in bytes
+    void addSize(const size_t size) noexcept;                        // increase the max length of the bytes object by size
     void addByte(const unsigned char byte);                          // adds one byte at the end of the byte array by reference
     bool isEmpty() const noexcept;                                   // returns true if there are no bytes in the array
     u_int64_t toLong() const;                                        // returns a long that is the decimal representation of the Bytes
