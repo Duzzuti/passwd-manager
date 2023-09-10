@@ -43,7 +43,7 @@ void DataHeader::setChainHash1(const ChainHash chainhash) {
     }
     // set the information to the object
     this->dh.chainhash1 = chainhash;
-    this->header_bytes.setLen(0); // clear header bytes because they have to be recalculated
+    this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
 
 void DataHeader::setChainHash2(const ChainHash chainhash) {
@@ -55,21 +55,21 @@ void DataHeader::setChainHash2(const ChainHash chainhash) {
     }
     // set the information to the object
     this->dh.chainhash2 = chainhash;
-    this->header_bytes.setLen(0); // clear header bytes because they have to be recalculated
+    this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
 
 void DataHeader::setFileDataMode(const FModes file_mode) {
     // sets the file data mode
     PLOG_VERBOSE << "setting file mode: " << +file_mode;
     this->dh.setFileDataMode(file_mode);
-    this->header_bytes.setLen(0); // clear header bytes because they have to be recalculated
+    this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
 
 void DataHeader::setValidPasswordHashBytes(const Bytes& validBytes) {
     // set the passwordhash validator hash
     PLOG_VERBOSE << "setting password validator hash: " << validBytes.toHex();
     this->dh.setValidPasswordHash(validBytes);
-    this->header_bytes.setLen(0); // clear header bytes because they have to be recalculated
+    this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
 
 void DataHeader::setFileSize(const u_int64_t file_size) {
@@ -80,22 +80,22 @@ void DataHeader::setFileSize(const u_int64_t file_size) {
         PLOG_ERROR << "all dataheader parts have to be set to set the file size";
         throw std::logic_error("all dataheader parts have to be set to set the file size");
     }
-    if(file_size < this->getHeaderLength()){
+    if (file_size < this->getHeaderLength()) {
         // file size is to small
         PLOG_ERROR << "file size is to small (file_size: " << file_size << ", header_length: " << this->getHeaderLength() << ")";
         throw std::invalid_argument("file size is to small");
     }
-    this->header_bytes.setLen(0); // clear header bytes because they have to be recalculated
+    this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
     this->file_size = file_size;
 }
 
-std::optional<u_int64_t> DataHeader::getFileSize() const noexcept { return this->file_size;}
+std::optional<u_int64_t> DataHeader::getFileSize() const noexcept { return this->file_size; }
 
 void DataHeader::setEncSalt(const Bytes& salt) {
     // sets the salt
     PLOG_VERBOSE << "setting salt: " << salt.toHex();
     this->dh.setEncSalt(salt);
-    this->header_bytes.setLen(0); // clear header bytes because they have to be recalculated
+    this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
 
 Bytes DataHeader::getHeaderBytes() const {
@@ -122,13 +122,13 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
         PLOG_ERROR << "not all required data is set to calculate the header bytes";
         throw std::logic_error("not all required data is set to calculate the header bytes");
     }
-    if(!this->file_size.has_value()){
+    if (!this->file_size.has_value()) {
         // file size is not set
         PLOG_ERROR << "file size is not set";
         throw std::logic_error("file size is not set");
     }
     // file size is set
-    if(this->file_size.value() < this->getHeaderLength()){
+    if (this->file_size.value() < this->getHeaderLength()) {
         // file size is to small
         PLOG_ERROR << "file size is to small (file_size: " << this->file_size.value() << ", header_length: " << this->getHeaderLength() << ")";
         throw std::invalid_argument("file size is to small");
@@ -151,11 +151,11 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
 
     Bytes dataheader = Bytes(len);
     try {
-        Bytes::fromLong(this->file_size.value(), true).addcopyToBytes(dataheader);  // add file size
-        Bytes::fromLong(len, true).addcopyToBytes(dataheader);         // add hash size
-        dataheader.addByte(this->dh.getFileDataMode());     // add file mode byte
-        dataheader.addByte(this->dh.getHashMode());         // add hash mode byte
-        dataheader.addByte(this->dh.chainhash1.getMode());  // add first chainhash mode byte
+        Bytes::fromLong(this->file_size.value(), true).addcopyToBytes(dataheader);          // add file size
+        Bytes::fromLong(len, true).addcopyToBytes(dataheader);                              // add hash size
+        dataheader.addByte(this->dh.getFileDataMode());                                     // add file mode byte
+        dataheader.addByte(this->dh.getHashMode());                                         // add hash mode byte
+        dataheader.addByte(this->dh.chainhash1.getMode());                                  // add first chainhash mode byte
         Bytes::fromLong(this->dh.chainhash1.getIters(), true).addcopyToBytes(dataheader);   // add iterations for the first chainhash
         dataheader.addByte(this->dh.chainhash1.getChainHashData()->getLen());               // add datablock length byte
         this->dh.chainhash1.getChainHashData()->getDataBlock().addcopyToBytes(dataheader);  // add first datablock
