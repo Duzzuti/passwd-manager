@@ -411,7 +411,7 @@ ErrorStruct<bool> API::EMPTY_FILE_SELECTED::unselectFile() noexcept {
     return this->parent->_unselectFile();
 }
 
-ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string& password, const u_int64_t timeout) noexcept {
+ErrorStruct<bool> API::FILE_SELECTED::verifyPassword(const std::string& password, const u_int64_t timeout) noexcept {
     // timeout=0 means no timeout
     // checks if a password (given from the user to decrypt) is valid for the selected file and returns its hash.
     // This call is expensive
@@ -431,14 +431,14 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string& passwor
             // the first chain hash failed (due to timeout or other error)
             PLOG_ERROR << "The first chain hash failed (verifyPassword) (err1.success: " << +err1.success << ", err1.errorCode: " << +err1.errorCode << ", err1.errorInfo: " << err1.errorInfo
                        << ", err1.what: " << err1.what << ")";
-            return err1;
+            return ErrorStruct<bool>{err1.success, err1.errorCode, err1.errorInfo, err1.what};
         }
         // perform the second chain hash (passwordhash -> passwordhashhash = validation hash)
         u_int64_t new_timeout = timeout - timer.peekTime();
         timer.stop();
         if (timeout != 0 && new_timeout <= 0) {
             PLOG_WARNING << "Timeout reached after the first chainhash";
-            ErrorStruct<Bytes> err;
+            ErrorStruct<bool> err;
             err.success = SuccessType::TIMEOUT;
             err.errorCode = ErrorCode::ERR_TIMEOUT;
             err.errorInfo = "Timeout reached after the first chainhash";
@@ -449,7 +449,7 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string& passwor
             // the second chain hash failed (due to timeout or other error)
             PLOG_ERROR << "The second chain hash failed (verifyPassword) (err2.success: " << +err2.success << ", err2.errorCode: " << +err2.errorCode << ", err2.errorInfo: " << err2.errorInfo
                        << ", err2.what: " << err2.what << ")";
-            return err2;
+            return ErrorStruct<bool>{err2.success, err2.errorCode, err2.errorInfo, err2.what};
         }
         if (err2.returnValue() == dhp.getValidPasswordHash()) {
             // the password is valid (because the validation hashes match)
@@ -458,11 +458,11 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string& passwor
             PLOG_INFO << "The given password is valid (verifyPassword)";
             this->parent->correct_password_hash = err1.returnValue();
             this->parent->current_state = std::make_unique<PASSWORD_VERIFIED>(this->parent);
-            return err1;
+            return ErrorStruct<bool>{true};
         }
         // the password is invalid
         PLOG_WARNING << "The given password is invalid (verifyPassword)";
-        ErrorStruct<Bytes> err;
+        ErrorStruct<bool> err;
         err.success = SuccessType::FAIL;
         err.errorCode = ErrorCode::ERR_PASSWORD_INVALID;
         return err;
@@ -470,19 +470,19 @@ ErrorStruct<Bytes> API::FILE_SELECTED::verifyPassword(const std::string& passwor
     } catch (const std::exception& e) {
         // some error occurred
         PLOG_ERROR << "Some error occurred while verifying the password (verifyPassword) (what: " << e.what() << ")";
-        ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, "Some error occurred while verifying the password", e.what()};
+        ErrorStruct<bool> err{SuccessType::FAIL, ErrorCode::ERR, "Some error occurred while verifying the password", e.what()};
         return err;
     }
 }
 
-ErrorStruct<std::unique_ptr<DataHeader>> API::EMPTY_FILE_SELECTED::createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout) noexcept {
+ErrorStruct<bool> API::EMPTY_FILE_SELECTED::createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout) noexcept {
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // A timeout (in ms) can be specified to limit the time of the call (0 means no timeout)
     // you can specify the iterations
     if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
-        ErrorStruct<std::unique_ptr<DataHeader>> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        ErrorStruct<bool> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
     // calculates the data header (its a refactored function that is used more than once)
@@ -491,25 +491,25 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::EMPTY_FILE_SELECTED::createDataHea
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
                    << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
-        return std::move(dhhs.errorStruct);
+        return ErrorStruct<bool>{dhhs.errorStruct.success, dhhs.errorStruct.errorCode, dhhs.errorStruct.errorInfo, dhhs.errorStruct.what};
     }
 
     PLOG_INFO << "The data header was created successfully (createDataHeader)";
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
-    this->parent->dh = std::make_unique<DataHeader>(*(dhhs.errorStruct.returnRef()));
+    this->parent->dh = dhhs.errorStruct.returnMove();
     this->parent->file_data_struct = std::make_unique<FileDataStruct>(this->parent->file_mode, std::make_unique<Bytes>(0));
     this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
-    return std::move(dhhs.errorStruct);
+    return ErrorStruct<bool>{true};
 }
 
-ErrorStruct<std::unique_ptr<DataHeader>> API::EMPTY_FILE_SELECTED::createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept {
+ErrorStruct<bool> API::EMPTY_FILE_SELECTED::createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept {
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
     if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
-        ErrorStruct<std::unique_ptr<DataHeader>> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        ErrorStruct<bool> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
     // calculates the data header (its a refactored function that is used more than once)
@@ -518,16 +518,16 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::EMPTY_FILE_SELECTED::createDataHea
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
                    << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
-        return std::move(dhhs.errorStruct);
+        return ErrorStruct<bool>{dhhs.errorStruct.success, dhhs.errorStruct.errorCode, dhhs.errorStruct.errorInfo, dhhs.errorStruct.what};
     }
 
     PLOG_INFO << "The data header was created successfully (createDataHeader)";
     // updating the state
     this->parent->correct_password_hash = dhhs.Password_hash();
-    this->parent->dh = std::make_unique<DataHeader>(*(dhhs.errorStruct.returnRef()));
+    this->parent->dh = dhhs.errorStruct.returnMove();
     this->parent->file_data_struct = std::make_unique<FileDataStruct>(this->parent->file_mode, std::make_unique<Bytes>(0));
     this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
-    return std::move(dhhs.errorStruct);
+    return ErrorStruct<bool>{true};
 }
 
 ErrorStruct<std::unique_ptr<FileDataStruct>> API::PASSWORD_VERIFIED::getDecryptedData() noexcept {
@@ -542,7 +542,7 @@ ErrorStruct<std::unique_ptr<FileDataStruct>> API::PASSWORD_VERIFIED::getDecrypte
         dbc.addData(this->parent->selected_file->getData().returnMove(), this->parent->selected_file->getDataLen());
         // get the decrypted data
         std::unique_ptr<FileDataStruct> result = std::make_unique<FileDataStruct>(this->parent->file_mode, std::move(dbc.getResult()));
-        this->parent->file_data_struct = result->getCopy();
+        this->parent->file_data_struct = nullptr;
         // changes the state
         this->parent->current_state = std::make_unique<DECRYPTED>(this->parent);
         return ErrorStruct<std::unique_ptr<FileDataStruct>>::createMove(std::move(result));
@@ -553,22 +553,22 @@ ErrorStruct<std::unique_ptr<FileDataStruct>> API::PASSWORD_VERIFIED::getDecrypte
     }
 }
 
-ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(std::unique_ptr<FileDataStruct>&& file_data) noexcept {
+ErrorStruct<bool> API::DECRYPTED::encryptData(std::unique_ptr<FileDataStruct>&& file_data) noexcept {
     // encrypts the data and returns the encrypted data
     // uses the password and data header that were passed to verifyPassword
-    PLOG_VERBOSE << "Getting encrypted data";
+    PLOG_VERBOSE << "encrypt data...";
     if (!file_data->isComplete()) {
         PLOG_ERROR << "The given FileDataStruct is not complete";
-        ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR_FILEDATASTRUCT_INCOMPLETE, ""};
+        ErrorStruct<bool> err{SuccessType::FAIL, ErrorCode::ERR_FILEDATASTRUCT_INCOMPLETE, ""};
         return err;
     }
-    ErrorStruct<Bytes> err{SuccessType::FAIL, ErrorCode::ERR, ""};
+    ErrorStruct<bool> err{SuccessType::FAIL, ErrorCode::ERR, ""};
     if (file_data->getFileMode() != this->parent->file_mode) {
         // the user wants to encrypt data with a different file mode
-        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (getEncryptedData) (provided file mode: " << +file_data->getFileMode()
+        PLOG_ERROR << "The provided file mode does not match with the selected file data mode (encryptData) (provided file mode: " << +file_data->getFileMode()
                    << ", selected file mode: " << +this->parent->file_mode << ")";
         err.errorCode = ErrorCode::ERR_FILEMODE_INVALID;
-        err.errorInfo = " In getEncryptedData: The provided file mode does not match with the given file data mode";
+        err.errorInfo = " In encryptData: The provided file mode does not match with the given file data mode";
         return err;
     }
     try {
@@ -576,19 +576,18 @@ ErrorStruct<Bytes> API::DECRYPTED::getEncryptedData(std::unique_ptr<FileDataStru
         EncryptBlockChain ebc{HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
         ebc.addData(std::move(file_data->dec_data));
+        file_data->dec_data.reset();
         // get the encrypted data
         this->parent->encrypted = std::move(ebc.getResult());
-
         this->parent->file_data_struct = std::move(file_data);
         // change the state
-        ErrorStruct<Bytes> err{*(this->parent->encrypted)};
         this->parent->current_state = std::make_unique<ENCRYPTED>(this->parent);
         // returns the result
-        return err;
+        return ErrorStruct<bool>{true};
     } catch (const std::exception& e) {
         // something went wrong inside of one of these functions, read what message for more information
-        PLOG_ERROR << "Something went wrong while encrypting the data (getEncryptedData) (what: " << e.what() << ")";
-        err.errorInfo = "In getEncryptedData: Something went wrong while encrypting the data";
+        PLOG_ERROR << "Something went wrong while encrypting the data (encryptData) (what: " << e.what() << ")";
+        err.errorInfo = "In encryptData: Something went wrong while encrypting the data";
         err.what = e.what();
         return err;
     }
@@ -602,7 +601,7 @@ ErrorStruct<std::unique_ptr<FileDataStruct>> API::DECRYPTED::getFileData() noexc
     return ErrorStruct<std::unique_ptr<FileDataStruct>>::createMove(std::move(this->parent->file_data_struct));
 }
 
-ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::changeSalt() noexcept {
+ErrorStruct<bool> API::DECRYPTED::changeSalt() noexcept {
     // creates data header with the current settings and password, just changes the salt
     // this call is not expensive because it does not have to chainhash the password
     PLOG_VERBOSE << "Changing salt";
@@ -614,16 +613,16 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::changeSalt() noexcept {
     // dataheader parts is now ready to create the dataheader object
     ErrorStruct<std::unique_ptr<DataHeader>> err = DataHeader::setHeaderParts(dhp);
     if (err.isSuccess()) {
-        this->parent->dh = std::make_unique<DataHeader>(*(err.returnRef()));
+        this->parent->dh = err.returnMove();
         this->parent->dh->calcHeaderBytes();
     } else {
         PLOG_ERROR << "The data header could not be created (changeSalt) (success: " << +err.success << ", errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what
                    << ")";
     }
-    return err;
+    return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
 }
 
-ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout) noexcept {
+ErrorStruct<bool> API::DECRYPTED::createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout) noexcept {
     // the new generated header will be used for the next encryption, that means the old password is not valid anymore
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
@@ -631,7 +630,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::createDataHeader(const 
     // you can specify the iterations
     if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsIters is not complete";
-        ErrorStruct<std::unique_ptr<DataHeader>> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        ErrorStruct<bool> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
     PLOG_VERBOSE << "Creating data header with iterations settings (" << ds << ", timeout: " << timeout << ")";
@@ -641,24 +640,24 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::createDataHeader(const 
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
                    << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
-        return std::move(dhhs.errorStruct);
+        return ErrorStruct<bool>{dhhs.errorStruct.success, dhhs.errorStruct.errorCode, dhhs.errorStruct.errorInfo, dhhs.errorStruct.what};
     }
 
     PLOG_INFO << "The data header was created successfully (createDataHeader)";
     // updating the data header and the password hash
     this->parent->correct_password_hash = dhhs.Password_hash();
-    this->parent->dh = std::make_unique<DataHeader>(*(dhhs.errorStruct.returnRef()));
-    return std::move(dhhs.errorStruct);
+    this->parent->dh = dhhs.errorStruct.returnMove();
+    return ErrorStruct<bool>{true};
 }
 
-ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept {
+ErrorStruct<bool> API::DECRYPTED::createDataHeader(const std::string& password, const DataHeaderSettingsTime& ds) noexcept {
     // the new generated header will be used for the next encryption, that means the old password is not valid anymore
     // creates a data header for a given password and settings by randomizing the salt and chainhash data
     // This call is expensive because it has to chainhash the password twice to generate a validator.
     // you can specify the time (in ms) that the chainhashes should take in the settings
     if (!ds.isComplete()) {
         PLOG_ERROR << "The given DataHeaderSettingsTime is not complete";
-        ErrorStruct<std::unique_ptr<DataHeader>> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
+        ErrorStruct<bool> err{SuccessType::FAIL, ErrorCode::ERR_DATAHEADERSETTINGS_INCOMPLETE, ""};
         return err;
     }
     PLOG_VERBOSE << "Creating data header with time settings (" << ds << ")";
@@ -668,14 +667,14 @@ ErrorStruct<std::unique_ptr<DataHeader>> API::DECRYPTED::createDataHeader(const 
         // the data header could not be created
         PLOG_ERROR << "The data header could not be created (createDataHeader) (success: " << +dhhs.errorStruct.success << ", errorCode: " << +dhhs.errorStruct.errorCode
                    << ", errorInfo: " << dhhs.errorStruct.errorInfo << ", what: " << dhhs.errorStruct.what << ")";
-        return std::move(dhhs.errorStruct);
+        return ErrorStruct<bool>{dhhs.errorStruct.success, dhhs.errorStruct.errorCode, dhhs.errorStruct.errorInfo, dhhs.errorStruct.what};
     }
 
     PLOG_INFO << "The data header was created successfully (createDataHeader)";
     // updating the data header and the password hash
     this->parent->correct_password_hash = dhhs.Password_hash();
-    this->parent->dh = std::make_unique<DataHeader>(*(dhhs.errorStruct.returnRef()));
-    return std::move(dhhs.errorStruct);
+    this->parent->dh = dhhs.errorStruct.returnMove();
+    return ErrorStruct<bool>{true};
 }
 
 ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path& file_path) noexcept {
