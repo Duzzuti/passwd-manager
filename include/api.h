@@ -187,9 +187,7 @@ class API {
         };
         // creates data header with the current settings and password, just changes the salt
         // this call is not expensive because it does not have to chainhash the password
-        virtual ErrorStruct<bool> changeSalt() noexcept {
-            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state"};
-        };
+        virtual ErrorStruct<bool> changeSalt() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "changeSalt is only available in the DECRYPTED state"}; };
 
         // decrypts the data
         // returns the decrypted content (without the data header)
