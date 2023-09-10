@@ -495,6 +495,7 @@ class DataHeader {
     DataHeaderParts dh;                           // saves every part of the header
     unsigned char hash_size;                      // the size of the hash provided by the hash function (in Bytes)
     Bytes header_bytes = Bytes(MAX_HEADER_SIZE);  // bytes that are in the header
+    std::optional<u_int64_t> file_size;           // the size of the file that is encrypted
 
    private:
     // checks if all data is set correctly
@@ -512,6 +513,8 @@ class DataHeader {
     void setChainHash1(const ChainHash chainhash);
     void setChainHash2(const ChainHash chainhash);
     void setValidPasswordHashBytes(const Bytes& validBytes);  // sets the passwordhashhash to validate the password hash
+    void setFileSize(const u_int64_t file_size);              // sets the file size
+    std::optional<u_int64_t> getFileSize() const noexcept;    // gets the file size
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
     void calcHeaderBytes(const Bytes& passwordhash = Bytes(0));

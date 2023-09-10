@@ -45,4 +45,4 @@ const constexpr u_int64_t MAX_RUNTIME = 1000 * 60 * 60 * 24;  // 1 day
 const constexpr u_int64_t TIMEOUT_ITERATIONS = 1000;
 
 //##################### HEADER ##########################
-const constexpr u_int16_t MAX_HEADER_SIZE = 22 + 2 * 64 + 2 * 255;
+const constexpr u_int16_t MAX_HEADER_SIZE = 38 + 2 * 64 + 2 * 255;
