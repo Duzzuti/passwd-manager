@@ -43,6 +43,3 @@ const constexpr u_int64_t MAX_RUNTIME = 1000 * 60 * 60 * 24;  // 1 day
 // stores the number of iteration that can passed from the chainhash before the timeout is checked
 // a higher value does increase performance but leads to more inaccurate timeout calls
 const constexpr u_int64_t TIMEOUT_ITERATIONS = 1000;
-
-//##################### HEADER ##########################
-const constexpr u_int16_t MAX_HEADER_SIZE = 38 + 2 * 64 + 2 * 255;
