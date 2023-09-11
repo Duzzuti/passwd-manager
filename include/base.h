@@ -30,6 +30,15 @@ enum FModes {
 // enum which describes a success type, an success type can be a success, fail or timeout
 enum SuccessType { SUCCESS, FAIL, TIMEOUT };
 
+// enum which holds the datablock types for the dataheader
+enum DatablockType {
+    DEFAULT = 0,
+    FILENAME,       // filename datablock type
+    FILEEXTENSION,  // fileextension datablock type
+    INDEX,          // index datablock type
+    TIMESTAMP,      // timestamp datablock type
+};
+
 // struct that is used as an data package between format and other classes
 // it contains the name of the chainhash block part and its length in bytes (or zero if it is a *B part)
 // chainhash_modes.md
