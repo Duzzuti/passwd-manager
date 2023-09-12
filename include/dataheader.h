@@ -25,7 +25,7 @@ struct DataBlock {
 
     void setData(const Bytes& data) {
         // sets the data
-        if(data.getLen() > 0 && data.getLen() <= 255)   // the size has to be one byte
+        if (data.getLen() > 0 && data.getLen() <= 255)  // the size has to be one byte
             this->data = data;
         else {
             PLOG_ERROR << "the given data has an invalid length: " << data.getLen();
@@ -42,9 +42,9 @@ struct EncDataBlock {
    private:
     DataBlock data_block;  // the enc data
     EncDataBlock() = default;
-   public:
 
-    static EncDataBlock createEncBlock(const unsigned char enc_type, const Bytes enc_data){
+   public:
+    static EncDataBlock createEncBlock(const unsigned char enc_type, const Bytes enc_data) {
         // creates an EncDataBlock from the given data
         EncDataBlock enc_block;
         enc_block.data_block.type = DatablockType(enc_type);
@@ -59,7 +59,7 @@ struct EncDataBlock {
         u_int16_t written = 0;
         u_int16_t end;
         Bytes enc_data = Bytes::withU64(data_block.getData().getLen());
-        while(enc_data.getLen() < data_block.getData().getLen()) {
+        while (enc_data.getLen() < data_block.getData().getLen()) {
             // encrypt the data
             enc_salt = hash->hash(enc_salt - pwhash);
             end = std::min<int>(written + enc_salt.getLen(), data_block.getData().getLen());
@@ -69,18 +69,18 @@ struct EncDataBlock {
         this->data_block = datablock;
     }
 
-    Bytes getEnc() const noexcept{
+    Bytes getEnc() const noexcept {
         // gets the data
         return this->data_block.getData();
     }
 
-    Bytes getDec(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) const noexcept{
+    Bytes getDec(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) const noexcept {
         // decrypts the data
         pwhash = hash->hash(pwhash);
         u_int16_t written = 0;
         u_int16_t end;
         Bytes dec_data = Bytes::withU64(this->data_block.getData().getLen());
-        while(dec_data.getLen() < this->data_block.getData().getLen()) {
+        while (dec_data.getLen() < this->data_block.getData().getLen()) {
             // decrypt the data
             enc_salt = hash->hash(enc_salt - pwhash);
             end = std::min<int>(written + enc_salt.getLen(), this->data_block.getData().getLen());
@@ -110,10 +110,10 @@ struct DataHeaderParts {
     std::optional<Bytes> valid_passwordhash;  // saves the hash that should be the result of the second chainhash
     std::optional<Bytes> enc_salt;            // saves the encoded salt
    public:
-    std::vector<DataBlock> dec_data_blocks;  // the decrypted data blocks
+    std::vector<DataBlock> dec_data_blocks;     // the decrypted data blocks
     std::vector<EncDataBlock> enc_data_blocks;  // the encrypted data blocks
-    ChainHash chainhash1;  // chainhash data for the first chainhash (password -> passwordhash)
-    ChainHash chainhash2;  // chainhash data for the second chainhash (passwordhash -> validate password)
+    ChainHash chainhash1;                       // chainhash data for the first chainhash (password -> passwordhash)
+    ChainHash chainhash2;                       // chainhash data for the second chainhash (passwordhash -> validate password)
 
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set
@@ -217,8 +217,8 @@ struct DataHeaderParts {
     bool isComplete(const unsigned char hash_size) const noexcept {
         // checks if everything is set correctly
         try {
-            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->isHashModeSet() && this->getHashSize() == hash_size 
-                && this->isEncSaltSet())
+            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->isHashModeSet() && this->getHashSize() == hash_size &&
+                this->isEncSaltSet())
                 return true;  // everything is set correctly
         } catch (std::exception& e) {
             PLOG_WARNING << "isComplete thrown: " << e.what();
@@ -588,11 +588,11 @@ class DataHeader {
     more information about the header: docs/dataheader.md
     */
    private:
-    DataHeaderParts dh;                           // saves every part of the header
-    unsigned char hash_size;                      // the size of the hash provided by the hash function (in Bytes)
-    Bytes header_bytes = Bytes(0);                // bytes that are in the header
-    std::optional<u_int64_t> file_size;           // the size of the file that is encrypted
-    u_int32_t datablocks_len = 0;                 // the length of the datablocks
+    DataHeaderParts dh;                  // saves every part of the header
+    unsigned char hash_size;             // the size of the hash provided by the hash function (in Bytes)
+    Bytes header_bytes = Bytes(0);       // bytes that are in the header
+    std::optional<u_int64_t> file_size;  // the size of the file that is encrypted
+    u_int32_t datablocks_len = 0;        // the length of the datablocks
 
    private:
     // checks if all data is set correctly
@@ -611,11 +611,11 @@ class DataHeader {
     void setChainHash2(const ChainHash chainhash);
     void setValidPasswordHashBytes(const Bytes& validBytes);  // sets the passwordhashhash to validate the password hash
     void clearDataBlocks() noexcept;                          // clears the data blocks
-    void addDataBlock(const DataBlock datablock);            // adds a data block
-    void addEncDataBlock(const EncDataBlock encdatablock);   // adds an encrypted data block
+    void addDataBlock(const DataBlock datablock);             // adds a data block
+    void addEncDataBlock(const EncDataBlock encdatablock);    // adds an encrypted data block
 
-    void setFileSize(const u_int64_t file_size);              // sets the file size
-    std::optional<u_int64_t> getFileSize() const noexcept;    // gets the file size
+    void setFileSize(const u_int64_t file_size);            // sets the file size
+    std::optional<u_int64_t> getFileSize() const noexcept;  // gets the file size
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
     void calcHeaderBytes(const Bytes& passwordhash = Bytes(0));
