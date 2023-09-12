@@ -16,7 +16,7 @@ DataHeader::DataHeader(const HModes hash_mode) {
     // generate the salt with random bytes
     Bytes rand_salt(this->hash_size);
     rand_salt.fillrandom();
-    this->dh.setEncSalt(rand_salt);                    // set the random generated encrypted salt
+    this->dh.setEncSalt(rand_salt);  // set the random generated encrypted salt
 }
 
 bool DataHeader::isComplete() const noexcept {
@@ -27,11 +27,10 @@ bool DataHeader::isComplete() const noexcept {
 
 unsigned int DataHeader::getHeaderLength() const noexcept {
     // gets the header len, if there is no header set try to calculate the len, else return 0
-    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())                                                                             // all data set to calculate the header length
-        return 40 + 2 * this->hash_size + this->datablocks_len +
-            this->dh.chainhash1.getChainHashData()->getLen() + this->dh.chainhash2.getChainHashData()->getLen();  // dataheader.md
-    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();                                                                    // header bytes are set, so we get this length
-    return 0;                                                                                                                                   // not enough infos to get the header length
+    if (this->dh.chainhash1.valid() && this->dh.chainhash2.valid())  // all data set to calculate the header length
+        return 40 + 2 * this->hash_size + this->datablocks_len + this->dh.chainhash1.getChainHashData()->getLen() + this->dh.chainhash2.getChainHashData()->getLen();  // dataheader.md
+    if (this->header_bytes.getLen() > 0) return this->header_bytes.getLen();  // header bytes are set, so we get this length
+    return 0;                                                                 // not enough infos to get the header length
 }
 
 int DataHeader::getHashSize() const noexcept {
@@ -87,19 +86,19 @@ void DataHeader::clearDataBlocks() noexcept {
 
 void DataHeader::addDataBlock(const DataBlock datablock) {
     // adds a data block
-    if(this->dh.dec_data_blocks.size() >= 255) {
+    if (this->dh.dec_data_blocks.size() >= 255) {
         // there are already 255 datablocks
         PLOG_ERROR << "there are already 255 datablocks";
         throw std::length_error("there are already 255 datablocks");
     }
-    this->datablocks_len += 2 + datablock.getData().getLen();   // 1 for type, 1 for len, len for data
+    this->datablocks_len += 2 + datablock.getData().getLen();  // 1 for type, 1 for len, len for data
     this->dh.dec_data_blocks.push_back(datablock);
     this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
 
 void DataHeader::addEncDataBlock(const EncDataBlock encdatablock) {
     // adds an encrypted data block
-    if(this->dh.enc_data_blocks.size() >= 255) {
+    if (this->dh.enc_data_blocks.size() >= 255) {
         // there are already 255 encrypted datablocks
         PLOG_ERROR << "there are already 255 encrypted datablocks";
         throw std::length_error("there are already 255 encrypted datablocks");
@@ -188,17 +187,17 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
 
     Bytes dataheader = Bytes(len);
     try {
-        Bytes::fromLong(this->file_size.value(), true).addcopyToBytes(dataheader);          // add file size
-        Bytes::fromLong(len, true).addcopyToBytes(dataheader);                              // add header size
+        Bytes::fromLong(this->file_size.value(), true).addcopyToBytes(dataheader);  // add file size
+        Bytes::fromLong(len, true).addcopyToBytes(dataheader);                      // add header size
 
-        dataheader.addByte(this->dh.getFileDataMode());                                     // add file mode byte
-        dataheader.addByte(this->dh.getHashMode());                                         // add hash mode byte
-        
-        dataheader.addByte((unsigned char)this->dh.dec_data_blocks.size());                 // add data block count byte
-        for(DataBlock& datablock : this->dh.dec_data_blocks) {                              // add all data blocks
-            dataheader.addByte(datablock.type);                                             // add type byte
-            dataheader.addByte((unsigned char)datablock.getData().getLen());                // add data length byte
-            datablock.getData().addcopyToBytes(dataheader);                                 // add data
+        dataheader.addByte(this->dh.getFileDataMode());  // add file mode byte
+        dataheader.addByte(this->dh.getHashMode());      // add hash mode byte
+
+        dataheader.addByte((unsigned char)this->dh.dec_data_blocks.size());   // add data block count byte
+        for (DataBlock& datablock : this->dh.dec_data_blocks) {               // add all data blocks
+            dataheader.addByte(datablock.type);                               // add type byte
+            dataheader.addByte((unsigned char)datablock.getData().getLen());  // add data length byte
+            datablock.getData().addcopyToBytes(dataheader);                   // add data
         }
         dataheader.addByte(this->dh.chainhash1.getMode());                                  // add first chainhash mode byte
         Bytes::fromLong(this->dh.chainhash1.getIters(), true).addcopyToBytes(dataheader);   // add iterations for the first chainhash
@@ -209,13 +208,13 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
         dataheader.addByte(this->dh.chainhash2.getChainHashData()->getLen());               // add datablock length byte
         this->dh.chainhash2.getChainHashData()->getDataBlock().addcopyToBytes(dataheader);  // add second datablock
         this->dh.getValidPasswordHash().addcopyToBytes(dataheader);                         // add password validator
-        this->dh.getEncSalt().addcopyToBytes(dataheader);  // add encrypted salt
+        this->dh.getEncSalt().addcopyToBytes(dataheader);                                   // add encrypted salt
 
-        dataheader.addByte((unsigned char)this->dh.enc_data_blocks.size());                // add encrypted data block count byte
-        for(EncDataBlock& encdatablock : this->dh.enc_data_blocks) {                        // add all encrypted data blocks
-            dataheader.addByte(encdatablock.getEncType());                                  // add type byte
-            dataheader.addByte((unsigned char)encdatablock.getEnc().getLen());              // add data length byte
-            encdatablock.getEnc().addcopyToBytes(dataheader);                               // add data
+        dataheader.addByte((unsigned char)this->dh.enc_data_blocks.size());     // add encrypted data block count byte
+        for (EncDataBlock& encdatablock : this->dh.enc_data_blocks) {           // add all encrypted data blocks
+            dataheader.addByte(encdatablock.getEncType());                      // add type byte
+            dataheader.addByte((unsigned char)encdatablock.getEnc().getLen());  // add data length byte
+            encdatablock.getEnc().addcopyToBytes(dataheader);                   // add data
         }
     } catch (std::length_error& ex) {
         // trying to add more bytes than previously calculated
@@ -253,7 +252,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
     u_int16_t index = 0;  // index of the current byte
 
     // ********************* FILESIZE *********************
-    try{
+    try {
         try {
             // loading file size
             file_size = fileBytes.copySubBytes(index, index + 8).toLong();
@@ -280,7 +279,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
         }
         index += 8;
 
-        if(header_size > fileBytes.getLen()) {
+        if (header_size > fileBytes.getLen()) {
             // header size is bigger than the file size
             PLOG_ERROR << "header size is bigger than the given bytes (header_size: " << header_size << ", given bytes: " << fileBytes.getLen() << ")";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -324,7 +323,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
         // loading data blocks
         data_block_count = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
         index += 1;
-        for(int i = 0; i < data_block_count; i++) {
+        for (int i = 0; i < data_block_count; i++) {
             // data block type
             unsigned char type = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
             index += 1;
@@ -566,7 +565,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
         // loading encrypted data blocks
         unsigned char enc_data_block_count = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
         index += 1;
-        for(int i = 0; i < enc_data_block_count; i++) {
+        for (int i = 0; i < enc_data_block_count; i++) {
             // data block type
             unsigned char enc_type = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
             index += 1;
@@ -578,9 +577,9 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
             index += len;
             dh->addEncDataBlock(EncDataBlock::createEncBlock(enc_type, enc_data));
         }
-        try{
+        try {
             dh->setFileSize(file_size);  // setting the file size
-        } catch(const std::invalid_argument& ex){
+        } catch (const std::invalid_argument& ex) {
             PLOG_ERROR << "invalid file size (error msg: " << ex.what() << ")";
             err.errorCode = ERR_FILESIZE_INVALID;
             err.errorInfo = file_size;
@@ -634,14 +633,14 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         return err;
     }
     header_size = tmp.toLong();
-    if(end - start != file_size){
+    if (end - start != file_size) {
         // file size is not equal to the stream size
         PLOG_ERROR << "file size is not equal to the given stream size (file_size: " << file_size << ", stream size: " << (end - start) << ")";
         err.errorCode = ERR_FILESIZE_INVALID;
         err.errorInfo = "file size is not equal to the given stream size (file_size: " + std::to_string(file_size) + ", stream size: " + std::to_string(end - start) + ")";
         return err;
     }
-    if(header_size > file_size){
+    if (header_size > file_size) {
         // header size is bigger than the file size
         PLOG_ERROR << "header size is bigger than the file size (header_size: " << header_size << ", file size: " << file_size << ")";
         err.errorCode = ERR_HEADERSIZE_FILESIZE_MISMATCH;
@@ -667,7 +666,6 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         err.errorInfo = "Hash mode";
         return err;
     }
-
 
     try {
         dh = std::make_unique<DataHeader>(HModes(hmode));
@@ -703,7 +701,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         err.errorInfo = "Data block count";
         return err;
     }
-    for(int i = 0; i < data_block_count; i++) {
+    for (int i = 0; i < data_block_count; i++) {
         // data block type
         unsigned char type;
         if (file.readsome(reinterpret_cast<char*>(&type), 1) != 1) {
@@ -1059,9 +1057,9 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         err.what = ex.what();
         return err;
     }
-    try{
+    try {
         dh->setFileSize(file_size);  // setting the file size
-    } catch(const std::invalid_argument& ex){
+    } catch (const std::invalid_argument& ex) {
         PLOG_ERROR << "invalid file size (error msg: " << ex.what() << ")";
         err.errorCode = ERR_FILESIZE_INVALID;
         err.errorInfo = file_size;
@@ -1084,10 +1082,10 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderParts(const DataHe
         dh->setChainHash2(dhp.chainhash2);                                                 // setting the chainhash 2
         dh->setValidPasswordHashBytes(dhp.getValidPasswordHash());                         // setting the password validator hash
         dh->setEncSalt(dhp.getEncSalt());                                                  // setting the encrypted salt
-        for(const DataBlock& db : dhp.dec_data_blocks) {                                   // setting the data blocks
+        for (const DataBlock& db : dhp.dec_data_blocks) {                                  // setting the data blocks
             dh->addDataBlock(db);
         }
-        for(const EncDataBlock& edb : dhp.enc_data_blocks) {                               // setting the encrypted data blocks
+        for (const EncDataBlock& edb : dhp.enc_data_blocks) {  // setting the encrypted data blocks
             dh->addEncDataBlock(edb);
         }
 
