@@ -17,8 +17,17 @@
 //WORK correct link of the docs
 |Bytes|Type|Doc|More Docs|
 |---|---|-------------|-----|
+|8|u_int64|how long is the whole file in Bytes|-|
+|8|u_int64|how long is the dataheader in Bytes|-|
 |1|unsigned char|which kind of data is in the file|[*file_data.md*](file_data.md)|
 |1|unsigned char|which hash function was used in this file|[*hash_modes.md*](hash_modes.md)|
+|1|unsigned char|how many datablocks are following|WORK|
+|||||
+|||DATABLOCKS||
+|1|unsigned char|which type of data is stored in that block|WORK|
+|1|unsigned char|how long is the datablock in Bytes|WORK|
+|0-255|Bytes|data of the datablock|WORK|
+|||||
 |1|unsigned char|which chainhash was used to get the passwordhash|- [*chainhash_modes.md*](chainhash_modes.md)|
 |8|u_int64|saves the number of iterations for turning the password into the passwordhash|[*bytes.md*](bytes.md)|
 |1|unsigned char|saves the length (in bytes) of the datablock for the first chainhash|- [*chainhash_modes.md*](chainhash_modes.md)|
@@ -29,16 +38,45 @@
 |0-255|Bytes|data block for the second chainhash|- [*chainhash_modes.md*](chainhash_modes.md)|
 |Hash size|Bytes|saves the bytes of a chainhash from the passwordhash to validate the password|-|
 |Hash size|Bytes|saves the encrypted salt|[*doc.md*](doc.md)|
-
+|1|unsigned char|how many decrypted datablocks are following|WORK|
+|||||
+|||DECRYPTED DATABLOCKS||
+|1|unsigned char|which type of data is stored in that block (encrypted)|WORK|
+|1|unsigned char|how long is the datablock in Bytes|WORK|
+|0-255|Bytes|data of the datablock (encrypted)|WORK|
+|||||
+|||||
 
 ### Total length of the data header lh:
-    22 + 2*HashSize <= lh <= 22 + 2*HashSize + 2*255 Bytes
+    lh = 40 + 2*HashSize + cs + d + ed
+    with: cs = cs1 + cs2 < 2*255 Bytes (chainhash-datablocks)
+          d = nd*2 + sdd    (datablocks)
+          ed = ned*2 + sedd (encrypted datablocks)
+
+    => lh = 40 + 2*HashSize + cs1 + cs2 + 2(nd+ned) + sdd + sedd
+
+    and:  cs1, cs2 = chainhash datablock sizes
+          nd = number of datablocks
+          sdd = sum of all data from datablocks
+          ned = number of encrypted datablocks
+          sedd = sum of all data from encryped datablocks
+
+
+|Hash size|Min lh|Max lh (without datablocks)|
+|---|---|---|
+|32|104|614|
+|48|136|646|
+|64|168|678|
+
+each datablock is adding between 2 and 257 Bytes on data.<br>
+There are 510 (2*255) datablocks maximum.
+That means that the maximum dataheader size is:
 
 |Hash size|Min lh|Max lh|
 |---|---|---|
-|32|86|596|
-|48|118|628|
-|64|150|660|
+|32|104|131684 (132KB)|
+|48|136|131716 (132KB)|
+|64|168|131748 (132KB)|
 
 ## DataHeaderSettings
 `DataHeaderSettings` are used in the `API` to create a new `DataHeader`. These structs contain all information that is needed to generate a new `DataHeader`.
