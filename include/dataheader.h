@@ -58,7 +58,7 @@ struct EncDataBlock {
         this->data_block.type = DatablockType((unsigned char)(datablock.type + pwhash.copySubBytes(0, 8).toLong()));
         u_int16_t written = 0;
         u_int16_t end;
-        Bytes enc_data{data_block.getData().getLen()};
+        Bytes enc_data = Bytes::withU64(data_block.getData().getLen());
         while(enc_data.getLen() < data_block.getData().getLen()) {
             // encrypt the data
             enc_salt = hash->hash(enc_salt - pwhash);
@@ -79,11 +79,11 @@ struct EncDataBlock {
         pwhash = hash->hash(pwhash);
         u_int16_t written = 0;
         u_int16_t end;
-        Bytes dec_data{this->data_block.getData().getLen()};
+        Bytes dec_data = Bytes::withU64(this->data_block.getData().getLen());
         while(dec_data.getLen() < this->data_block.getData().getLen()) {
             // decrypt the data
             enc_salt = hash->hash(enc_salt - pwhash);
-            end = std::min<int>(written + enc_salt.getLen(), data_block.getData().getLen());
+            end = std::min<int>(written + enc_salt.getLen(), this->data_block.getData().getLen());
             (this->data_block.getData().copySubBytes(written, end) - enc_salt.copySubBytes(0, end - written)).addcopyToBytes(dec_data);
         }
         return dec_data;
