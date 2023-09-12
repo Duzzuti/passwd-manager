@@ -12,8 +12,8 @@ class FileHandler {
     */
    private:
     const std::filesystem::path filepath;  // stores the path to the encryption file
-    size_t header_size = 0;             // stores the size of the data header
-    size_t file_size = 0;               // stores the size of the file
+    size_t header_size = 0;                // stores the size of the data header
+    size_t file_size = 0;                  // stores the size of the file
    public:
     static const std::string extension;  // encryption files (.enc)
    public:

@@ -96,27 +96,27 @@ void FileHandler::update() {
     this->file_size = end - begin;
     filestream.seekg(begin);
     Bytes tmp(8);
-    if(filestream.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
-        if(this->file_size == 0)
+    if (filestream.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
+        if (this->file_size == 0)
             this->header_size = 0;
-        else{
+        else {
             PLOG_ERROR << "The file is too small to contain a data header but is not empty";
             throw std::length_error("The file is too small to contain a data header but is not empty");
         }
     }
     tmp.setLen(8);
-    if(tmp.toLong() != this->file_size){
+    if (tmp.toLong() != this->file_size) {
         PLOG_ERROR << "The file size does not match with the file size in the data header";
         throw std::logic_error("The file size does not match with the file size in the data header");
     }
-    if(filestream.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
+    if (filestream.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
         PLOG_ERROR << "The file is too small to contain a data header but is not empty";
         throw std::length_error("The file is too small to contain a data header but is not empty");
     }
     tmp.setLen(8);
     this->header_size = tmp.toLong();
     filestream.close();
-    if(this->header_size > this->file_size){
+    if (this->header_size > this->file_size) {
         PLOG_ERROR << "The file size is smaller than the given header size";
         throw std::logic_error("The file size is smaller than the given header size");
     }
@@ -274,8 +274,8 @@ Bytes FileHandler::getFirstBytes(const size_t num) const {
         // the set encryption file does not exist on the system
         throw std::runtime_error("file cannot be opened");
     }
-    Bytes b(num);  // creates a buffer to hold the read bytes
-    if (file.readsome(reinterpret_cast<char*>(b.getBytes()), num) != num){  // reads into the buffer
+    Bytes b(num);                                                            // creates a buffer to hold the read bytes
+    if (file.readsome(reinterpret_cast<char*>(b.getBytes()), num) != num) {  // reads into the buffer
         // not enough characters to read (file is not long enough)
         throw std::length_error("File contains to few characters");
     }
