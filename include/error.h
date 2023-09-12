@@ -48,7 +48,9 @@ enum ErrorCode {
     ERR_DATAHEADERSETTINGS_INCOMPLETE,
     ERR_FILEDATASTRUCT_INCOMPLETE,
     ERR_FILEDATA_INVALID,
-    ERR_FILEDATASTRUCT_NULL
+    ERR_FILEDATASTRUCT_NULL,
+    ERR_FILESIZE_INVALID,
+    ERR_HEADERSIZE_FILESIZE_MISMATCH,
 };
 
 // used in a function that could fail, it returns a success type, a value and an error message
@@ -295,6 +297,12 @@ std::string getErrorMessage(ErrorStruct<T>& err, bool verbose_err_msg = true) no
 
         case ERR_FILEDATASTRUCT_NULL:
             return "FileDataStruct is null. It was moved previously" + err_msg;
+
+        case ERR_FILESIZE_INVALID:
+            return "Filesize is invalid: " + err.errorInfo + err_msg;
+
+        case ERR_HEADERSIZE_FILESIZE_MISMATCH:
+            return "Header size and filesize mismatch: " + err.errorInfo + err_msg;
 
         case ERR:
             if (err.errorInfo.empty()) return "An error occurred" + err_msg;
