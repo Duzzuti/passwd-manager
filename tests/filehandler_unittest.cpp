@@ -1,13 +1,14 @@
 #include "filehandler.h"
 
 #include <gtest/gtest.h>
+
 #include <sstream>
 
 #include "rng.h"
 
-TEST(FileHandlerClass, statics){
+TEST(FileHandlerClass, statics) {
     EXPECT_EQ(FileHandler::extension, ".enc");
-    for(int i = 0; i < 10; i++){
+    for (int i = 0; i < 10; i++) {
         std::filesystem::path path = RNG::get_random_string(10) + ".enc";
         EXPECT_TRUE(FileHandler::isValidPath(path, false).returnValue());
         EXPECT_TRUE(FileHandler::createFile(path).returnValue());
@@ -15,9 +16,9 @@ TEST(FileHandlerClass, statics){
     }
 }
 
-TEST(FileHandlerClass, basic_empty){
+TEST(FileHandlerClass, basic_empty) {
     // handling basic operations with an empty file
-    for(int i = 0; i < 10; i++){
+    for (int i = 0; i < 10; i++) {
         Bytes tmp(10);
         tmp.fillrandom();
         std::filesystem::path path = RNG::get_random_string(10) + ".enc";
@@ -30,7 +31,7 @@ TEST(FileHandlerClass, basic_empty){
         EXPECT_EQ(file_handler.getHeaderSize(), 0);
         EXPECT_EQ(file_handler.getFileSize(), 0);
         EXPECT_THROW(file_handler.getFirstBytes(1), std::length_error);
-        
+
         // write to file, check if it has been written correctly
         EXPECT_TRUE(file_handler.writeBytesIfEmpty(tmp).returnValue());
         EXPECT_FALSE(file_handler.isEmtpy());
@@ -103,8 +104,8 @@ TEST(FileHandlerClass, basic_empty){
     }
 }
 
-TEST(FileHandlerClass, basic_filled){
-    for(int i = 0; i < 10; i++){
+TEST(FileHandlerClass, basic_filled) {
+    for (int i = 0; i < 10; i++) {
         Bytes tmp(10);
         tmp.fillrandom();
         std::filesystem::path path = RNG::get_random_string(10) + ".enc";
@@ -130,8 +131,8 @@ TEST(FileHandlerClass, basic_filled){
     }
 }
 
-TEST(FileHandlerClass, dataheader_simple){
-    for(int i = 0; i < 10; i++){
+TEST(FileHandlerClass, dataheader_simple) {
+    for (int i = 0; i < 10; i++) {
         Bytes tmp(64);
         tmp.fillrandom();
         std::filesystem::path path = RNG::get_random_string(10) + ".enc";
@@ -172,8 +173,3 @@ TEST(FileHandlerClass, dataheader_simple){
         EXPECT_TRUE(file_handler.getDataHeader().returnMove() == dh);
     }
 }
-
-
-
-
-
