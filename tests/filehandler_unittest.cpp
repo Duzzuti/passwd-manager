@@ -1,4 +1,5 @@
 #include "filehandler.h"
+#include "dataheader_generator.h"
 
 #include <gtest/gtest.h>
 
@@ -33,11 +34,14 @@ TEST(FileHandlerClass, basic_empty) {
         EXPECT_THROW(file_handler.getFirstBytes(1), std::length_error);
 
         // write to file, check if it has been written correctly
-        EXPECT_TRUE(file_handler.writeBytesIfEmpty(tmp).returnValue());
-        EXPECT_FALSE(file_handler.isEmtpy());
+        std::ofstream file = file_handler.getWriteStreamIfEmpty().returnMove();
+        file << tmp;
+        file.close();
+        // not updated yet
+        EXPECT_TRUE(file_handler.isEmtpy());    
         EXPECT_EQ(file_handler.getHeaderSize(), 0);
         EXPECT_EQ(file_handler.getFileSize(), 0);
-        EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));
+        EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));   // that should work nethertheless
         std::stringstream ss;
         ss << file_handler.getFileStream().rdbuf();
         EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
@@ -46,68 +50,33 @@ TEST(FileHandlerClass, basic_empty) {
         EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss2.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
         EXPECT_EQ(file_handler.getAllBytes().getLen(), 10);
 
-        // cannot write to file if it is not empty
-        EXPECT_FALSE(file_handler.writeBytesIfEmpty(tmp).isSuccess());
-        EXPECT_EQ(file_handler.getAllBytes().getLen(), 10);
-
         // update will lead to invalid dataheader (file size mismatch)
         EXPECT_THROW(file_handler.update(), std::logic_error);
         EXPECT_EQ(file_handler.getHeaderSize(), 0);
         EXPECT_EQ(file_handler.getFileSize(), 10);  // file size should be set anyway
-
-        // write to file, check if it has been written correctly
-        EXPECT_TRUE(file_handler.writeBytes(tmp).returnValue());
         EXPECT_FALSE(file_handler.isEmtpy());
-        EXPECT_EQ(file_handler.getHeaderSize(), 0);
-        EXPECT_EQ(file_handler.getFileSize(), 0);  // file size should be reset
-        EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));
-        std::stringstream ss3;
-        ss3 << file_handler.getFileStream().rdbuf();
-        EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss3.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
-        std::stringstream ss4;
-        ss4 << file_handler.getDataStream().rdbuf();
-        EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss4.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
-        EXPECT_EQ(file_handler.getAllBytes().getLen(), 10);
-
-        // cannot write to file if it is not empty
-        EXPECT_FALSE(file_handler.writeBytesIfEmpty(tmp).isSuccess());
-        EXPECT_EQ(file_handler.getAllBytes().getLen(), 10);
-
-        // update will lead to invalid dataheader (file size mismatch)
-        EXPECT_THROW(file_handler.update(), std::logic_error);
-        EXPECT_EQ(file_handler.getHeaderSize(), 0);
-        EXPECT_EQ(file_handler.getFileSize(), 10);  // file size should be set anyway
-
         EXPECT_FALSE(file_handler.getWriteStreamIfEmpty().isSuccess());
+        EXPECT_EQ(file_handler.getAllBytes().getLen(), 10);
 
-        std::ofstream file = file_handler.getWriteStream().returnMove();
+        file = file_handler.getWriteStream().returnMove();
         EXPECT_TRUE(file.is_open());
+        EXPECT_NO_THROW(file_handler.update());
         EXPECT_EQ(file_handler.getHeaderSize(), 0);
         EXPECT_EQ(file_handler.getFileSize(), 0);  // file size should be reset
         EXPECT_THROW(file_handler.getFirstBytes(1), std::length_error);
         EXPECT_TRUE(file_handler.isEmtpy());
-
-        // write to file, check if it has been written correctly
-        file.write(reinterpret_cast<const char*>(tmp.getBytes()), tmp.getLen());
-        file.close();
-        EXPECT_FALSE(file_handler.isEmtpy());
-        EXPECT_EQ(file_handler.getHeaderSize(), 0);
-        EXPECT_EQ(file_handler.getFileSize(), 0);  // file size should be reset
-        EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));
-        std::stringstream ss5;
-        ss5 << file_handler.getFileStream().rdbuf();
-        EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss5.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
-        std::stringstream ss6;
-        ss6 << file_handler.getDataStream().rdbuf();
-        EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss6.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
-        EXPECT_EQ(file_handler.getAllBytes().getLen(), 10);
     }
 }
 
 TEST(FileHandlerClass, basic_filled) {
     for (int i = 0; i < 10; i++) {
-        Bytes tmp(10);
-        tmp.fillrandom();
+        Bytes tmp = DataHeaderGen::generateDH(DataHeaderGenSet{
+            .hashmode = HASHMODE_SHA256,
+            .datablocknum = 0,
+            .decdatablocknum = 0,
+            .chainhashlen1 = 0,
+            .chainhashlen2 = 0,
+        });
         std::filesystem::path path = RNG::get_random_string(10) + ".enc";
         FileHandler::createFile(path);
         std::ofstream file(path, std::ios::binary);
@@ -118,16 +87,21 @@ TEST(FileHandlerClass, basic_filled) {
         EXPECT_FALSE(file_handler.isEmtpy());
         EXPECT_TRUE(file_handler.getFileStream().is_open());
         EXPECT_TRUE(file_handler.getDataStream().is_open());
-        EXPECT_EQ(file_handler.getHeaderSize(), 0);
-        EXPECT_EQ(file_handler.getFileSize(), 10);
+        EXPECT_EQ(file_handler.getHeaderSize(), MIN_DATAHEADER_LEN);
+        EXPECT_EQ(file_handler.getFileSize(), MIN_DATAHEADER_LEN);
         EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));
         std::stringstream ss;
         ss << file_handler.getFileStream().rdbuf();
         EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
         std::stringstream ss2;
         ss2 << file_handler.getDataStream().rdbuf();
-        EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss2.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
-        EXPECT_EQ(file_handler.getAllBytes().getLen(), 10);
+        EXPECT_EQ(ss2.str(), "");
+        EXPECT_EQ(file_handler.getAllBytes().getLen(), MIN_DATAHEADER_LEN);
+        std::unique_ptr<DataHeader> dh = file_handler.getDataHeader().returnMove();
+        EXPECT_TRUE(dh->getHeaderBytes() == tmp);
+        EXPECT_EQ(dh->getHeaderLength(), MIN_DATAHEADER_LEN);
+        EXPECT_EQ(dh->getFileSize(), MIN_DATAHEADER_LEN);
+
     }
 }
 
@@ -144,8 +118,8 @@ TEST(FileHandlerClass, dataheader_simple) {
         dhp.setValidPasswordHash(tmp);
         CHModes chm1 = CHAINHASH_CONSTANT_COUNT_SALT;
         CHModes chm2 = CHAINHASH_QUADRATIC;
-        std::unique_ptr<ChainHashData> chd1 = std::make_unique<ChainHashData>(Format(CHAINHASH_CONSTANT_COUNT_SALT));
-        std::unique_ptr<ChainHashData> chd2 = std::make_unique<ChainHashData>(Format(CHAINHASH_QUADRATIC));
+        std::unique_ptr<ChainHashData> chd1 = std::make_unique<ChainHashData>(Format(chm1));
+        std::unique_ptr<ChainHashData> chd2 = std::make_unique<ChainHashData>(Format(chm2));
         chd1->generateRandomData();
         chd2->generateRandomData();
         dhp.chainhash1 = ChainHash(chm1, 1000, std::move(chd1));
@@ -170,6 +144,45 @@ TEST(FileHandlerClass, dataheader_simple) {
         EXPECT_TRUE(ss2.str() == "");
         EXPECT_EQ(file_handler.getAllBytes().getLen(), dh->getHeaderLength());
         EXPECT_TRUE(file_handler.isDataHeader(FILEMODE_PASSWORD).returnValue());
-        EXPECT_TRUE(file_handler.getDataHeader().returnMove() == dh);
+        EXPECT_TRUE(file_handler.getDataHeader().returnMove()->getHeaderBytes() == dh->getHeaderBytes());
     }
 }
+
+TEST(FileHandlerClass, complex_filled) {
+    for (int i = 0; i < 10; i++) {
+        Bytes tmp = DataHeaderGen::generateDH(DataHeaderGenSet{
+            .hashmode = HASHMODE_SHA512,
+            .datablocknum = 189,
+            .decdatablocknum = 54,
+            .chainhashlen1 = 154,
+            .chainhashlen2 = 1,
+        });
+
+        std::filesystem::path path = RNG::get_random_string(10) + ".enc";
+        FileHandler::createFile(path);
+        std::ofstream file(path, std::ios::binary);
+        file.write(reinterpret_cast<const char*>(tmp.getBytes()), tmp.getLen());
+        file.close();
+        FileHandler file_handler(path);
+        EXPECT_EQ(file_handler.getPath(), path);
+        EXPECT_FALSE(file_handler.isEmtpy());
+        EXPECT_TRUE(file_handler.getFileStream().is_open());
+        EXPECT_TRUE(file_handler.getDataStream().is_open());
+        EXPECT_EQ(file_handler.getHeaderSize(), file_handler.getFileSize());
+        EXPECT_GT(file_handler.getFileSize(), MIN_DATAHEADER_LEN);
+        EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));
+        std::stringstream ss;
+        ss << file_handler.getFileStream().rdbuf();
+        EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
+        std::stringstream ss2;
+        ss2 << file_handler.getDataStream().rdbuf();
+        EXPECT_EQ(ss2.str(), "");
+        EXPECT_EQ(file_handler.getAllBytes().getLen(), file_handler.getHeaderSize());
+        std::unique_ptr<DataHeader> dh = file_handler.getDataHeader().returnMove();
+        EXPECT_TRUE(dh->getHeaderBytes() == tmp);
+        EXPECT_EQ(dh->getHeaderLength(), file_handler.getHeaderSize());
+        EXPECT_EQ(dh->getFileSize(), file_handler.getHeaderSize());
+
+    }
+}
+
