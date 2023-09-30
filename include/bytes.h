@@ -1,8 +1,8 @@
 #pragma once
 
+#include <fstream>
 #include <iostream>
 #include <memory>
-#include <fstream>
 
 class Bytes {
     /*
