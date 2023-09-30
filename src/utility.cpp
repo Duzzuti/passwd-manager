@@ -79,7 +79,7 @@ bool isValidNumber(const std::string& number, const bool accept_blank, const u_i
 }
 
 bool readData(std::istream& stream, Bytes& data, const unsigned int& size) noexcept {
-    if(data.getMaxLen() - data.getLen() < size) {
+    if (data.getMaxLen() - data.getLen() < size) {
         PLOG_WARNING << "data object is smaller than the given size";
         return false;
     }
@@ -87,15 +87,15 @@ bool readData(std::istream& stream, Bytes& data, const unsigned int& size) noexc
     while (true) {
         // read the data until the given size is reached
         read += stream.readsome(reinterpret_cast<char*>(data.getBytes() + data.getLen() + read), size - read);
-        if(read != size && (stream.eof() || stream.peek() == EOF)){
+        if (read != size && (stream.eof() || stream.peek() == EOF)) {
             PLOG_WARNING << "end of file reached before the given size was read";
             return false;
         }
-        if(read == size){
+        if (read == size) {
             data.setLen(data.getLen() + read);
             return true;
         }
-        if(stream.fail() || stream.bad()){
+        if (stream.fail() || stream.bad()) {
             PLOG_WARNING << "failed to read data from stream";
             return false;
         }
@@ -107,14 +107,14 @@ bool readData(std::istream& stream, unsigned char* data, const unsigned int& siz
     while (true) {
         // read the data until the given size is reached
         read += stream.readsome(reinterpret_cast<char*>(data + read), size - read);
-        if(read != size && (stream.eof() || stream.peek() == EOF)){
+        if (read != size && (stream.eof() || stream.peek() == EOF)) {
             PLOG_WARNING << "end of file reached before the given size was read";
             return false;
         }
-        if(read == size){
+        if (read == size) {
             return true;
         }
-        if(stream.fail() || stream.bad()){
+        if (stream.fail() || stream.bad()) {
             PLOG_WARNING << "failed to read data from stream";
             return false;
         }
