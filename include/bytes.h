@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <fstream>
 
 class Bytes {
     /*
@@ -61,4 +62,6 @@ class Bytes {
             this->bytes = nullptr;
         }
     };  // destructor
+
+    friend std::ofstream& operator<<(std::ofstream& os, const Bytes& bytes);  // writes the bytes to the given ofstream
 };

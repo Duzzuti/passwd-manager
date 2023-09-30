@@ -365,3 +365,9 @@ u_int64_t Bytes::toLong() const {
     std::memcpy(&res, reversedBytes, this->len);
     return res;
 }
+
+std::ofstream& operator<<(std::ofstream& os, const Bytes& bytes) {
+    // writes the bytes to the given ofstream
+    os.write(reinterpret_cast<const char*>(bytes.bytes), bytes.len);
+    return os;
+}
