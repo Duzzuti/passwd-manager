@@ -1,7 +1,8 @@
 #include "blockchain.h"
-#include "utility.h"
 
 #include <fstream>
+
+#include "utility.h"
 
 BlockChain::BlockChain(std::shared_ptr<Hash> hash, const Bytes& passwordhash, const Bytes& enc_salt) {
     // initialize the salt generator (iterator)

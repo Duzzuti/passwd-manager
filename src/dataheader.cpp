@@ -586,7 +586,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
             err.what = ex.what();
             return err;
         }
-        try{
+        try {
             dh->calcHeaderBytes();
         } catch (const std::exception& ex) {
             // some other error occurred
@@ -803,7 +803,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
             bool copied = false;
             if (nl.len != 0) {
                 // got a data part with set length
-                tmp.setLen(0); // clear tmp
+                tmp.setLen(0);  // clear tmp
                 if (!readData(file, tmp, nl.len)) {
                     throw std::length_error("not enough data to read the chainhash data block 1");
                 }
@@ -812,7 +812,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
                 data_len += nl.len;
             } else {
                 // got a data parCHModest with * length (use the remaining bytes)
-                tmp.setLen(0); // clear tmp
+                tmp.setLen(0);  // clear tmp
                 if (!readData(file, tmp, ch1datablocklen - data_len)) {
                     throw std::length_error("not enough data to read the chainhash data block 1");
                 }
@@ -943,7 +943,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
             bool copied = false;
             if (nl.len != 0) {
                 // got a data part with set length
-                tmp.setLen(0); // clear tmp
+                tmp.setLen(0);  // clear tmp
                 if (!readData(file, tmp, nl.len)) {
                     throw std::length_error("not enough data to read the chainhash data block 2");
                 }
@@ -952,7 +952,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
                 data_len += nl.len;
             } else {
                 // got a data parCHModest with * length (use the remaining bytes)
-                tmp.setLen(0); // clear tmp
+                tmp.setLen(0);  // clear tmp
                 if (!readData(file, tmp, ch2datablocklen - data_len)) {
                     throw std::length_error("not enough data to read the chainhash data block 2");
                 }
@@ -1115,7 +1115,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         }
         dh->addEncDataBlock(EncDataBlock::createEncBlock(type, data));
     }
-    try{
+    try {
         dh->calcHeaderBytes();
     } catch (const std::exception& ex) {
         // some other error occurred
