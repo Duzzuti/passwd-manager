@@ -1,10 +1,10 @@
 #include "filehandler.h"
-#include "dataheader_generator.h"
 
 #include <gtest/gtest.h>
 
 #include <sstream>
 
+#include "dataheader_generator.h"
 #include "rng.h"
 
 TEST(FileHandlerClass, statics) {
@@ -38,10 +38,10 @@ TEST(FileHandlerClass, basic_empty) {
         file << tmp;
         file.close();
         // not updated yet
-        EXPECT_TRUE(file_handler.isEmtpy());    
+        EXPECT_TRUE(file_handler.isEmtpy());
         EXPECT_EQ(file_handler.getHeaderSize(), 0);
         EXPECT_EQ(file_handler.getFileSize(), 0);
-        EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));   // that should work nethertheless
+        EXPECT_EQ(file_handler.getFirstBytes(1), tmp.copySubBytes(0, 1));  // that should work nethertheless
         std::stringstream ss;
         ss << file_handler.getFileStream().rdbuf();
         EXPECT_TRUE(std::memcmp(reinterpret_cast<const unsigned char*>(ss.str().c_str()), tmp.getBytes(), tmp.getLen()) == 0);
@@ -101,7 +101,6 @@ TEST(FileHandlerClass, basic_filled) {
         EXPECT_TRUE(dh->getHeaderBytes() == tmp);
         EXPECT_EQ(dh->getHeaderLength(), MIN_DATAHEADER_LEN);
         EXPECT_EQ(dh->getFileSize(), MIN_DATAHEADER_LEN);
-
     }
 }
 
@@ -182,7 +181,5 @@ TEST(FileHandlerClass, complex_filled) {
         EXPECT_TRUE(dh->getHeaderBytes() == tmp);
         EXPECT_EQ(dh->getHeaderLength(), file_handler.getHeaderSize());
         EXPECT_EQ(dh->getFileSize(), file_handler.getHeaderSize());
-
     }
 }
-
