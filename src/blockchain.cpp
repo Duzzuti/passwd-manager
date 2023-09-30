@@ -1,4 +1,5 @@
 #include "blockchain.h"
+#include "utility.h"
 
 #include <fstream>
 
@@ -36,11 +37,10 @@ void BlockChain::addData(std::ifstream&& filestream, const size_t stream_len) {
         // get the data that can be added on the last block to complete it
         // it is the minimum of the free space in the last block and the length of the remaining data
         Bytes data_part{std::min<int>(this->getFreeSpaceInLastBlock(), stream_len - written)};
-        if (filestream.readsome(reinterpret_cast<char*>(data_part.getBytes()), data_part.getMaxLen()) != data_part.getMaxLen()) {
+        if (!readData(filestream, data_part, data_part.getMaxLen())) {
             PLOG_FATAL << "could not read all bytes from file. streamsize: " << stream_len << ", written: " << written << ", data_part_len: " << data_part.getLen();
             throw std::runtime_error("could not read all bytes from file");
         }
-        data_part.setLen(data_part.getMaxLen());
         written += data_part.getLen();
         this->current_block->addData(data_part);
         // add a new block if data is left

@@ -586,6 +586,16 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
             err.what = ex.what();
             return err;
         }
+        try{
+            dh->calcHeaderBytes();
+        } catch (const std::exception& ex) {
+            // some other error occurred
+            PLOG_ERROR << "An error occurred while calculating the header bytes (error msg: " << ex.what() << ")";
+            err.errorCode = ERR;
+            err.errorInfo = "An error occurred while calculating the header bytes";
+            err.what = ex.what();
+            return err;
+        }
         assert(index == header_size);
         assert(dh->getHeaderLength() == header_size);
         return ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::move(dh));
@@ -615,17 +625,17 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     std::streampos end = file.tellg();
     file.seekg(start);
     //********************* FILESIZE *********************
-    if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
+    if (!readData(file, tmp, 8)) {
         // readsome could not read the file size
         PLOG_ERROR << "not enogh data to read the file size";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "File size";
         return err;
     }
-    tmp.setLen(8);
     file_size = tmp.toLong();
+    tmp.setLen(0);  // clear tmp
     //********************* HEADERSIZE *********************
-    if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
+    if (!readData(file, tmp, 8)) {
         // readsome could not read the header size
         PLOG_ERROR << "not enogh data to read the header size";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -633,6 +643,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         return err;
     }
     header_size = tmp.toLong();
+    tmp.setLen(0);  // clear tmp
     if (end - start != file_size) {
         // file size is not equal to the stream size
         PLOG_ERROR << "file size is not equal to the given stream size (file_size: " << file_size << ", stream size: " << (end - start) << ")";
@@ -649,7 +660,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     }
     //********************* FILEMODE *********************
     // loading file mode
-    if (file.readsome(reinterpret_cast<char*>(&file_size), 8) != 8) {
+    if (!readData(file, &fmode, 1)) {
         // readsome could not read the file mode
         PLOG_ERROR << "not enogh data to read the file mode";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -659,7 +670,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
 
     // ********************* HASH FUNCTION *********************
     // loading and setting hash mode
-    if (file.readsome(reinterpret_cast<char*>(&hmode), 1) != 1) {
+    if (!readData(file, &hmode, 1)) {
         // readsome could not read the hash mode
         PLOG_ERROR << "not enogh data to read the hash mode";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -694,7 +705,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     // ********************* DATABLOCKS *********************
     // loading data blocks
     unsigned char data_block_count;
-    if (file.readsome(reinterpret_cast<char*>(&data_block_count), 1) != 1) {
+    if (!readData(file, &data_block_count, 1)) {
         // readsome could not read the data block count
         PLOG_ERROR << "not enogh data to read the data block count";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -704,7 +715,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     for (int i = 0; i < data_block_count; i++) {
         // data block type
         unsigned char type;
-        if (file.readsome(reinterpret_cast<char*>(&type), 1) != 1) {
+        if (!readData(file, &type, 1)) {
             // readsome could not read the data block type
             PLOG_ERROR << "not enogh data to read the data block type";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -713,7 +724,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         }
         // data block len
         unsigned char len;
-        if (file.readsome(reinterpret_cast<char*>(&len), 1) != 1) {
+        if (!readData(file, &len, 1)) {
             // readsome could not read the data block len
             PLOG_ERROR << "not enogh data to read the data block len";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -722,14 +733,13 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         }
         // data block data
         Bytes data(len);
-        if (file.readsome(reinterpret_cast<char*>(data.getBytes()), len) != len) {
+        if (!readData(file, data, len)) {
             // readsome could not read the data block data
             PLOG_ERROR << "not enogh data to read the data block data";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Data block data";
             return err;
         }
-        data.setLen(len);
         dh->addDataBlock(DataBlock(DatablockType(type), data));
     }
 
@@ -738,7 +748,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     std::shared_ptr<ChainHashData> chd1 = nullptr;
     unsigned char ch1mode;
     // loading and setting chainhash1 mode
-    if (file.readsome(reinterpret_cast<char*>(&ch1mode), 1) != 1) {
+    if (!readData(file, &ch1mode, 1)) {
         // readsome could not read the hash mode
         PLOG_ERROR << "not enogh data to read the chainhash1 mode";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -766,19 +776,18 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     // chainhash 1 iters
     u_int64_t ch1iters;
     // loading and chainhash1 iters
-    if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
+    if (!readData(file, tmp, 8)) {
         // readsome could not read the chainhash1 iters
         PLOG_ERROR << "not enogh data to read the chainhash1 iters";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash1 iters";
         return err;
     }
-    tmp.setLen(8);
     ch1iters = tmp.toLong();
     // chainhash 1 data block len
     unsigned char ch1datablocklen;
     // loading and chainhash1 blocklen
-    if (file.readsome(reinterpret_cast<char*>(&ch1datablocklen), 1) != 1) {
+    if (!readData(file, &ch1datablocklen, 1)) {
         // readsome could not read the chainhash1 blocklen
         PLOG_ERROR << "not enogh data to read the chainhash1 blocklen";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -794,19 +803,19 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
             bool copied = false;
             if (nl.len != 0) {
                 // got a data part with set length
-                if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), nl.len) != nl.len) {
+                tmp.setLen(0); // clear tmp
+                if (!readData(file, tmp, nl.len)) {
                     throw std::length_error("not enough data to read the chainhash data block 1");
                 }
-                tmp.setLen(nl.len);
                 copied = true;
                 chd1->addBytes(tmp);
                 data_len += nl.len;
             } else {
                 // got a data parCHModest with * length (use the remaining bytes)
-                if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), ch1datablocklen - data_len) != ch1datablocklen - data_len) {
+                tmp.setLen(0); // clear tmp
+                if (!readData(file, tmp, ch1datablocklen - data_len)) {
                     throw std::length_error("not enough data to read the chainhash data block 1");
                 }
-                tmp.setLen(ch1datablocklen - data_len);
                 copied = true;
                 chd1->addBytes(tmp);
                 data_len = ch1datablocklen;
@@ -878,7 +887,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     std::shared_ptr<ChainHashData> chd2 = nullptr;
     unsigned char ch2mode;
     // loading and setting chainhash2 mode
-    if (file.readsome(reinterpret_cast<char*>(&ch2mode), 1) != 1) {
+    if (!readData(file, &ch2mode, 1)) {
         // readsome could not read the hash mode
         PLOG_ERROR << "not enogh data to read the chainhash2 mode";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -907,19 +916,18 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     u_int64_t ch2iters;
     tmp = Bytes(8);
     // loading and chainhash2 iters
-    if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), 8) != 8) {
+    if (!readData(file, tmp, 8)) {
         // readsome could not read the chainhash2 iters
         PLOG_ERROR << "not enogh data to read the chainhash2 iters";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
         err.errorInfo = "Chainhash2 iters";
         return err;
     }
-    tmp.setLen(8);
     ch2iters = tmp.toLong();
     // chainhash 2 data block len
     unsigned char ch2datablocklen;
     // loading and chainhash1 blocklen
-    if (file.readsome(reinterpret_cast<char*>(&ch2datablocklen), 1) != 1) {
+    if (!readData(file, &ch2datablocklen, 1)) {
         // readsome could not read the chainhash2 blocklen
         PLOG_ERROR << "not enogh data to read the chainhash2 blocklen";
         err.errorCode = ERR_NOT_ENOUGH_DATA;
@@ -929,24 +937,25 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
     // chainhash 2 data block
     data_len = 0;
     copied = false;
+    tmp = Bytes(255);
     for (NameLen nl : format2->getNameLenList()) {
         try {
             bool copied = false;
             if (nl.len != 0) {
                 // got a data part with set length
-                if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), nl.len) != nl.len) {
+                tmp.setLen(0); // clear tmp
+                if (!readData(file, tmp, nl.len)) {
                     throw std::length_error("not enough data to read the chainhash data block 2");
                 }
-                tmp.setLen(nl.len);
                 copied = true;
                 chd2->addBytes(tmp);
                 data_len += nl.len;
             } else {
                 // got a data parCHModest with * length (use the remaining bytes)
-                if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), ch2datablocklen - data_len) != ch2datablocklen - data_len) {
+                tmp.setLen(0); // clear tmp
+                if (!readData(file, tmp, ch2datablocklen - data_len)) {
                     throw std::length_error("not enough data to read the chainhash data block 2");
                 }
-                tmp.setLen(ch2datablocklen - data_len);
                 copied = true;
                 chd2->addBytes(tmp);
                 data_len = ch2datablocklen;
@@ -1016,15 +1025,14 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
 
     //********************* PASSWORD VALIDATOR HASH *********************
     try {
-        Bytes tmp = Bytes(dh->hash_size);
-        if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh->hash_size) != dh->hash_size) {
+        Bytes tmp(dh->hash_size);
+        if (!readData(file, tmp, dh->hash_size)) {
             // readsome could not read the password validator hash
             PLOG_ERROR << "not enogh data to read the password validator hash";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Password validator hash";
             return err;
         }
-        tmp.setLen(dh->hash_size);
         dh->setValidPasswordHashBytes(tmp);
     } catch (const std::exception& ex) {
         // some other error occurred
@@ -1038,15 +1046,14 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
 
     // encrypted salt
     try {
-        Bytes tmp = Bytes(dh->hash_size);
-        if (file.readsome(reinterpret_cast<char*>(tmp.getBytes()), dh->hash_size) != dh->hash_size) {
+        Bytes tmp(dh->hash_size);
+        if (!readData(file, tmp, dh->hash_size)) {
             // readsome could not read the encrypted salt
             PLOG_ERROR << "not enogh data to read the encrypted salt";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Encrypted salt";
             return err;
         }
-        tmp.setLen(dh->hash_size);
         dh->setEncSalt(tmp);
     } catch (const std::exception& ex) {
         // some other error occurred
@@ -1066,7 +1073,59 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         err.what = ex.what();
         return err;
     }
-    assert(start - file.tellg() == dh->getHeaderLength());
+
+    // ********************* ENCRYPTED DATABLOCKS *********************
+    // loading encrypted data blocks
+    unsigned char enc_data_block_count;
+    if (!readData(file, &enc_data_block_count, 1)) {
+        // readsome could not read the encrypted block count
+        PLOG_ERROR << "not enogh data to read the encrypted block count";
+        err.errorCode = ERR_NOT_ENOUGH_DATA;
+        err.errorInfo = "Encrypted block count";
+        return err;
+    }
+
+    for (int i = 0; i < enc_data_block_count; i++) {
+        // enc data block type
+        unsigned char type;
+        if (!readData(file, &type, 1)) {
+            // readsome could not read the enc data block type
+            PLOG_ERROR << "not enogh data to read the enc data block type";
+            err.errorCode = ERR_NOT_ENOUGH_DATA;
+            err.errorInfo = "Enc datablock type";
+            return err;
+        }
+        // data block len
+        unsigned char len;
+        if (!readData(file, &len, 1)) {
+            // readsome could not read the enc data block len
+            PLOG_ERROR << "not enogh data to read the enc data block len";
+            err.errorCode = ERR_NOT_ENOUGH_DATA;
+            err.errorInfo = "Enc datablock len";
+            return err;
+        }
+        // data block data
+        Bytes data(len);
+        if (!readData(file, data, len)) {
+            // readsome could not read the enc data block data
+            PLOG_ERROR << "not enogh data to read the enc data block data";
+            err.errorCode = ERR_NOT_ENOUGH_DATA;
+            err.errorInfo = "Enc datablock data";
+            return err;
+        }
+        dh->addEncDataBlock(EncDataBlock::createEncBlock(type, data));
+    }
+    try{
+        dh->calcHeaderBytes();
+    } catch (const std::exception& ex) {
+        // some other error occurred
+        PLOG_ERROR << "An error occurred while calculating the header bytes (error msg: " << ex.what() << ")";
+        err.errorCode = ERR;
+        err.errorInfo = "An error occurred while calculating the header bytes";
+        err.what = ex.what();
+        return err;
+    }
+    assert(file.tellg() - start == dh->getHeaderLength());
     assert(dh->getHeaderLength() == header_size);
     return ErrorStruct<std::unique_ptr<DataHeader>>::createMove(std::move(dh));
 }
