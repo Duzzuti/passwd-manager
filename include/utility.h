@@ -21,3 +21,7 @@ void addStringToBytes(const std::string& str, Bytes& bytes);
 unsigned int getLongLen(const u_int64_t& num) noexcept;
 // checks if a string is a valid number
 bool isValidNumber(const std::string& number, const bool accept_blank = false, const u_int64_t& lower_bound = 0, const u_int64_t& upper_bound = -1) noexcept;
+// reads the data from the stream and avoid buffering limits
+bool readData(std::istream& stream, Bytes& data, const unsigned int& size) noexcept;
+// data is at least size bytes long
+bool readData(std::istream& stream, unsigned char* data, const unsigned int& size) noexcept;
