@@ -3,11 +3,11 @@ implements the FileHandler class
 */
 
 #include "filehandler.h"
-#include "utility.h"
 
 #include <fstream>
 
 #include "logger.h"
+#include "utility.h"
 
 const std::string FileHandler::extension = ".enc";
 
@@ -105,12 +105,12 @@ void FileHandler::update() {
             PLOG_ERROR << "The file is too small to contain a data header but is not empty";
             throw std::length_error("The file is too small to contain a data header but is not empty");
         }
-    } else{
+    } else {
         if (tmp.toLong() != this->file_size) {
             PLOG_ERROR << "The file size does not match with the file size in the data header";
             throw std::logic_error("The file size does not match with the file size in the data header");
         }
-        tmp.setLen(0); // reset the length
+        tmp.setLen(0);  // reset the length
         if (!readData(filestream, tmp, 8)) {
             PLOG_ERROR << "The file is too small to contain a data header but is not empty";
             throw std::length_error("The file is too small to contain a data header but is not empty");
@@ -122,7 +122,7 @@ void FileHandler::update() {
         PLOG_ERROR << "The file size is smaller than the given header size";
         throw std::logic_error("The file size is smaller than the given header size");
     }
-    if(this->header_size < MIN_DATAHEADER_LEN && !(this->header_size == 0 && this->file_size == 0)){
+    if (this->header_size < MIN_DATAHEADER_LEN && !(this->header_size == 0 && this->file_size == 0)) {
         PLOG_ERROR << "The file is too small to contain a data header but is not empty";
         throw std::length_error("The file is too small to contain a data header but is not empty");
     }
@@ -143,9 +143,7 @@ ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) noexcept {
     return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnRef()->getDataHeaderParts().getFileDataMode())};
 }
 
-bool FileHandler::isEmtpy() const noexcept {
-    return this->empty;
-}
+bool FileHandler::isEmtpy() const noexcept { return this->empty; }
 
 ErrorStruct<std::unique_ptr<DataHeader>> FileHandler::getDataHeader() noexcept {
     // reads the data header from the file
@@ -258,7 +256,7 @@ Bytes FileHandler::getAllBytes() const {
 
     // gets the Bytes
     Bytes ret(file_size);
-    if(!readData(file, ret, file_size)){
+    if (!readData(file, ret, file_size)) {
         // not enough characters to read (file is not long enough)
         throw std::length_error("File contains to few characters");
     }
@@ -273,7 +271,7 @@ Bytes FileHandler::getFirstBytes(const size_t num) const {
         // the set encryption file does not exist on the system
         throw std::runtime_error("file cannot be opened");
     }
-    Bytes b(num);                                                            // creates a buffer to hold the read bytes
+    Bytes b(num);                   // creates a buffer to hold the read bytes
     if (!readData(file, b, num)) {  // reads into the buffer
         // not enough characters to read (file is not long enough)
         throw std::length_error("File contains to few characters");
