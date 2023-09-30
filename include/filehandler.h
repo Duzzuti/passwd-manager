@@ -14,6 +14,7 @@ class FileHandler {
     const std::filesystem::path filepath;  // stores the path to the encryption file
     size_t header_size = 0;                // stores the size of the data header
     size_t file_size = 0;                  // stores the size of the file
+    bool empty;                            // stores if the file is empty
    public:
     static const std::string extension;  // encryption files (.enc)
    public:
@@ -28,10 +29,13 @@ class FileHandler {
     std::ifstream getDataStream() const noexcept;                                                         // returns the data stream from the file (without the data header)
     size_t getHeaderSize() const noexcept;                                                                // returns the size of the data header
     size_t getFileSize() const noexcept;                                                                  // returns the length of the data in the file (without the data header)
+    
+    // NO update() needed
     Bytes getFirstBytes(const size_t num) const;                                                          // reads the first num Bytes from the encryption file
     Bytes getAllBytes() const;                                                                            // reads all Bytes from the given encryption file
-    ErrorStruct<bool> writeBytesIfEmpty(Bytes& bytes) noexcept;                                           // writes the given bytes to the file if it is empty
-    ErrorStruct<bool> writeBytes(Bytes& bytes) noexcept;                                                  // writes the given bytes to the file
+    
+    //ErrorStruct<bool> writeBytesIfEmpty(Bytes& bytes) noexcept;                                           // writes the given bytes to the file if it is empty
+    //ErrorStruct<bool> writeBytes(Bytes& bytes) noexcept;                                                  // writes the given bytes to the file
     ErrorStruct<std::ofstream> getWriteStream() noexcept;                                                 // returns a write stream to the file
     ErrorStruct<std::ofstream> getWriteStreamIfEmpty() noexcept;                                          // returns a write stream to the file if it is empty
     std::filesystem::path getPath() const noexcept;                                                       // returns the filepath
