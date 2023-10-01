@@ -17,9 +17,9 @@ ErrorStruct<std::unique_ptr<FileHandler>> API::_getFileHandler(const std::filesy
         PLOG_ERROR << "The file path is invalid (file path: " << file_path.c_str() << ", errorCode: " << +err1.errorCode << ", errorInfo: " << err1.errorInfo << ", what: " << err1.what << ")";
         return ErrorStruct<std::unique_ptr<FileHandler>>{err1.success, err1.errorCode, err1.errorInfo, err1.what};
     }
-    try{
+    try {
         return ErrorStruct<std::unique_ptr<FileHandler>>::createMove(std::move(std::make_unique<FileHandler>(file_path)));
-    }catch(const std::exception& e){
+    } catch (const std::exception& e) {
         // something went wrong while creating the file handler
         PLOG_ERROR << "Something went wrong while creating the file handler (what: " << e.what() << ")";
         return ErrorStruct<std::unique_ptr<FileHandler>>{SuccessType::FAIL, ErrorCode::ERR_FILEHANDLER_CREATION, "", e.what()};
