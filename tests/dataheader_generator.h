@@ -78,11 +78,10 @@ public:
         unsigned char ddatablocknum = set.decdatablocknum.has_value() ? set.decdatablocknum.value() : RNG::get_random_byte();
         ret.addByte(ddatablocknum); // number of dec datablocks
         for(u_int16_t i = 0; i < ddatablocknum; i++){
-            unsigned char len = RNG::get_random_byte(1);
-            ret.addSize(len + 2);
-            ret.addByte(RNG::get_random_byte()); // datablock type
-            ret.addByte(len); // datablock length
-            Bytes tmp(len);
+            ret.addSize(257);
+            ret.addByte(RNG::get_random_byte()); // enc datablock type
+            ret.addByte(RNG::get_random_byte()); // enc datablock length
+            Bytes tmp(255);
             tmp.fillrandom();
             tmp.addcopyToBytes(ret);
         }

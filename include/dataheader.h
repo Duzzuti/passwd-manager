@@ -41,12 +41,18 @@ struct DataBlock {
 struct EncDataBlock {
    private:
     DataBlock data_block;  // the enc data
+    unsigned char enc_len;
     EncDataBlock() = default;
 
    public:
-    static EncDataBlock createEncBlock(const unsigned char enc_type, const Bytes enc_data) {
+    static EncDataBlock createEncBlock(const unsigned char enc_type, const Bytes enc_data, const unsigned char enc_len) {
         // creates an EncDataBlock from the given data
+        if(enc_data.getLen() != 255){
+            PLOG_ERROR << "the given data has an invalid length: " << enc_data.getLen();
+            throw std::invalid_argument("data has an invalid length");
+        }
         EncDataBlock enc_block;
+        enc_block.enc_len = enc_len;
         enc_block.data_block.type = DatablockType(enc_type);
         enc_block.data_block.setData(enc_data);
         return enc_block;
@@ -55,16 +61,20 @@ struct EncDataBlock {
     EncDataBlock(DataBlock datablock, const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) {
         // basic constructor
         pwhash = hash->hash(pwhash);
-        this->data_block.type = DatablockType((unsigned char)(datablock.type + pwhash.copySubBytes(0, 8).toLong()));
+        this->data_block.type = DatablockType((unsigned char)(datablock.type + pwhash.copySubBytes(0, 1).toLong()));
+        this->enc_len = (unsigned char)(datablock.getData().getLen() + pwhash.copySubBytes(1, 2).toLong());
         u_int16_t written = 0;
         u_int16_t end;
-        Bytes enc_data = Bytes::withU64(data_block.getData().getLen());
-        while (enc_data.getLen() < data_block.getData().getLen()) {
+        Bytes enc_data(255);
+        while (enc_data.getLen() != datablock.getData().getLen()) {
             // encrypt the data
             enc_salt = hash->hash(enc_salt - pwhash);
-            end = std::min<int>(written + enc_salt.getLen(), data_block.getData().getLen());
+            end = std::min<int>(written + enc_salt.getLen(), datablock.getData().getLen());
             (datablock.getData().copySubBytes(written, end) + enc_salt.copySubBytes(0, end - written)).addcopyToBytes(enc_data);
+            written = end;
         }
+        enc_data.addSize(255 - enc_data.getLen());  // fill the rest with random data
+        enc_data.fillrandom();
         datablock.setData(enc_data);
         this->data_block = datablock;
     }
@@ -77,14 +87,16 @@ struct EncDataBlock {
     Bytes getDec(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) const noexcept {
         // decrypts the data
         pwhash = hash->hash(pwhash);
+        unsigned char len = (unsigned char)(this->enc_len - pwhash.copySubBytes(1, 2).toLong());
         u_int16_t written = 0;
         u_int16_t end;
-        Bytes dec_data = Bytes::withU64(this->data_block.getData().getLen());
-        while (dec_data.getLen() < this->data_block.getData().getLen()) {
+        Bytes dec_data(len);
+        while (dec_data.getLen() < len) {
             // decrypt the data
             enc_salt = hash->hash(enc_salt - pwhash);
-            end = std::min<int>(written + enc_salt.getLen(), this->data_block.getData().getLen());
+            end = std::min<int>(written + enc_salt.getLen(), len);
             (this->data_block.getData().copySubBytes(written, end) - enc_salt.copySubBytes(0, end - written)).addcopyToBytes(dec_data);
+            written = end;
         }
         return dec_data;
     }
@@ -97,7 +109,12 @@ struct EncDataBlock {
     DatablockType getDecType(const std::unique_ptr<Hash>&& hash, Bytes pwhash) const noexcept {
         // gets the type
         pwhash = hash->hash(pwhash);
-        return DatablockType((unsigned char)(this->data_block.type - pwhash.copySubBytes(0, 8).toLong()));
+        return DatablockType((unsigned char)(this->data_block.type - pwhash.copySubBytes(0, 1).toLong()));
+    }
+
+    unsigned char getEncLen() const noexcept {
+        // gets the length
+        return this->enc_len;
     }
 };
 

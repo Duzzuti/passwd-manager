@@ -103,7 +103,8 @@ void DataHeader::addEncDataBlock(const EncDataBlock encdatablock) {
         PLOG_ERROR << "there are already 255 encrypted datablocks";
         throw std::length_error("there are already 255 encrypted datablocks");
     }
-    this->datablocks_len += 2 + encdatablock.getEnc().getLen();  // 1 for type, 1 for len, len for data
+    // should be the same as 257 
+    this->datablocks_len += 2 + encdatablock.getEnc().getLen();  // 1 for type, 1 for len, len for data (255)
     this->dh.enc_data_blocks.push_back(encdatablock);
     this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
@@ -225,7 +226,7 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
         dataheader.addByte((unsigned char)this->dh.enc_data_blocks.size());     // add encrypted data block count byte
         for (EncDataBlock& encdatablock : this->dh.enc_data_blocks) {           // add all encrypted data blocks
             dataheader.addByte(encdatablock.getEncType());                      // add type byte
-            dataheader.addByte((unsigned char)encdatablock.getEnc().getLen());  // add data length byte
+            dataheader.addByte((unsigned char)encdatablock.getEncLen());        // add data length byte
             encdatablock.getEnc().addcopyToBytes(dataheader);                   // add data
         }
     } catch (std::length_error& ex) {
@@ -581,13 +582,13 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
             // data block type
             unsigned char enc_type = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
             index += 1;
-            // data block len
-            unsigned char len = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
+            // enc data block len
+            unsigned char enc_len = fileBytes.copySubBytes(index, index + 1).getBytes()[0];
             index += 1;
             // data block data
-            Bytes enc_data = fileBytes.copySubBytes(index, index + len);
-            index += len;
-            dh->addEncDataBlock(EncDataBlock::createEncBlock(enc_type, enc_data));
+            Bytes enc_data = fileBytes.copySubBytes(index, index + 255);
+            index += 255;
+            dh->addEncDataBlock(EncDataBlock::createEncBlock(enc_type, enc_data, enc_len));
         }
         try {
             dh->setFileSize(file_size);  // setting the file size
@@ -1117,15 +1118,15 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
             return err;
         }
         // data block data
-        Bytes data(len);
-        if (!readData(file, data, len)) {
+        Bytes data(255);
+        if (!readData(file, data, 255)) {
             // readsome could not read the enc data block data
             PLOG_ERROR << "not enogh data to read the enc data block data";
             err.errorCode = ERR_NOT_ENOUGH_DATA;
             err.errorInfo = "Enc datablock data";
             return err;
         }
-        dh->addEncDataBlock(EncDataBlock::createEncBlock(type, data));
+        dh->addEncDataBlock(EncDataBlock::createEncBlock(type, data, len));
     }
     try {
         dh->calcHeaderBytes();

@@ -42,8 +42,8 @@
 |||||
 |||DECRYPTED DATABLOCKS||
 |1|unsigned char|which type of data is stored in that block (encrypted)|WORK|
-|1|unsigned char|how long is the datablock in Bytes|WORK|
-|0-255|Bytes|data of the datablock (encrypted)|WORK|
+|1|unsigned char|how long is the actual data in Bytes (encrypted)|WORK|
+|255|Bytes|data of the datablock (encrypted) + random salt bytes|WORK|
 |||||
 |||||
 
@@ -51,15 +51,14 @@
     lh = 40 + 2*HashSize + cs + d + ed
     with: cs = cs1 + cs2 < 2*255 Bytes (chainhash-datablocks)
           d = nd*2 + sdd    (datablocks)
-          ed = ned*2 + sedd (encrypted datablocks)
+          ed = ned*257 (encrypted datablocks)
 
-    => lh = 40 + 2*HashSize + cs1 + cs2 + 2(nd+ned) + sdd + sedd
+    => lh = 40 + 2*HashSize + cs1 + cs2 + 2*nd + 257*ned + sdd
 
     and:  cs1, cs2 = chainhash datablock sizes
           nd = number of datablocks
           sdd = sum of all data from datablocks
           ned = number of encrypted datablocks
-          sedd = sum of all data from encryped datablocks
 
 
 |Hash size|Min lh|Max lh (without datablocks)|
