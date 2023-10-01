@@ -251,6 +251,10 @@ struct DataHeaderSettingsIters {
     std::optional<u_int64_t> chainhash1_iters;  // iterations for the first chainhash
     std::optional<u_int64_t> chainhash2_iters;  // iterations for the second chainhash
    public:
+    std::vector<DataBlock> dec_data_blocks;     // the decrypted data blocks
+    std::vector<EncDataBlock> enc_data_blocks;  // the encrypted data blocks
+
+   public:
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set
         return this->file_mode.has_value();
@@ -420,6 +424,10 @@ struct DataHeaderSettingsTime {
     std::optional<CHModes> chainhash2_mode;    // chainhash mode for the second chainhash (passwordhash -> validate password)
     std::optional<u_int64_t> chainhash1_time;  // max miliseconds for the first chainhash
     std::optional<u_int64_t> chainhash2_time;  // max miliseconds for the second chainhash
+   public:
+    std::vector<DataBlock> dec_data_blocks;     // the decrypted data blocks
+    std::vector<EncDataBlock> enc_data_blocks;  // the encrypted data blocks
+   
    public:
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set
@@ -615,6 +623,7 @@ class DataHeader {
     void addEncDataBlock(const EncDataBlock encdatablock);    // adds an encrypted data block
 
     void setFileSize(const u_int64_t file_size);            // sets the file size
+    void setDataSize(const u_int32_t data_size);            // sets the file size by adding the header size to the data size
     std::optional<u_int64_t> getFileSize() const noexcept;  // gets the file size
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
