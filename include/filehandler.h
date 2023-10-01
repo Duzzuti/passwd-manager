@@ -28,7 +28,8 @@ class FileHandler {
     std::ifstream getFileStream() const noexcept;                                                         // returns the file stream
     std::ifstream getDataStream() const noexcept;                                                         // returns the data stream from the file (without the data header)
     size_t getHeaderSize() const noexcept;                                                                // returns the size of the data header
-    size_t getFileSize() const noexcept;                                                                  // returns the length of the data in the file (without the data header)
+    size_t getFileSize() const noexcept;                                                                  // returns the length of the file
+    size_t getDataSize() const noexcept;                                                                  // returns the length of the data in the file
 
     // NO update() needed
     Bytes getFirstBytes(const size_t num) const;  // reads the first num Bytes from the encryption file

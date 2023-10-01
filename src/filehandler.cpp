@@ -169,6 +169,8 @@ size_t FileHandler::getHeaderSize() const noexcept { return this->header_size; }
 
 size_t FileHandler::getFileSize() const noexcept { return this->file_size; }
 
+size_t FileHandler::getDataSize() const noexcept { return this->file_size - this->header_size; }
+
 // ErrorStruct<bool> FileHandler::writeBytes(Bytes& bytes) noexcept {
 //     // writes bytes to the file
 //     // overrides old content

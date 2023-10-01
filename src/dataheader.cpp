@@ -125,6 +125,18 @@ void DataHeader::setFileSize(const u_int64_t file_size) {
     this->file_size = file_size;
 }
 
+void DataHeader::setDataSize(const u_int32_t data_size) {
+    // sets the file size
+    PLOG_VERBOSE << "setting file size with data size: " << data_size;
+    if (!this->isComplete()) {
+        // header bytes cannot be calculated (data is missing)
+        PLOG_ERROR << "all dataheader parts have to be set to set the file size";
+        throw std::logic_error("all dataheader parts have to be set to set the file size");
+    }
+    this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
+    this->file_size = data_size + this->getHeaderLength();
+}
+
 std::optional<u_int64_t> DataHeader::getFileSize() const noexcept { return this->file_size; }
 
 void DataHeader::setEncSalt(const Bytes& salt) {
