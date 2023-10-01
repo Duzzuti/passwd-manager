@@ -282,7 +282,7 @@ TEST(DataHeaderClass, calcHeaderBytes) {
 
             // stores the valid data
             DataHeaderParts dp;
-            Bytes dataheaderbytes(MAX_HEADER_SIZE);
+            Bytes dataheaderbytes(0);
 
             EXPECT_THROW(dh2.getHeaderBytes(), std::logic_error);                                    // dataheader is invalid
             EXPECT_THROW(dh3.getHeaderBytes(), std::logic_error);                                    // dataheader is invalid

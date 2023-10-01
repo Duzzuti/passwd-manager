@@ -17,7 +17,13 @@ ErrorStruct<std::unique_ptr<FileHandler>> API::_getFileHandler(const std::filesy
         PLOG_ERROR << "The file path is invalid (file path: " << file_path.c_str() << ", errorCode: " << +err1.errorCode << ", errorInfo: " << err1.errorInfo << ", what: " << err1.what << ")";
         return ErrorStruct<std::unique_ptr<FileHandler>>{err1.success, err1.errorCode, err1.errorInfo, err1.what};
     }
-    return ErrorStruct<std::unique_ptr<FileHandler>>::createMove(std::move(std::make_unique<FileHandler>(file_path)));
+    try{
+        return ErrorStruct<std::unique_ptr<FileHandler>>::createMove(std::move(std::make_unique<FileHandler>(file_path)));
+    }catch(const std::exception& e){
+        // something went wrong while creating the file handler
+        PLOG_ERROR << "Something went wrong while creating the file handler (what: " << e.what() << ")";
+        return ErrorStruct<std::unique_ptr<FileHandler>>{SuccessType::FAIL, ErrorCode::ERR_FILEHANDLER_CREATION, "", e.what()};
+    }
 }
 
 DataHeaderHelperStruct API::_createDataHeaderIters(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout) const noexcept {
@@ -37,6 +43,9 @@ DataHeaderHelperStruct API::_createDataHeaderIters(const std::string& password, 
         return dhhs;
     }
     DataHeaderParts dhp;
+    // copy the datablocks
+    dhp.dec_data_blocks = ds.dec_data_blocks;
+    dhp.enc_data_blocks = ds.enc_data_blocks;
     try {
         // trying to get the chainhashes
         std::shared_ptr<ChainHashData> chd1 = std::make_shared<ChainHashData>(Format{ds.getChainHash1Mode()});
@@ -109,10 +118,12 @@ DataHeaderHelperStruct API::_createDataHeaderIters(const std::string& password, 
     }
     // setting the validation hash
     dhp.setValidPasswordHash(ch2_err.returnValue());
+    Bytes salt(hash->getHashSize());
+    salt.fillrandom();
+    dhp.setEncSalt(salt);
 
     // dataheader parts is now ready to create the dataheader object
     dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
-    if (dhhs.errorStruct.isSuccess()) dhhs.errorStruct.returnRef()->calcHeaderBytes();
     dhhs.Password_hash(ch1_err.returnValue());  // adding the password hash to the dhhs struct
     return dhhs;
 }
@@ -137,6 +148,9 @@ DataHeaderHelperStruct API::_createDataHeaderTime(const std::string& password, c
     }
 
     DataHeaderParts dhp;
+    // copy the datablocks
+    dhp.dec_data_blocks = ds.dec_data_blocks;
+    dhp.enc_data_blocks = ds.enc_data_blocks;
     ChainHashTimed ch1;
     ChainHashTimed ch2;
     try {
@@ -196,10 +210,13 @@ DataHeaderHelperStruct API::_createDataHeaderTime(const std::string& password, c
 
     // collecting the ChainHash that was used (getting the iterations)
     dhp.chainhash2 = ch2_err.returnValue().chainhash;
+    dhp.setValidPasswordHash(ch2_err.returnValue().result);
+    Bytes salt(hash->getHashSize());
+    salt.fillrandom();
+    dhp.setEncSalt(salt);
 
     // dataheader parts is now ready to create the dataheader object
     dhhs.errorStruct = DataHeader::setHeaderParts(dhp);
-    if (dhhs.errorStruct.isSuccess()) dhhs.errorStruct.returnRef()->calcHeaderBytes();
     dhhs.Password_hash(ch1_err.returnValue().result);  // adding the password hash to the dhhs struct
     return dhhs;
 }
@@ -539,7 +556,7 @@ ErrorStruct<std::unique_ptr<FileDataStruct>> API::PASSWORD_VERIFIED::getDecrypte
         // construct the blockchain
         DecryptBlockChain dbc{HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
-        dbc.addData(this->parent->selected_file->getData().returnMove(), this->parent->selected_file->getDataLen());
+        dbc.addData(this->parent->selected_file->getDataStream(), this->parent->selected_file->getDataSize());
         // get the decrypted data
         std::unique_ptr<FileDataStruct> result = std::make_unique<FileDataStruct>(this->parent->file_mode, std::move(dbc.getResult()));
         this->parent->file_data_struct = nullptr;
@@ -573,6 +590,8 @@ ErrorStruct<bool> API::DECRYPTED::encryptData(std::unique_ptr<FileDataStruct>&& 
     }
     try {
         // construct the blockchain
+        this->parent->dh->setDataSize(file_data->dec_data->getLen());
+        this->parent->dh->calcHeaderBytes();
         EncryptBlockChain ebc{HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
         ebc.addData(std::move(file_data->dec_data));
@@ -614,7 +633,6 @@ ErrorStruct<bool> API::DECRYPTED::changeSalt() noexcept {
     ErrorStruct<std::unique_ptr<DataHeader>> err = DataHeader::setHeaderParts(dhp);
     if (err.isSuccess()) {
         this->parent->dh = err.returnMove();
-        this->parent->dh->calcHeaderBytes();
     } else {
         PLOG_ERROR << "The data header could not be created (changeSalt) (success: " << +err.success << ", errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what
                    << ")";
@@ -686,32 +704,34 @@ ErrorStruct<bool> API::ENCRYPTED::writeToFile(const std::filesystem::path& file_
         PLOG_ERROR << "The provided file path is invalid (writeToFile) (errorCode: " << +err_file.errorCode << ", errorInfo: " << err_file.errorInfo << ", what: " << err_file.what << ")";
         return ErrorStruct<bool>{err_file.success, err_file.errorCode, err_file.errorInfo, err_file.what};
     }
-    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
-    this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted->addcopyToBytes(full_data);            // adds the encrypted data
-    ErrorStruct<bool> err = err_file.returnRef()->writeBytesIfEmpty(full_data);
+    ErrorStruct<std::ofstream> err = err_file.returnRef()->getWriteStreamIfEmpty();
     if (err.isSuccess()) {
+        Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
+        this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
+        this->parent->encrypted->addcopyToBytes(full_data);            // adds the encrypted data
         this->parent->encrypted.reset();
+        err.returnRef() << full_data;  // writes the data to the file
         this->parent->current_state = std::make_unique<FINISHED>(this->parent);
     } else {
         PLOG_ERROR << "Some error occurred while writing to the file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
     }
-    return err;
+    return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
 }
 
 ErrorStruct<bool> API::ENCRYPTED::writeToFile() noexcept {
     // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
     PLOG_VERBOSE << "Writing to selected file (file_path: " << this->parent->selected_file->getPath().c_str() << ")";
     // checks if the selected file exists (it could be deleted in the meantime)
-    Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
-    this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
-    this->parent->encrypted->addcopyToBytes(full_data);            // adds the encrypted data
-    ErrorStruct<bool> err = this->parent->selected_file->writeBytes(full_data);
+    ErrorStruct<std::ofstream> err = this->parent->selected_file->getWriteStream();
     if (err.isSuccess()) {
+        Bytes full_data{(int64_t)(this->parent->dh->getHeaderBytes().getLen() + this->parent->encrypted->getLen())};
+        this->parent->dh->getHeaderBytes().addcopyToBytes(full_data);  // adds the data header
+        this->parent->encrypted->addcopyToBytes(full_data);            // adds the encrypted data
         this->parent->encrypted.reset();
+        err.returnRef() << full_data;  // writes the data to the file
         this->parent->current_state = std::make_unique<FINISHED>(this->parent);
     } else {
         PLOG_FATAL << "Some error occurred while writing to the selected file (writeToFile) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
     }
-    return err;
+    return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
 }
