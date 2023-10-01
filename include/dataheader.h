@@ -47,7 +47,7 @@ struct EncDataBlock {
    public:
     static EncDataBlock createEncBlock(const unsigned char enc_type, const Bytes enc_data, const unsigned char enc_len) {
         // creates an EncDataBlock from the given data
-        if(enc_data.getLen() != 255){
+        if (enc_data.getLen() != 255) {
             PLOG_ERROR << "the given data has an invalid length: " << enc_data.getLen();
             throw std::invalid_argument("data has an invalid length");
         }

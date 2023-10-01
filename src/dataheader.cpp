@@ -103,7 +103,7 @@ void DataHeader::addEncDataBlock(const EncDataBlock encdatablock) {
         PLOG_ERROR << "there are already 255 encrypted datablocks";
         throw std::length_error("there are already 255 encrypted datablocks");
     }
-    // should be the same as 257 
+    // should be the same as 257
     this->datablocks_len += 2 + encdatablock.getEnc().getLen();  // 1 for type, 1 for len, len for data (255)
     this->dh.enc_data_blocks.push_back(encdatablock);
     this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
@@ -223,11 +223,11 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
         this->dh.getValidPasswordHash().addcopyToBytes(dataheader);                         // add password validator
         this->dh.getEncSalt().addcopyToBytes(dataheader);                                   // add encrypted salt
 
-        dataheader.addByte((unsigned char)this->dh.enc_data_blocks.size());     // add encrypted data block count byte
-        for (EncDataBlock& encdatablock : this->dh.enc_data_blocks) {           // add all encrypted data blocks
-            dataheader.addByte(encdatablock.getEncType());                      // add type byte
-            dataheader.addByte((unsigned char)encdatablock.getEncLen());        // add data length byte
-            encdatablock.getEnc().addcopyToBytes(dataheader);                   // add data
+        dataheader.addByte((unsigned char)this->dh.enc_data_blocks.size());  // add encrypted data block count byte
+        for (EncDataBlock& encdatablock : this->dh.enc_data_blocks) {        // add all encrypted data blocks
+            dataheader.addByte(encdatablock.getEncType());                   // add type byte
+            dataheader.addByte((unsigned char)encdatablock.getEncLen());     // add data length byte
+            encdatablock.getEnc().addcopyToBytes(dataheader);                // add data
         }
     } catch (std::length_error& ex) {
         // trying to add more bytes than previously calculated
