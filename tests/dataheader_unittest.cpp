@@ -139,7 +139,7 @@ TEST(DataHeaderClass, setChainHash) {
             EXPECT_NO_THROW(dh2.setChainHash1(chainhash));
             // tests on the changed object
             EXPECT_THROW(dh2.getDataHeaderParts(), std::logic_error);                  // dataheader is not completed
-            EXPECT_EQ(22 + 2 * hash_size + 2 * chd->getLen(), dh2.getHeaderLength());  // both chainhashes are set, therefore a length can be computed
+            EXPECT_EQ(40 + 2 * hash_size + 2 * chd->getLen(), dh2.getHeaderLength());  // both chainhashes are set, therefore a length can be computed
             EXPECT_THROW(dh2.getHeaderBytes(), std::logic_error);                      // dataheader is not completed
             EXPECT_THROW(dh2.calcHeaderBytes(hsb), std::logic_error);                  // dataheader is not completed
             // some edge cases
@@ -277,6 +277,9 @@ TEST(DataHeaderClass, calcHeaderBytes) {
 
             // valid password hash validator and valid passwordhash
             EXPECT_NO_THROW(dh.setValidPasswordHashBytes(pval));
+            EXPECT_THROW(dh.calcHeaderBytes(phash), std::logic_error);
+
+            EXPECT_NO_THROW(dh.setFileSize(100000));
             EXPECT_EQ(typeid(void), typeid(dh.calcHeaderBytes(phash)));
             EXPECT_NO_THROW(dh.calcHeaderBytes(phash));
 
@@ -289,10 +292,10 @@ TEST(DataHeaderClass, calcHeaderBytes) {
             EXPECT_THROW(dh4.getHeaderBytes(), std::logic_error);                                    // dataheader is invalid
             EXPECT_NO_THROW(dataheaderbytes = dh.getHeaderBytes());                                  // dataheader is valid
             EXPECT_NO_THROW(dp = dh.getDataHeaderParts());                                           // dataheader is valid
-            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh.getHeaderLength());   // chainhashes are set, therefore length can be computed
-            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh2.getHeaderLength());  // chainhashes are set, therefore length can be computed
-            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh3.getHeaderLength());  // chainhashes are set, therefore length can be computed
-            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh4.getHeaderLength());  // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(40 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh.getHeaderLength());   // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(40 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh2.getHeaderLength());  // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(40 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh3.getHeaderLength());  // chainhashes are set, therefore length can be computed
+            EXPECT_EQ(40 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dh4.getHeaderLength());  // chainhashes are set, therefore length can be computed
 
             // testing the returned dataparts
             EXPECT_EQ(HModes(hash_mode), dp.getHashMode());
@@ -308,19 +311,23 @@ TEST(DataHeaderClass, calcHeaderBytes) {
             EXPECT_EQ(pval, dp.getValidPasswordHash());
 
             // testing the returned dataheaderbytes
-            EXPECT_EQ(22 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dataheaderbytes.getLen());
-            EXPECT_EQ(file_mode, FModes(dataheaderbytes.copySubBytes(0, 1).getBytes()[0]));
-            EXPECT_EQ(hash_mode, HModes(dataheaderbytes.copySubBytes(1, 2).getBytes()[0]));
-            EXPECT_EQ(ch1_mode, CHModes(dataheaderbytes.copySubBytes(2, 3).getBytes()[0]));
-            EXPECT_EQ(iters1, dataheaderbytes.copySubBytes(3, 11).toLong());
-            EXPECT_EQ(chd1->getLen(), dataheaderbytes.copySubBytes(11, 12).getBytes()[0]);
-            EXPECT_EQ(chd1->getDataBlock(), dataheaderbytes.copySubBytes(12, 12 + chd1->getLen()));
-            EXPECT_EQ(ch2_mode, CHModes(dataheaderbytes.copySubBytes(12 + chd1->getLen(), 13 + chd1->getLen()).getBytes()[0]));
-            EXPECT_EQ(iters2, dataheaderbytes.copySubBytes(13 + chd1->getLen(), 21 + chd1->getLen()).toLong());
-            EXPECT_EQ(chd2->getLen(), dataheaderbytes.copySubBytes(21 + chd1->getLen(), 22 + chd1->getLen()).getBytes()[0]);
-            EXPECT_EQ(chd2->getDataBlock(), dataheaderbytes.copySubBytes(22 + chd1->getLen(), 22 + chd1->getLen() + chd2->getLen()));
-            EXPECT_EQ(pval, dataheaderbytes.copySubBytes(22 + chd1->getLen() + chd2->getLen(), 22 + chd1->getLen() + chd2->getLen() + hash_size));
-            EXPECT_EQ(dp.getEncSalt(), dataheaderbytes.copySubBytes(22 + chd1->getLen() + chd2->getLen() + hash_size, 22 + chd1->getLen() + chd2->getLen() + 2 * hash_size));
+            EXPECT_EQ(40 + 2 * hash_size + chd1->getLen() + chd2->getLen(), dataheaderbytes.getLen());
+            EXPECT_EQ(100000, dataheaderbytes.copySubBytes(0, 8).toLong());
+            EXPECT_EQ(dataheaderbytes.getLen(), dataheaderbytes.copySubBytes(8, 16).toLong());
+            EXPECT_EQ(file_mode, FModes(dataheaderbytes.copySubBytes(16, 17).getBytes()[0]));
+            EXPECT_EQ(hash_mode, HModes(dataheaderbytes.copySubBytes(17, 18).getBytes()[0]));
+            EXPECT_EQ(0, dataheaderbytes.copySubBytes(18, 19).getBytes()[0]);
+            EXPECT_EQ(ch1_mode, CHModes(dataheaderbytes.copySubBytes(19, 20).getBytes()[0]));
+            EXPECT_EQ(iters1, dataheaderbytes.copySubBytes(20, 28).toLong());
+            EXPECT_EQ(chd1->getLen(), dataheaderbytes.copySubBytes(28, 29).getBytes()[0]);
+            EXPECT_EQ(chd1->getDataBlock(), dataheaderbytes.copySubBytes(29, 29 + chd1->getLen()));
+            EXPECT_EQ(ch2_mode, CHModes(dataheaderbytes.copySubBytes(29 + chd1->getLen(), 30 + chd1->getLen()).getBytes()[0]));
+            EXPECT_EQ(iters2, dataheaderbytes.copySubBytes(30 + chd1->getLen(), 38 + chd1->getLen()).toLong());
+            EXPECT_EQ(chd2->getLen(), dataheaderbytes.copySubBytes(38 + chd1->getLen(), 39 + chd1->getLen()).getBytes()[0]);
+            EXPECT_EQ(chd2->getDataBlock(), dataheaderbytes.copySubBytes(39 + chd1->getLen(), 39 + chd1->getLen() + chd2->getLen()));
+            EXPECT_EQ(pval, dataheaderbytes.copySubBytes(39 + chd1->getLen() + chd2->getLen(), 39 + chd1->getLen() + chd2->getLen() + hash_size));
+            EXPECT_EQ(dp.getEncSalt(), dataheaderbytes.copySubBytes(39 + chd1->getLen() + chd2->getLen() + hash_size, 39 + chd1->getLen() + chd2->getLen() + 2 * hash_size));
+            EXPECT_EQ(0, dataheaderbytes.copySubBytes(39 + chd1->getLen() + chd2->getLen() + 2 * hash_size, 40 + chd1->getLen() + chd2->getLen() + 2 * hash_size).getBytes()[0]);
 
             // testing some edge cases
             // setting all data except valid hash or file mode
