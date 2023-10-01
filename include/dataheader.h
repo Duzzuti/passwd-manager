@@ -427,7 +427,7 @@ struct DataHeaderSettingsTime {
    public:
     std::vector<DataBlock> dec_data_blocks;     // the decrypted data blocks
     std::vector<EncDataBlock> enc_data_blocks;  // the encrypted data blocks
-   
+
    public:
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set
