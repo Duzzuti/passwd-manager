@@ -345,17 +345,17 @@ TEST(DataHeaderClass, calcHeaderBytes) {
     }
 }
 
-TEST(DataHeaderClass, datablocks){
-    for(int k = 0; k < 100; k++){
+TEST(DataHeaderClass, datablocks) {
+    for (int k = 0; k < 100; k++) {
         std::vector<DataBlock> db;
         std::vector<EncDataBlock> ddb;
         HModes hashmode = HModes(RNG::get_random_byte(1, MAX_HASHMODE_NUMBER));
-        for(int i = 0; i < RNG::get_random_byte(); i++){
+        for (int i = 0; i < RNG::get_random_byte(); i++) {
             Bytes tmp(RNG::get_random_byte(1));
             tmp.fillrandom();
             db.push_back(DataBlock(DatablockType(RNG::get_random_byte()), tmp));
         }
-        for(int j = 0; j < RNG::get_random_byte(); j++){
+        for (int j = 0; j < RNG::get_random_byte(); j++) {
             Bytes tmp(255);
             tmp.fillrandom();
             ddb.push_back(EncDataBlock::createEncBlock(DatablockType(RNG::get_random_byte()), tmp, RNG::get_random_byte()));
@@ -368,10 +368,10 @@ TEST(DataHeaderClass, datablocks){
             .chainhashlen2 = 0,
         });
         std::unique_ptr<DataHeader> dh = DataHeader::setHeaderBytes(dhb).returnMove();
-        for(int i = 0; i < db.size(); i++){
+        for (int i = 0; i < db.size(); i++) {
             dh->addDataBlock(db[i]);
         }
-        for(int i = 0; i < ddb.size(); i++){
+        for (int i = 0; i < ddb.size(); i++) {
             dh->addEncDataBlock(ddb[i]);
         }
         dh->setFileSize(100000);
