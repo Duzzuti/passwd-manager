@@ -7,6 +7,7 @@ implements the FileHandler class
 #include <fstream>
 
 #include "logger.h"
+#include "utility.h"
 
 const std::string FileHandler::extension = ".enc";
 
@@ -85,6 +86,46 @@ FileHandler::FileHandler(const std::filesystem::path& file) : filepath(file) {
         PLOG_FATAL << "The given file path is invalid (file path: " << file << ")";
         throw std::runtime_error("The given file path is invalid (file path: " + file.string() + ")");
     }
+    this->update();
+}
+
+void FileHandler::update() {
+    std::ifstream filestream = this->getFileStream();
+    std::streampos begin = filestream.tellg();
+    filestream.seekg(0, std::ios::end);
+    std::streampos end = filestream.tellg();
+    this->file_size = end - begin;
+    this->empty = (this->file_size == 0);
+    filestream.seekg(begin);
+    Bytes tmp(8);
+    if (!readData(filestream, tmp, 8)) {
+        if (this->file_size == 0)
+            this->header_size = 0;
+        else {
+            PLOG_ERROR << "The file is too small to contain a data header but is not empty";
+            throw std::length_error("The file is too small to contain a data header but is not empty");
+        }
+    } else {
+        if (tmp.toLong() != this->file_size) {
+            PLOG_ERROR << "The file size does not match with the file size in the data header";
+            throw std::logic_error("The file size does not match with the file size in the data header");
+        }
+        tmp.setLen(0);  // reset the length
+        if (!readData(filestream, tmp, 8)) {
+            PLOG_ERROR << "The file is too small to contain a data header but is not empty";
+            throw std::length_error("The file is too small to contain a data header but is not empty");
+        }
+        this->header_size = tmp.toLong();
+    }
+    filestream.close();
+    if (this->header_size > this->file_size) {
+        PLOG_ERROR << "The file size is smaller than the given header size";
+        throw std::logic_error("The file size is smaller than the given header size");
+    }
+    if (this->header_size < MIN_DATAHEADER_LEN && !(this->header_size == 0 && this->file_size == 0)) {
+        PLOG_ERROR << "The file is too small to contain a data header but is not empty";
+        throw std::length_error("The file is too small to contain a data header but is not empty");
+    }
 }
 
 ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) noexcept {
@@ -102,76 +143,57 @@ ErrorStruct<bool> FileHandler::isDataHeader(FModes exp_file_mode) noexcept {
     return ErrorStruct<bool>{FAIL, ERR_FILEMODE_INVALID, std::to_string(+err.returnRef()->getDataHeaderParts().getFileDataMode())};
 }
 
-bool FileHandler::isEmtpy() const noexcept {
-    // checks if the file is empty
-    try {
-        // try to read the first byte
-        this->getFirstBytes(1);
-    } catch (std::length_error& e) {
-        // the file is empty
-        return true;
-    }
-    return false;
-}
+bool FileHandler::isEmtpy() const noexcept { return this->empty; }
 
 ErrorStruct<std::unique_ptr<DataHeader>> FileHandler::getDataHeader() noexcept {
     // reads the data header from the file
-    std::ifstream filestream(this->filepath.c_str(), std::ios::binary);
+    std::ifstream filestream = this->getFileStream();
     ErrorStruct<std::unique_ptr<DataHeader>> ret = DataHeader::setHeaderBytes(filestream);
-    header_size = ret.returnRef()->getHeaderLength();
     filestream.close();
     return ret;
 }
 
-ErrorStruct<std::ifstream> FileHandler::getData() noexcept {
+std::ifstream FileHandler::getFileStream() const noexcept {
+    // returns the file stream
+    return std::ifstream(this->filepath.c_str(), std::ios::binary);
+}
+
+std::ifstream FileHandler::getDataStream() const noexcept {
     // reads the data from the file (without the data header)
     std::ifstream file(this->filepath.c_str(), std::ios::binary);
-    if (header_size != 0) {
-        file.seekg(header_size, std::ios::beg);
-        return ErrorStruct<std::ifstream>::createMove(std::move(file));
-    } else {
-        ErrorStruct<std::unique_ptr<DataHeader>> err = DataHeader::setHeaderBytes(file);
-        if (!err.isSuccess()) {
-            // the data header could not be read
-            file.close();
-            PLOG_ERROR << "The data header could not be read (getData) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
-            return ErrorStruct<std::ifstream>{err.success, err.errorCode, err.errorInfo, err.what};
-        }
-        header_size = err.returnRef()->getHeaderLength();
-        // the data header was read successfully
-        // the remaining bytes are the data
-        return ErrorStruct<std::ifstream>::createMove(std::move(file));
-    }
+    file.seekg(this->header_size, std::ios::beg);
+    return file;
 }
 
-ErrorStruct<bool> FileHandler::writeBytes(Bytes& bytes) noexcept {
-    // writes bytes to the file
-    // overrides old content
-    PLOG_VERBOSE << "Writing to file (file_path: " << this->filepath.c_str() << ")";
-    // checks if the selected file exists
-    ErrorStruct<bool> err_file = this->isValidPath(this->filepath, true);
-    if (!err_file.isSuccess()) {
-        PLOG_ERROR << "The provided file path is invalid (writeBytes) (errorCode: " << +err_file.errorCode << ", errorInfo: " << err_file.errorInfo << ", what: " << err_file.what << ")";
-        return err_file;
-    }
-    // file path is valid
-    std::ofstream file(this->filepath.c_str(), std::ios::binary);
-    if (!file.is_open()) {
-        PLOG_FATAL << "The file could not be opened";
-        // should not happen because the file was checked before
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, this->filepath.c_str()};
-    }
-    // write the data
-    file.write(reinterpret_cast<char*>(bytes.getBytes()), bytes.getLen());
-    file.close();
-    this->header_size = 0;
+size_t FileHandler::getHeaderSize() const noexcept { return this->header_size; }
 
-    PLOG_VERBOSE << "Successfully wrote " << bytes.getLen() << " bytes to file (file_path: " << this->filepath.c_str() << ")";
-    return ErrorStruct<bool>{true};
-}
+size_t FileHandler::getFileSize() const noexcept { return this->file_size; }
+
+size_t FileHandler::getDataSize() const noexcept { return this->file_size - this->header_size; }
+
+// ErrorStruct<bool> FileHandler::writeBytes(Bytes& bytes) noexcept {
+//     // writes bytes to the file
+//     // overrides old content
+//     PLOG_VERBOSE << "Writing to file (file_path: " << this->filepath.c_str() << ")";
+//     this->header_size = 0;
+//     this->file_size = 0;
+//     ErrorStruct<std::ofstream> err = this->getWriteStream();
+//     if (!err.isSuccess()) {
+//         PLOG_ERROR << "The file could not be opened (writeBytes) (errorCode: " << +err.errorCode << ", errorInfo: " << err.errorInfo << ", what: " << err.what << ")";
+//         return ErrorStruct<bool>{err.success, err.errorCode, err.errorInfo, err.what};
+//     }
+//     std::ofstream file = err.returnMove();
+//     // write the data
+//     file.write(reinterpret_cast<char*>(bytes.getBytes()), bytes.getLen());
+//     file.close();
+//     this->header_size = 0;
+//     PLOG_VERBOSE << "Successfully wrote " << bytes.getLen() << " bytes to file (file_path: " << this->filepath.c_str() << ")";
+//     return ErrorStruct<bool>{true};
+// }
 
 ErrorStruct<std::ofstream> FileHandler::getWriteStream() noexcept {
     this->header_size = 0;
+    this->file_size = 0;
     // returns a write stream to the file
     // overrides old content
     PLOG_VERBOSE << "Getting write stream to file (file_path: " << this->filepath.c_str() << ")";
@@ -205,26 +227,26 @@ ErrorStruct<std::ofstream> FileHandler::getWriteStreamIfEmpty() noexcept {
 
 std::filesystem::path FileHandler::getPath() const noexcept { return this->filepath; }
 
-ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes& bytes) noexcept {
-    // writes bytes to the file if the file is empty
-    try {
-        if (!this->isEmtpy()) {
-            // the file is not empty
-            PLOG_WARNING << "The file is not empty (file_path: " << this->filepath.c_str() << ")";
-            return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
-        }
-    } catch (std::exception& e) {
-        PLOG_ERROR << "Some error occurred while checking the file data (" << e.what() << ")";
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, this->filepath.c_str(), e.what()};
-    }
-    // the file is empty
-    return this->writeBytes(bytes);
-}
+// ErrorStruct<bool> FileHandler::writeBytesIfEmpty(Bytes& bytes) noexcept {
+//     // writes bytes to the file if the file is empty
+//     try {
+//         if (!this->isEmtpy()) {
+//             // the file is not empty
+//             PLOG_WARNING << "The file is not empty (file_path: " << this->filepath.c_str() << ")";
+//             return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_EMPTY, this->filepath.c_str()};
+//         }
+//     } catch (std::exception& e) {
+//         PLOG_ERROR << "Some error occurred while checking the file data (" << e.what() << ")";
+//         return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, this->filepath.c_str(), e.what()};
+//     }
+//     // the file is empty
+//     return this->writeBytes(bytes);
+// }
 
 Bytes FileHandler::getAllBytes() const {
     // reads all Bytes from the file
     PLOG_VERBOSE << "Reading all Bytes from file (file_path: " << this->filepath.c_str() << ")";
-    std::ifstream file(this->filepath.c_str(), std::ios::binary);  // create the file stream
+    std::ifstream file = this->getFileStream();  // create the file stream
     if (!file) {
         // the set encryption file does not exist on the system
         throw std::runtime_error("file cannot be opened");
@@ -236,23 +258,23 @@ Bytes FileHandler::getAllBytes() const {
 
     // gets the Bytes
     Bytes ret(file_size);
-    file.read(reinterpret_cast<char*>(ret.getBytes()), file_size);
-    ret.setLen(file_size);
+    if (!readData(file, ret, file_size)) {
+        // not enough characters to read (file is not long enough)
+        throw std::length_error("File contains to few characters");
+    }
     file.close();
     return ret;
 }
 
 Bytes FileHandler::getFirstBytes(const size_t num) const {
     // reads the num first bytes of the encryption file
-    std::ifstream file(this->filepath.c_str(), std::ios::binary);  // create the file stream
+    std::ifstream file = this->getFileStream();  // create the file stream
     if (!file) {
         // the set encryption file does not exist on the system
         throw std::runtime_error("file cannot be opened");
     }
-    Bytes b(num);  // creates a buffer to hold the read bytes
-    if (file.readsome(reinterpret_cast<char*>(b.getBytes()), num) != num)
-        ;
-    {  // reads into the buffer
+    Bytes b(num);                   // creates a buffer to hold the read bytes
+    if (!readData(file, b, num)) {  // reads into the buffer
         // not enough characters to read (file is not long enough)
         throw std::length_error("File contains to few characters");
     }

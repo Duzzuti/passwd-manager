@@ -44,5 +44,6 @@ const constexpr u_int64_t MAX_RUNTIME = 1000 * 60 * 60 * 24;  // 1 day
 // a higher value does increase performance but leads to more inaccurate timeout calls
 const constexpr u_int64_t TIMEOUT_ITERATIONS = 1000;
 
-//##################### HEADER ##########################
-const constexpr u_int16_t MAX_HEADER_SIZE = 22 + 2 * 64 + 2 * 255;
+//##################### LENGTHS #######################
+// stores the minimum length of the dataheader
+const constexpr unsigned int MIN_DATAHEADER_LEN = 104;

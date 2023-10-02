@@ -20,6 +20,14 @@ Bytes Bytes::fromLong(const u_int64_t l, const bool addzeros) {
     return res;
 }
 
+Bytes Bytes::withU64(const u_int64_t max_len) noexcept {
+    Bytes b;
+    b.max_len = max_len;
+    b.len = 0;
+    b.bytes = new unsigned char[max_len];
+    return b;
+}
+
 Bytes::Bytes(const int64_t max_len) {
     // creates an empty byte array with a given maximum length
     if (max_len < 0) {
@@ -356,4 +364,10 @@ u_int64_t Bytes::toLong() const {
     }
     std::memcpy(&res, reversedBytes, this->len);
     return res;
+}
+
+std::ofstream& operator<<(std::ofstream& os, const Bytes& bytes) {
+    // writes the bytes to the given ofstream
+    os.write(reinterpret_cast<const char*>(bytes.bytes), bytes.len);
+    return os;
 }

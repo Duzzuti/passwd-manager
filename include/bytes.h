@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <iostream>
 #include <memory>
 
@@ -14,9 +15,15 @@ class Bytes {
     size_t max_len;          // max length of the byte array
     size_t len;              // length of the byte array
     bool deallocate = true;  // if the bytes array should be deallocated when the object is destroyed
+    Bytes() {
+        this->bytes = nullptr;
+        this->max_len = 0;
+        this->len = 0;
+    }
 
    public:
     static Bytes fromLong(const u_int64_t l, const bool addzeros = false);  // sets the Bytes to the decimal representation of the given long
+    static Bytes withU64(const u_int64_t max_len) noexcept;                 // creates an empty byte array with a given maximum length
 
     Bytes(const int64_t max_len);                                    // creates an empty byte array with a given maximum length
     Bytes(unsigned char* bytes, const size_t len);                   // creates a Bytes object with the given bytes and length (consumes the array)
@@ -55,4 +62,6 @@ class Bytes {
             this->bytes = nullptr;
         }
     };  // destructor
+
+    friend std::ofstream& operator<<(std::ofstream& os, const Bytes& bytes);  // writes the bytes to the given ofstream
 };

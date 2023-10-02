@@ -2,11 +2,121 @@
 
 #include <fstream>
 #include <optional>
+#include <vector>
 
 #include "bytes.h"
 #include "chainhash_modes.h"
 #include "file_modes.h"
 #include "hash_modes.h"
+
+struct DataBlock {
+   private:
+    Bytes data = Bytes(0);  // the decrypted data
+   public:
+    DatablockType type = DatablockType::DEFAULT;
+
+    DataBlock() = default;
+
+    DataBlock(const DatablockType type, const Bytes data) {
+        // basic constructor
+        this->type = type;
+        this->setData(data);
+    }
+
+    void setData(const Bytes& data) {
+        // sets the data
+        if (data.getLen() > 0 && data.getLen() <= 255)  // the size has to be one byte
+            this->data = data;
+        else {
+            PLOG_ERROR << "the given data has an invalid length: " << data.getLen();
+            throw std::invalid_argument("data has an invalid length");
+        }
+    }
+    Bytes getData() const noexcept {
+        // gets the data
+        return this->data;
+    }
+};
+
+struct EncDataBlock {
+   private:
+    DataBlock data_block;  // the enc data
+    unsigned char enc_len;
+    EncDataBlock() = default;
+
+   public:
+    static EncDataBlock createEncBlock(const unsigned char enc_type, const Bytes enc_data, const unsigned char enc_len) {
+        // creates an EncDataBlock from the given data
+        if (enc_data.getLen() != 255) {
+            PLOG_ERROR << "the given data has an invalid length: " << enc_data.getLen();
+            throw std::invalid_argument("data has an invalid length");
+        }
+        EncDataBlock enc_block;
+        enc_block.enc_len = enc_len;
+        enc_block.data_block.type = DatablockType(enc_type);
+        enc_block.data_block.setData(enc_data);
+        return enc_block;
+    }
+
+    EncDataBlock(DataBlock datablock, const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) {
+        // basic constructor
+        pwhash = hash->hash(pwhash);
+        this->data_block.type = DatablockType((unsigned char)(datablock.type + pwhash.copySubBytes(0, 1).toLong()));
+        this->enc_len = (unsigned char)(datablock.getData().getLen() + pwhash.copySubBytes(1, 2).toLong());
+        u_int16_t written = 0;
+        u_int16_t end;
+        Bytes enc_data(255);
+        while (enc_data.getLen() != datablock.getData().getLen()) {
+            // encrypt the data
+            enc_salt = hash->hash(enc_salt - pwhash);
+            end = std::min<int>(written + enc_salt.getLen(), datablock.getData().getLen());
+            (datablock.getData().copySubBytes(written, end) + enc_salt.copySubBytes(0, end - written)).addcopyToBytes(enc_data);
+            written = end;
+        }
+        enc_data.addSize(255 - enc_data.getLen());  // fill the rest with random data
+        enc_data.fillrandom();
+        datablock.setData(enc_data);
+        this->data_block = datablock;
+    }
+
+    Bytes getEnc() const noexcept {
+        // gets the data
+        return this->data_block.getData();
+    }
+
+    Bytes getDec(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) const noexcept {
+        // decrypts the data
+        pwhash = hash->hash(pwhash);
+        unsigned char len = (unsigned char)(this->enc_len - pwhash.copySubBytes(1, 2).toLong());
+        u_int16_t written = 0;
+        u_int16_t end;
+        Bytes dec_data(len);
+        while (dec_data.getLen() < len) {
+            // decrypt the data
+            enc_salt = hash->hash(enc_salt - pwhash);
+            end = std::min<int>(written + enc_salt.getLen(), len);
+            (this->data_block.getData().copySubBytes(written, end) - enc_salt.copySubBytes(0, end - written)).addcopyToBytes(dec_data);
+            written = end;
+        }
+        return dec_data;
+    }
+
+    DatablockType getEncType() const noexcept {
+        // gets the type
+        return this->data_block.type;
+    }
+
+    DatablockType getDecType(const std::unique_ptr<Hash>&& hash, Bytes pwhash) const noexcept {
+        // gets the type
+        pwhash = hash->hash(pwhash);
+        return DatablockType((unsigned char)(this->data_block.type - pwhash.copySubBytes(0, 1).toLong()));
+    }
+
+    unsigned char getEncLen() const noexcept {
+        // gets the length
+        return this->enc_len;
+    }
+};
 
 struct DataHeaderParts {
     // holds the variables used for the dataheader
@@ -17,8 +127,10 @@ struct DataHeaderParts {
     std::optional<Bytes> valid_passwordhash;  // saves the hash that should be the result of the second chainhash
     std::optional<Bytes> enc_salt;            // saves the encoded salt
    public:
-    ChainHash chainhash1;  // chainhash data for the first chainhash (password -> passwordhash)
-    ChainHash chainhash2;  // chainhash data for the second chainhash (passwordhash -> validate password)
+    std::vector<DataBlock> dec_data_blocks;     // the decrypted data blocks
+    std::vector<EncDataBlock> enc_data_blocks;  // the encrypted data blocks
+    ChainHash chainhash1;                       // chainhash data for the first chainhash (password -> passwordhash)
+    ChainHash chainhash2;                       // chainhash data for the second chainhash (passwordhash -> validate password)
 
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set
@@ -122,7 +234,8 @@ struct DataHeaderParts {
     bool isComplete(const unsigned char hash_size) const noexcept {
         // checks if everything is set correctly
         try {
-            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->isHashModeSet() && this->getHashSize() == hash_size)
+            if (this->chainhash1.valid() && this->chainhash2.valid() && this->isValidPasswordHashSet() && this->isFileDataModeSet() && this->isHashModeSet() && this->getHashSize() == hash_size &&
+                this->isEncSaltSet())
                 return true;  // everything is set correctly
         } catch (std::exception& e) {
             PLOG_WARNING << "isComplete thrown: " << e.what();
@@ -154,6 +267,10 @@ struct DataHeaderSettingsIters {
     std::optional<CHModes> chainhash2_mode;     // chainhash mode for the second chainhash (passwordhash -> validate password)
     std::optional<u_int64_t> chainhash1_iters;  // iterations for the first chainhash
     std::optional<u_int64_t> chainhash2_iters;  // iterations for the second chainhash
+   public:
+    std::vector<DataBlock> dec_data_blocks;     // the decrypted data blocks
+    std::vector<EncDataBlock> enc_data_blocks;  // the encrypted data blocks
+
    public:
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set
@@ -325,6 +442,10 @@ struct DataHeaderSettingsTime {
     std::optional<u_int64_t> chainhash1_time;  // max miliseconds for the first chainhash
     std::optional<u_int64_t> chainhash2_time;  // max miliseconds for the second chainhash
    public:
+    std::vector<DataBlock> dec_data_blocks;     // the decrypted data blocks
+    std::vector<EncDataBlock> enc_data_blocks;  // the encrypted data blocks
+
+   public:
     bool isFileDataModeSet() const noexcept {
         // checks if the file data mode is set
         return this->file_mode.has_value();
@@ -492,9 +613,11 @@ class DataHeader {
     more information about the header: docs/dataheader.md
     */
    private:
-    DataHeaderParts dh;                           // saves every part of the header
-    unsigned char hash_size;                      // the size of the hash provided by the hash function (in Bytes)
-    Bytes header_bytes = Bytes(MAX_HEADER_SIZE);  // bytes that are in the header
+    DataHeaderParts dh;                  // saves every part of the header
+    unsigned char hash_size;             // the size of the hash provided by the hash function (in Bytes)
+    Bytes header_bytes = Bytes(0);       // bytes that are in the header
+    std::optional<u_int64_t> file_size;  // the size of the file that is encrypted
+    u_int32_t datablocks_len = 0;        // the length of the datablocks
 
    private:
     // checks if all data is set correctly
@@ -512,6 +635,13 @@ class DataHeader {
     void setChainHash1(const ChainHash chainhash);
     void setChainHash2(const ChainHash chainhash);
     void setValidPasswordHashBytes(const Bytes& validBytes);  // sets the passwordhashhash to validate the password hash
+    void clearDataBlocks() noexcept;                          // clears the data blocks
+    void addDataBlock(const DataBlock datablock);             // adds a data block
+    void addEncDataBlock(const EncDataBlock encdatablock);    // adds an encrypted data block
+
+    void setFileSize(const u_int64_t file_size);            // sets the file size
+    void setDataSize(const u_int32_t data_size);            // sets the file size by adding the header size to the data size
+    std::optional<u_int64_t> getFileSize() const noexcept;  // gets the file size
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
     void calcHeaderBytes(const Bytes& passwordhash = Bytes(0));
