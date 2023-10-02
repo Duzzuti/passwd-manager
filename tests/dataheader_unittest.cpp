@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "chainhash_data.h"
+#include "dataheader_generator.h"
 #include "rng.h"
 #include "settings.h"
 #include "test_settings.cpp"
@@ -341,5 +342,43 @@ TEST(DataHeaderClass, calcHeaderBytes) {
             EXPECT_NO_THROW(dh6.setValidPasswordHashBytes(pval));
             EXPECT_THROW(dh6.calcHeaderBytes(phash), std::logic_error);
         }
+    }
+}
+
+TEST(DataHeaderClass, datablocks){
+    for(int k = 0; k < 100; k++){
+        std::vector<DataBlock> db;
+        std::vector<EncDataBlock> ddb;
+        HModes hashmode = HModes(RNG::get_random_byte(1, MAX_HASHMODE_NUMBER));
+        for(int i = 0; i < RNG::get_random_byte(); i++){
+            Bytes tmp(RNG::get_random_byte(1));
+            tmp.fillrandom();
+            db.push_back(DataBlock(DatablockType(RNG::get_random_byte()), tmp));
+        }
+        for(int j = 0; j < RNG::get_random_byte(); j++){
+            Bytes tmp(255);
+            tmp.fillrandom();
+            ddb.push_back(EncDataBlock::createEncBlock(DatablockType(RNG::get_random_byte()), tmp, RNG::get_random_byte()));
+        }
+        Bytes dhb = DataHeaderGen::generateDH(DataHeaderGenSet{
+            .hashmode = hashmode,
+            .datablocknum = 0,
+            .decdatablocknum = 0,
+            .chainhashlen1 = 0,
+            .chainhashlen2 = 0,
+        });
+        std::unique_ptr<DataHeader> dh = DataHeader::setHeaderBytes(dhb).returnMove();
+        for(int i = 0; i < db.size(); i++){
+            dh->addDataBlock(db[i]);
+        }
+        for(int i = 0; i < ddb.size(); i++){
+            dh->addEncDataBlock(ddb[i]);
+        }
+        dh->setFileSize(100000);
+        dh->calcHeaderBytes();
+        Bytes header = dh->getHeaderBytes();
+        std::unique_ptr<DataHeader> dh2 = DataHeader::setHeaderBytes(header).returnMove();
+        dh2->calcHeaderBytes();
+        EXPECT_EQ(dh->getHeaderBytes(), dh2->getHeaderBytes());
     }
 }
