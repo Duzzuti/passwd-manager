@@ -195,6 +195,12 @@ class API {
         virtual ErrorStruct<std::unique_ptr<FileDataStruct>> getDecryptedData() noexcept {
             return ErrorStruct<std::unique_ptr<FileDataStruct>>{FAIL, ERR_API_STATE_INVALID, "getDecryptedData is only available in the PASSWORD_VERIFIED state"};
         };
+        // decrypts the data and writes it to a file in the given directory (filename and extension are taken from the dataheader)
+        // .dec is default extension and the name is randomized if not specified in the dataheader
+        virtual ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept{
+            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "decryptData is only available in the PASSWORD_VERIFIED state"};
+        }
+
         // gets the file data struct
         // it stores the file mode as well as the decrypted file content
         virtual ErrorStruct<std::unique_ptr<FileDataStruct>> getFileData() noexcept {
@@ -205,6 +211,10 @@ class API {
         virtual ErrorStruct<bool> encryptData(std::unique_ptr<FileDataStruct>&& file_data) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "encryptData is only available in the DECRYPTED state"};
         };
+        virtual ErrorStruct<bool> encryptData(std::ifstream& decrypted_file) noexcept {
+            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "encryptData is only available in the DECRYPTED state"};
+        };
+
         // writes encrypted data to the selected file adds the dataheader, uses the encrypted data from getEncryptedData
         virtual ErrorStruct<bool> writeToFile() noexcept { return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "writeToFile is only available in the ENCRYPTED state"}; };
         // writes encrypted data to a file adds the dataheader, uses the encrypted data from getEncryptedData
@@ -249,12 +259,14 @@ class API {
        public:
         PASSWORD_VERIFIED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to PASSWORD_VERIFIED"; };
         ErrorStruct<std::unique_ptr<FileDataStruct>> getDecryptedData() noexcept override;
+        ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept override;
     };
 
     class DECRYPTED : public WorkflowState {
        public:
         DECRYPTED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to DECRYPTED"; };
         ErrorStruct<bool> encryptData(std::unique_ptr<FileDataStruct>&& file_data) noexcept override;
+        ErrorStruct<bool> encryptData(std::ifstream& decrypted_file) noexcept override;
         ErrorStruct<std::unique_ptr<FileDataStruct>> getFileData() noexcept override;
         ErrorStruct<bool> changeSalt() noexcept override;
         ErrorStruct<bool> createDataHeader(const std::string& password, const DataHeaderSettingsIters& ds, const u_int64_t timeout = 0) noexcept override;
@@ -325,6 +337,10 @@ class API {
     // // encoder: writes the file data (gotten from the object.getFileData()) and data header to the file
     // // this fails if file_path is not the same as in createEncFile(). You have to call setFile() manually before calling this function again
     // ErrorStruct<bool> runWorkflow2enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
+
+    // FILE STREAMS
+    static ErrorStruct<bool> encrypt(std::filesystem::path& path, const std::string& password) noexcept;
+    static ErrorStruct<bool> decrypt(std::filesystem::path& path, const std::string& password) noexcept;
 
     // gets the path of the current working directory
     static std::filesystem::path getCurrentDirPath() noexcept;
@@ -423,6 +439,11 @@ class API {
         PLOG_DEBUG << "API call made (getDecryptedData)";
         return this->current_state->getDecryptedData();
     }
+    // decrypts the data (requires successful verifyPassword run) and writes it to a file in the given directory (filename and extension are taken from the dataheader)
+    ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept {
+        PLOG_DEBUG << "API call made (decryptData)";
+        return this->current_state->decryptData(dest_dir);
+    }
 
     // gets the file data struct
     // it stores the file mode as well as the decrypted file content
@@ -436,6 +457,10 @@ class API {
     ErrorStruct<bool> encryptData(std::unique_ptr<FileDataStruct>&& file_data) noexcept {
         PLOG_DEBUG << "API call made (encryptData)";
         return this->current_state->encryptData(std::move(file_data));
+    }
+    ErrorStruct<bool> encryptData(std::ifstream& decrypted_file) noexcept {
+        PLOG_DEBUG << "API call made (encryptData) with ifstream";
+        return this->current_state->encryptData(decrypted_file);
     }
 
     // writes encrypted data to a file adds the dataheader (requires successful getEncryptedData run)
