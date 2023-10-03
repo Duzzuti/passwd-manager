@@ -197,7 +197,7 @@ class API {
         };
         // decrypts the data and writes it to a file in the given directory (filename and extension are taken from the dataheader)
         // .dec is default extension and the name is randomized if not specified in the dataheader
-        virtual ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept{
+        virtual ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept {
             return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "decryptData is only available in the PASSWORD_VERIFIED state"};
         }
 

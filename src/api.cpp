@@ -9,16 +9,16 @@ implementation of api.h
 #include "blockchain_stream_decrypt.h"
 #include "blockchain_stream_encrypt.h"
 #include "file_modes.h"
-#include "timer.h"
 #include "rng.h"
+#include "timer.h"
 #include "utility.h"
 
 ErrorStruct<bool> API::encrypt(std::filesystem::path& path, const std::string& password) noexcept {
     // encrypts the file at the given path with the given password
     PLOG_VERBOSE << "Encrypting file...";
-    if(!std::filesystem::is_regular_file(path)){
+    if (!std::filesystem::is_regular_file(path)) {
         PLOG_ERROR << "The given path is not a regular file (path: " << path.c_str() << ")";
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_FOUND, path.c_str()}; 
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_FOUND, path.c_str()};
     }
     std::filesystem::path top_dir = path.parent_path();
     std::string file_name = path.stem().string();
@@ -38,39 +38,39 @@ ErrorStruct<bool> API::encrypt(std::filesystem::path& path, const std::string& p
     u_int64_t timeout = 0;
     bool delete_file = true;
 
-    while(std::filesystem::exists(top_dir / enc_path)){
+    while (std::filesystem::exists(top_dir / enc_path)) {
         enc_path = RNG::get_random_string(10) + ".enc";
     }
 
     API api{FILEMODE_BYTES};
     ErrorStruct<bool> err_create = api.createFile(enc_path);
-    if(!err_create.isSuccess()){
+    if (!err_create.isSuccess()) {
         PLOG_ERROR << "The file could not be created (errorCode: " << +err_create.errorCode << ", errorInfo: " << err_create.errorInfo << ", what: " << err_create.what << ")";
         return err_create;
     }
     ErrorStruct<bool> err_select = api.selectFile(enc_path);
-    if(!err_select.isSuccess()){
+    if (!err_select.isSuccess()) {
         PLOG_ERROR << "The file could not be selected (errorCode: " << +err_select.errorCode << ", errorInfo: " << err_select.errorInfo << ", what: " << err_select.what << ")";
         return err_select;
     }
     ErrorStruct<bool> err_dh = api.createDataHeader(password, ds, timeout);
-    if(!err_dh.isSuccess()){
+    if (!err_dh.isSuccess()) {
         PLOG_ERROR << "The data header could not be created (errorCode: " << +err_dh.errorCode << ", errorInfo: " << err_dh.errorInfo << ", what: " << err_dh.what << ")";
         return err_dh;
     }
 
     std::ifstream ext_file{path};
-    if(!ext_file){
+    if (!ext_file) {
         PLOG_ERROR << "The file could not be opened (path: " << path.c_str() << ")";
         return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_OPEN, path.c_str()};
     }
-    if(!api.encryptData(ext_file).isSuccess()){
+    if (!api.encryptData(ext_file).isSuccess()) {
         PLOG_ERROR << "The file could not be encrypted (path: " << path.c_str() << ")";
         return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, path.c_str()};
     }
     ext_file.close();
-    if(delete_file){
-        if(!std::filesystem::remove(path)){
+    if (delete_file) {
+        if (!std::filesystem::remove(path)) {
             PLOG_ERROR << "The file could not be deleted (path: " << path.c_str() << ")";
             return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_DELETED, path.c_str()};
         }
@@ -85,32 +85,32 @@ ErrorStruct<bool> API::decrypt(std::filesystem::path& path, const std::string& p
     std::filesystem::path top_dir = path.parent_path();
     u_int64_t timeout = 0;
     bool delete_file = true;
-    try{
+    try {
         API api{FILEMODE_BYTES};
         ErrorStruct<bool> err_select = api.selectFile(path);
-        if(!err_select.isSuccess()){
+        if (!err_select.isSuccess()) {
             PLOG_ERROR << "The file could not be selected (errorCode: " << +err_select.errorCode << ", errorInfo: " << err_select.errorInfo << ", what: " << err_select.what << ")";
             return err_select;
         }
         ErrorStruct<bool> err_dh = api.verifyPassword(password, timeout);
-        if(!err_dh.isSuccess()){
+        if (!err_dh.isSuccess()) {
             PLOG_ERROR << "The password could not be verified (errorCode: " << +err_dh.errorCode << ", errorInfo: " << err_dh.errorInfo << ", what: " << err_dh.what << ")";
             return err_dh;
         }
 
-        if(!api.decryptData(top_dir).isSuccess()){
+        if (!api.decryptData(top_dir).isSuccess()) {
             PLOG_ERROR << "The file could not be decrypted (path: " << path.c_str() << ")";
             return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, path.c_str()};
         }
-        if(delete_file){
-            if(!std::filesystem::remove(path)){
+        if (delete_file) {
+            if (!std::filesystem::remove(path)) {
                 PLOG_ERROR << "The file could not be deleted (path: " << path.c_str() << ")";
                 return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_DELETED, path.c_str()};
             }
         }
-    	return ErrorStruct<bool>{true};
+        return ErrorStruct<bool>{true};
 
-    } catch(std::exception& e){
+    } catch (std::exception& e) {
         PLOG_ERROR << "Some error occured while decrypting (path: " << path.c_str() << ", what: " << e.what() << ")";
         return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, path.c_str(), e.what()};
     }
@@ -684,49 +684,46 @@ ErrorStruct<bool> API::PASSWORD_VERIFIED::decryptData(std::filesystem::path dest
     try {
         std::vector<DataBlock> dec_db = this->parent->dh->getDataHeaderParts().dec_data_blocks;
         std::vector<EncDataBlock> enc_db = this->parent->dh->getDataHeaderParts().enc_data_blocks;
-        
+
         std::string filename = RNG::get_random_string(10);
         std::string extension = ".dec";
 
-
-        for(int i = 0; i < dec_db.size(); i++){
-            switch(dec_db[i].type){
+        for (int i = 0; i < dec_db.size(); i++) {
+            switch (dec_db[i].type) {
                 case DatablockType::FILENAME:
                     filename = bytesToString(dec_db[i].getData());
                     break;
                 case DatablockType::FILEEXTENSION:
                     extension = bytesToString(dec_db[i].getData());
-                    if(extension[0] != '.')
-                        extension = "." + extension;
+                    if (extension[0] != '.') extension = "." + extension;
                     break;
             }
         }
-        for(int i = 0; i < enc_db.size(); i++){
-            if(!enc_db[i].isEncrypted()){
+        for (int i = 0; i < enc_db.size(); i++) {
+            if (!enc_db[i].isEncrypted()) {
                 PLOG_ERROR << "The data is not encrypted (decryptData) but should be";
                 return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_DATA_NOT_ENCRYPTED, "In decryptData: The data is not encrypted but should be"};
             }
-            switch(enc_db[i].getDecType(HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash)){
+            switch (enc_db[i].getDecType(HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash)) {
                 case DatablockType::FILENAME:
-                    filename = bytesToString(enc_db[i].getDec(HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), 
-                                                            this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()));
+                    filename = bytesToString(enc_db[i].getDec(HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash,
+                                                              this->parent->dh->getDataHeaderParts().getEncSalt()));
                     break;
                 case DatablockType::FILEEXTENSION:
-                    extension = bytesToString(enc_db[i].getDec(HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), 
-                                                            this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()));
-                    if(extension[0] != '.')
-                        extension = "." + extension;
+                    extension = bytesToString(enc_db[i].getDec(HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash,
+                                                               this->parent->dh->getDataHeaderParts().getEncSalt()));
+                    if (extension[0] != '.') extension = "." + extension;
                     break;
             }
         }
 
         std::filesystem::path ext_file = dest_dir / (filename + extension);
-        if(std::filesystem::exists(ext_file)){
+        if (std::filesystem::exists(ext_file)) {
             PLOG_ERROR << "The file already exists (decryptData) (file_path: " << ext_file << ")";
             return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_EXISTS, "In decryptData: The file already exists"};
         }
         std::ofstream ext_file_stream(ext_file, std::ios::binary);
-        if(!ext_file_stream.is_open()){
+        if (!ext_file_stream.is_open()) {
             PLOG_ERROR << "The file could not be created (decryptData) (file_path: " << ext_file << ")";
             return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_CREATED, "In decryptData: The file could not be created"};
         }
@@ -803,13 +800,13 @@ ErrorStruct<bool> API::DECRYPTED::encryptData(std::ifstream& decrypted_file) noe
         EncryptBlockChainStream ebc{HashModes::getHash(this->parent->dh->getDataHeaderParts().getHashMode()), this->parent->correct_password_hash, this->parent->dh->getDataHeaderParts().getEncSalt()};
         // add the data onto the blockchain
         ErrorStruct<std::ofstream> err_file = this->parent->selected_file->getWriteStreamIfEmpty();
-        if(!err_file.isSuccess()){
-            PLOG_ERROR << "Could not get write stream (encryptData) (err_file.success: " << +err_file.success << ", err_file.errorCode: " << +err_file.errorCode << ", err_file.errorInfo: " << err_file.errorInfo
-                       << ", err_file.what: " << err_file.what << ")";
+        if (!err_file.isSuccess()) {
+            PLOG_ERROR << "Could not get write stream (encryptData) (err_file.success: " << +err_file.success << ", err_file.errorCode: " << +err_file.errorCode
+                       << ", err_file.errorInfo: " << err_file.errorInfo << ", err_file.what: " << err_file.what << ")";
             return ErrorStruct<bool>{err_file.success, err_file.errorCode, err_file.errorInfo, err_file.what};
         }
         std::ofstream in_file = err_file.returnMove();
-        in_file << this->parent->dh->getHeaderBytes();  // write the header bytes
+        in_file << this->parent->dh->getHeaderBytes();                  // write the header bytes
         ebc.enc_stream(std::move(decrypted_file), std::move(in_file));  // encrypt the data and write the data to the file
         // change the state
         this->parent->current_state = std::make_unique<FINISHED>(this->parent);
@@ -818,7 +815,8 @@ ErrorStruct<bool> API::DECRYPTED::encryptData(std::ifstream& decrypted_file) noe
     } catch (const std::exception& e) {
         // something went wrong inside of one of these functions, read what message for more information
         PLOG_ERROR << "Something went wrong while encrypting the data (encryptData) (what: " << e.what() << ")";
-        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, "In encryptData: Something went wrong while encrypting the data", e.what()};;
+        return ErrorStruct<bool>{SuccessType::FAIL, ErrorCode::ERR, "In encryptData: Something went wrong while encrypting the data", e.what()};
+        ;
     }
 }
 
