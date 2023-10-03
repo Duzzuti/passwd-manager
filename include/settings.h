@@ -13,7 +13,7 @@ const std::string VALID_PASS_CHARSET = "a1eo0r2ins9lt357864mdycuhkbwgzpfvxjqAWYE
 
 //##################### FILEMODE ######################
 // stores the maximum valid mode, all modes from 1 to this number are valid
-const constexpr unsigned char MAX_FILEMODE_NUMBER = 1;
+const constexpr unsigned char MAX_FILEMODE_NUMBER = 2;
 // stores the default mode
 const constexpr unsigned char STANDARD_FILEMODE = 1;
 
