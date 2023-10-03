@@ -309,10 +309,10 @@ std::string getErrorMessage(ErrorStruct<T>& err, bool verbose_err_msg = true) no
 
         case ERR_FILEHANDLER_CREATION:
             return "FileHandler could not be created: " + err.errorInfo + err_msg;
-        
+
         case ERR_DATAHEADER_INVALID:
             return "DataHeader is invalid: " + err.errorInfo + err_msg;
-        
+
         case ERR_DATA_NOT_ENCRYPTED:
             return "Data is not encrypted: " + err.errorInfo + err_msg;
 

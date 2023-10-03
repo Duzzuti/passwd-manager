@@ -224,17 +224,17 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash, const bool verify) {
 
         dataheader.addByte((unsigned char)this->dh.enc_data_blocks.size());  // add encrypted data block count byte
         for (EncDataBlock& encdatablock : this->dh.enc_data_blocks) {        // add all encrypted data blocks
-            if(!encdatablock.isEncrypted()){
-                if(passwordhash.isEmpty()){
+            if (!encdatablock.isEncrypted()) {
+                if (passwordhash.isEmpty()) {
                     PLOG_ERROR << "trying to add an unencrypted datablock without providing a passwordhash";
                     throw std::logic_error("trying to add an unencrypted datablock without providing a passwordhash");
                 }
-                encdatablock.getEnc(HashModes::getHash(this->dh.getHashMode()), passwordhash, this->dh.getEncSalt(), true); // encrypt data
+                encdatablock.getEnc(HashModes::getHash(this->dh.getHashMode()), passwordhash, this->dh.getEncSalt(), true);  // encrypt data
             }
-            
-            dataheader.addByte(encdatablock.getEncType());                   // add type byte
-            dataheader.addByte((unsigned char)encdatablock.getEncLen());     // add data length byte
-            encdatablock.getEnc().addcopyToBytes(dataheader);                // add data
+
+            dataheader.addByte(encdatablock.getEncType());                // add type byte
+            dataheader.addByte((unsigned char)encdatablock.getEncLen());  // add data length byte
+            encdatablock.getEnc().addcopyToBytes(dataheader);             // add data
         }
     } catch (std::length_error& ex) {
         // trying to add more bytes than previously calculated

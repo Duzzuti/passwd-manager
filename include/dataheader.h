@@ -82,7 +82,7 @@ struct EncDataBlock {
         this->encrypted = true;
     }
 
-    EncDataBlock(DataBlock datablock){
+    EncDataBlock(DataBlock datablock) {
         // basic constructor
         this->data_block = datablock;
         this->len = datablock.getData().getLen();
@@ -96,19 +96,18 @@ struct EncDataBlock {
 
     Bytes getEnc() const {
         // gets the data
-        if(this->isEncrypted())
-            return this->data_block.getData();
+        if (this->isEncrypted()) return this->data_block.getData();
         PLOG_WARNING << "the data is not encrypted, please use getEnc(const std::unique_ptr<Hash>&&, Bytes, Bytes) instead";
         throw std::logic_error("the data is not encrypted");
     }
 
-    Bytes getEnc(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt, bool encrypt = true){
-        if(this->isEncrypted()){
+    Bytes getEnc(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt, bool encrypt = true) {
+        if (this->isEncrypted()) {
             PLOG_WARNING << "the data is encrypted, please use getEnc() instead";
             throw std::logic_error("the data is encrypted");
         }
         pwhash = hash->hash(pwhash);
-        if(encrypt){
+        if (encrypt) {
             this->data_block.type = DatablockType((unsigned char)(this->data_block.type + pwhash.copySubBytes(0, 1).toLong()));
             this->len = (unsigned char)(this->data_block.getData().getLen() + pwhash.copySubBytes(1, 2).toLong());
         }
@@ -124,7 +123,7 @@ struct EncDataBlock {
         }
         // fill the rest with random data
         enc_data.fillrandom();
-        if(encrypt){
+        if (encrypt) {
             this->data_block.setData(enc_data);
             this->encrypted = true;
         }
@@ -132,7 +131,7 @@ struct EncDataBlock {
     }
 
     Bytes getDec(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) const {
-        if(!this->isEncrypted()){
+        if (!this->isEncrypted()) {
             PLOG_WARNING << "the data is not encrypted, please use getDec() instead";
             throw std::logic_error("the data is not encrypted");
         }
@@ -153,7 +152,7 @@ struct EncDataBlock {
     }
 
     Bytes getDec() const {
-        if(this->isEncrypted()){
+        if (this->isEncrypted()) {
             PLOG_WARNING << "the data is encrypted, please use getDec(const std::unique_ptr<Hash>&&, Bytes, Bytes) instead";
             throw std::logic_error("the data is encrypted");
         }
@@ -162,14 +161,13 @@ struct EncDataBlock {
 
     DatablockType getEncType() const {
         // gets the type
-        if(this->isEncrypted())
-            return this->data_block.type;
+        if (this->isEncrypted()) return this->data_block.type;
         PLOG_WARNING << "the data is not encrypted, please use getEncType(const std::unique_ptr<Hash>&&, Bytes) instead";
         throw std::logic_error("the data is not encrypted");
     }
 
     DatablockType getEncType(const std::unique_ptr<Hash>&& hash, Bytes pwhash) const {
-        if(this->isEncrypted()){
+        if (this->isEncrypted()) {
             PLOG_WARNING << "the data is encrypted, please use getEncType() instead";
             throw std::logic_error("the data is encrypted");
         }
@@ -180,7 +178,7 @@ struct EncDataBlock {
 
     DatablockType getDecType(const std::unique_ptr<Hash>&& hash, Bytes pwhash) const {
         // gets the type
-        if(!this->isEncrypted()){
+        if (!this->isEncrypted()) {
             PLOG_WARNING << "the data is not encrypted, please use getDecType() instead";
             throw std::logic_error("the data is not encrypted");
         }
@@ -189,7 +187,7 @@ struct EncDataBlock {
     }
 
     DatablockType getDecType() const {
-        if(this->isEncrypted()){
+        if (this->isEncrypted()) {
             PLOG_WARNING << "the data is encrypted, please use getDecType(const std::unique_ptr<Hash>&&, Bytes) instead";
             throw std::logic_error("the data is encrypted");
         }
@@ -198,8 +196,7 @@ struct EncDataBlock {
 
     unsigned char getEncLen() const {
         // gets the length
-        if(this->isEncrypted())
-            return this->len;
+        if (this->isEncrypted()) return this->len;
         PLOG_WARNING << "the data is not encrypted, please use getEncLen(const std::unique_ptr<Hash>&&, Bytes) instead";
         throw std::logic_error("the data is not encrypted");
     }
