@@ -1,4 +1,5 @@
 #include "blockchain_stream.h"
+
 #include "utility.h"
 
 BlockChainStream::BlockChainStream(std::shared_ptr<Hash> hash, const Bytes& passwordhash, const Bytes& enc_salt) : hash_size(hash->getHashSize()), last_block_hash(hash_size) {
@@ -30,7 +31,8 @@ void BlockChainStream::enc_stream(std::ifstream&& in, std::ofstream&& out) noexc
         } else
             break;
     }
-    PLOG_VERBOSE << "added new data to blockchain [HEIGHT] " << this->getHeight() << " [DATA_SIZE] " << this->getDataSize() << "B (" << this->getDataSize() / 1024 << "KB, " << this->getDataSize() / 1024 / 1024 << "MB)";
+    PLOG_VERBOSE << "added new data to blockchain [HEIGHT] " << this->getHeight() << " [DATA_SIZE] " << this->getDataSize() << "B (" << this->getDataSize() / 1024 << "KB, "
+                 << this->getDataSize() / 1024 / 1024 << "MB)";
 }
 
 size_t BlockChainStream::getFreeSpaceInLastBlock() const noexcept {
