@@ -23,6 +23,6 @@ bool EncryptBlockChainStream::setBlock() noexcept {
 
     // add the new block to the chain
     this->current_block = std::move(new_block);
-
+    this->height++;
     return true;
 }
