@@ -85,21 +85,12 @@ TEST(Benchmark_stream_encrypt, sha256) {
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
     createTestFile(path, DATA_SIZE_100MB);
-    DataHeaderSettingsIters ds;
-    {
-        ds.setFileDataMode(FILEMODE_BYTES);
-        ds.setHashMode(HASHMODE_SHA256);
-        ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
-        ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
-        ds.setChainHash1Iters(CITERS);
-        ds.setChainHash2Iters(CITERS);
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
-    }
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    std::filesystem::path enc_path = API::encrypt(path, "password").returnMove();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA256;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
     timer.stop();
     _terminateMeasurementThread = true;
     memoryThread.join();
@@ -113,21 +104,12 @@ TEST(Benchmark_stream_encrypt, sha384) {
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
     createTestFile(path, DATA_SIZE_100MB);
-    DataHeaderSettingsIters ds;
-    {
-        ds.setFileDataMode(FILEMODE_BYTES);
-        ds.setHashMode(HASHMODE_SHA384);
-        ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
-        ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
-        ds.setChainHash1Iters(CITERS);
-        ds.setChainHash2Iters(CITERS);
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
-    }
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    std::filesystem::path enc_path = API::encrypt(path, "password").returnMove();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA384;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
     timer.stop();
     _terminateMeasurementThread = true;
     memoryThread.join();
@@ -141,21 +123,12 @@ TEST(Benchmark_stream_encrypt, sha512) {
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
     createTestFile(path, DATA_SIZE_100MB);
-    DataHeaderSettingsIters ds;
-    {
-        ds.setFileDataMode(FILEMODE_BYTES);
-        ds.setHashMode(HASHMODE_SHA512);
-        ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
-        ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
-        ds.setChainHash1Iters(CITERS);
-        ds.setChainHash2Iters(CITERS);
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
-    }
     std::thread memoryThread(MemoryThread);
     Timer timer;
     timer.start();
-    std::filesystem::path enc_path = API::encrypt(path, "password").returnMove();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA512;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
     timer.stop();
     _terminateMeasurementThread = true;
     memoryThread.join();
@@ -169,18 +142,9 @@ TEST(Benchmark_stream_decrypt, sha256) {
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
     createTestFile(path, DATA_SIZE_100MB);
-    DataHeaderSettingsIters ds;
-    {
-        ds.setFileDataMode(FILEMODE_BYTES);
-        ds.setHashMode(HASHMODE_SHA256);
-        ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
-        ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
-        ds.setChainHash1Iters(CITERS);
-        ds.setChainHash2Iters(CITERS);
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
-    }
-    std::filesystem::path enc_path = API::encrypt(path, "password").returnMove();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA256;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
     deleteFile(path);
 
     std::thread memoryThread(MemoryThread);
@@ -200,19 +164,11 @@ TEST(Benchmark_stream_decrypt, sha384) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
+
     createTestFile(path, DATA_SIZE_100MB);
-    DataHeaderSettingsIters ds;
-    {
-        ds.setFileDataMode(FILEMODE_BYTES);
-        ds.setHashMode(HASHMODE_SHA384);
-        ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
-        ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
-        ds.setChainHash1Iters(CITERS);
-        ds.setChainHash2Iters(CITERS);
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
-    }
-    std::filesystem::path enc_path = API::encrypt(path, "password").returnMove();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA384;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
     deleteFile(path);
 
     std::thread memoryThread(MemoryThread);
@@ -232,19 +188,11 @@ TEST(Benchmark_stream_decrypt, sha512) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
+
     createTestFile(path, DATA_SIZE_100MB);
-    DataHeaderSettingsIters ds;
-    {
-        ds.setFileDataMode(FILEMODE_BYTES);
-        ds.setHashMode(HASHMODE_SHA512);
-        ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
-        ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
-        ds.setChainHash1Iters(CITERS);
-        ds.setChainHash2Iters(CITERS);
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
-    }
-    std::filesystem::path enc_path = API::encrypt(path, "password").returnMove();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA512;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
     deleteFile(path);
 
     std::thread memoryThread(MemoryThread);
@@ -259,6 +207,147 @@ TEST(Benchmark_stream_decrypt, sha512) {
     deleteFile(enc_path);
     filing("stream_decrypt_sha512", CITERS, 100, timer.getAverageTime(), timer.getSlowest());
 }
+
+TEST(Benchmark_stream_encrypt, sha256_nochain) {
+    std::string file_name = "testfile";
+    std::string file_extension = ".txt";
+    std::filesystem::path path = file_name + file_extension;
+    createTestFile(path, DATA_SIZE_100MB);
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA256;
+    conf.iters1 = CITERS_SMALL;
+    conf.iters2 = CITERS_SMALL;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    deleteFile(path);
+    deleteFile(enc_path);
+    filing("stream_encrypt_sha256_nochain", CITERS_SMALL, 100, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(Benchmark_stream_encrypt, sha384_nochain) {
+    std::string file_name = "testfile";
+    std::string file_extension = ".txt";
+    std::filesystem::path path = file_name + file_extension;
+    createTestFile(path, DATA_SIZE_100MB);
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA384;
+    conf.iters1 = CITERS_SMALL;
+    conf.iters2 = CITERS_SMALL;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    deleteFile(path);
+    deleteFile(enc_path);
+    filing("stream_encrypt_sha384_nochain", CITERS_SMALL, 100, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(Benchmark_stream_encrypt, sha512_nochain) {
+    std::string file_name = "testfile";
+    std::string file_extension = ".txt";
+    std::filesystem::path path = file_name + file_extension;
+    createTestFile(path, DATA_SIZE_100MB);
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA512;
+    conf.iters1 = CITERS_SMALL;
+    conf.iters2 = CITERS_SMALL;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    deleteFile(path);
+    deleteFile(enc_path);
+    filing("stream_encrypt_sha512_nochain", CITERS_SMALL, 100, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(Benchmark_stream_decrypt, sha256_nochain) {
+    std::string file_name = "testfile";
+    std::string file_extension = ".txt";
+    std::filesystem::path path = file_name + file_extension;
+    createTestFile(path, DATA_SIZE_100MB);
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA256;
+    conf.iters1 = CITERS_SMALL;
+    conf.iters2 = CITERS_SMALL;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
+    deleteFile(path);
+
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+    std::filesystem::path dec_path = API::decrypt(enc_path, "password").returnMove();
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    EXPECT_EQ(path, dec_path);
+    deleteFile(dec_path);
+    deleteFile(enc_path);
+    filing("stream_decrypt_sha256_nochain", CITERS_SMALL, 100, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(Benchmark_stream_decrypt, sha384_nochain) {
+    std::string file_name = "testfile";
+    std::string file_extension = ".txt";
+    std::filesystem::path path = file_name + file_extension;
+
+    createTestFile(path, DATA_SIZE_100MB);
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA384;
+    conf.iters1 = CITERS_SMALL;
+    conf.iters2 = CITERS_SMALL;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
+    deleteFile(path);
+
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+    std::filesystem::path dec_path = API::decrypt(enc_path, "password").returnMove();
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    EXPECT_EQ(path, dec_path);
+    deleteFile(dec_path);
+    deleteFile(enc_path);
+    filing("stream_decrypt_sha384_nochain", CITERS_SMALL, 100, timer.getAverageTime(), timer.getSlowest());
+}
+
+TEST(Benchmark_stream_decrypt, sha512_nochain) {
+    std::string file_name = "testfile";
+    std::string file_extension = ".txt";
+    std::filesystem::path path = file_name + file_extension;
+
+    createTestFile(path, DATA_SIZE_100MB);
+    APIConfEncrypt conf;
+    conf.hash_mode = HASHMODE_SHA512;
+    conf.iters1 = CITERS_SMALL;
+    conf.iters2 = CITERS_SMALL;
+    std::filesystem::path enc_path = API::encrypt(path, "password", conf).returnMove();
+    deleteFile(path);
+
+    std::thread memoryThread(MemoryThread);
+    Timer timer;
+    timer.start();
+    std::filesystem::path dec_path = API::decrypt(enc_path, "password").returnMove();
+    timer.stop();
+    _terminateMeasurementThread = true;
+    memoryThread.join();
+    EXPECT_EQ(path, dec_path);
+    deleteFile(dec_path);
+    deleteFile(enc_path);
+    filing("stream_decrypt_sha512_nochain", CITERS_SMALL, 100, timer.getAverageTime(), timer.getSlowest());
+}
+
 
 TEST(Benchmark_write, small_sha256) {
     DataHeaderSettingsIters ds;

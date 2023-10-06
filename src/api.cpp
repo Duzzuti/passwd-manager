@@ -13,35 +13,44 @@ implementation of api.h
 #include "timer.h"
 #include "utility.h"
 
-ErrorStruct<std::filesystem::path> API::encrypt(std::filesystem::path& path, const std::string& password) noexcept {
+ErrorStruct<std::filesystem::path> API::encrypt(std::filesystem::path& path, const std::string& password, const APIConfEncrypt& config) noexcept {
     // encrypts the file at the given path with the given password
     PLOG_VERBOSE << "Encrypting file...";
     if (!std::filesystem::is_regular_file(path)) {
         PLOG_ERROR << "The given path is not a regular file (path: " << path.c_str() << ")";
         return ErrorStruct<std::filesystem::path>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_FOUND, path.c_str()};
     }
-    std::filesystem::path top_dir = path.parent_path();
+    std::filesystem::path top_dir = config.enc_top_dir == "" ? path.parent_path() : config.enc_top_dir;
     std::string file_name = path.stem().string();
     std::string file_extension = path.extension().string();
-    std::string enc_path = RNG::get_random_string(10) + ".enc";
+    std::filesystem::path enc_path = RNG::get_random_string(10) + ".enc";
+    if(config.enc_filename == "")
+        while (std::filesystem::exists(top_dir / enc_path)) {
+            enc_path = RNG::get_random_string(10) + ".enc";
+        }
+    else 
+        enc_path = config.enc_filename;
+
+    if(std::filesystem::exists(top_dir / enc_path)){
+        PLOG_ERROR << "The given path already exists (path: " << (top_dir / enc_path).c_str() << ")";
+        return ErrorStruct<std::filesystem::path>{SuccessType::FAIL, ErrorCode::ERR_FILE_EXISTS, (top_dir / enc_path).c_str()};
+    }
+
+    std::filesystem::path enc_path_full = top_dir / enc_path;
+    
     DataHeaderSettingsIters ds;
     {
         ds.setFileDataMode(FILEMODE_BYTES);
-        ds.setHashMode(HASHMODE_SHA512);
-        ds.setChainHash1Mode(CHAINHASH_CONSTANT_COUNT_SALT);
-        ds.setChainHash2Mode(CHAINHASH_QUADRATIC);
-        ds.setChainHash1Iters(1000000);
-        ds.setChainHash2Iters(1000000);
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
+        ds.setHashMode(config.hash_mode);
+        ds.setChainHash1Mode(config.chainhash_mode1);
+        ds.setChainHash2Mode(config.chainhash_mode2);
+        ds.setChainHash1Iters(config.iters1);
+        ds.setChainHash2Iters(config.iters2);
+        if(config.include_filename)
+            ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
+        if(config.include_extension)
+            ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
     }
-    u_int64_t timeout = 0;
-    bool delete_file = true;
-
-    while (std::filesystem::exists(top_dir / enc_path)) {
-        enc_path = RNG::get_random_string(10) + ".enc";
-    }
-    std::filesystem::path enc_path_full = top_dir / enc_path;
 
     API api{FILEMODE_BYTES};
     ErrorStruct<bool> err_create = api.createFile(enc_path_full);
@@ -54,7 +63,7 @@ ErrorStruct<std::filesystem::path> API::encrypt(std::filesystem::path& path, con
         PLOG_ERROR << "The file could not be selected (errorCode: " << +err_select.errorCode << ", errorInfo: " << err_select.errorInfo << ", what: " << err_select.what << ")";
         return ErrorStruct<std::filesystem::path>{err_select.success, err_select.errorCode, err_select.errorInfo, err_select.what};
     }
-    ErrorStruct<bool> err_dh = api.createDataHeader(password, ds, timeout);
+    ErrorStruct<bool> err_dh = api.createDataHeader(password, ds, config.timeout);
     if (!err_dh.isSuccess()) {
         PLOG_ERROR << "The data header could not be created (errorCode: " << +err_dh.errorCode << ", errorInfo: " << err_dh.errorInfo << ", what: " << err_dh.what << ")";
         return ErrorStruct<std::filesystem::path>{err_dh.success, err_dh.errorCode, err_dh.errorInfo, err_dh.what};
@@ -70,7 +79,7 @@ ErrorStruct<std::filesystem::path> API::encrypt(std::filesystem::path& path, con
         return ErrorStruct<std::filesystem::path>{SuccessType::FAIL, ErrorCode::ERR, path.c_str()};
     }
     ext_file.close();
-    if (delete_file) {
+    if (config.delete_file) {
         if (!std::filesystem::remove(path)) {
             PLOG_ERROR << "The file could not be deleted (path: " << path.c_str() << ")";
             return ErrorStruct<std::filesystem::path>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_DELETED, path.c_str()};
@@ -80,12 +89,10 @@ ErrorStruct<std::filesystem::path> API::encrypt(std::filesystem::path& path, con
     return ErrorStruct<std::filesystem::path>{enc_path_full};
 }
 
-ErrorStruct<std::filesystem::path> API::decrypt(std::filesystem::path& path, const std::string& password) noexcept {
+ErrorStruct<std::filesystem::path> API::decrypt(std::filesystem::path& path, const std::string& password, const APIConfDecrypt& config) noexcept {
     // decrypts the file at the given path with the given password
     PLOG_VERBOSE << "Decrypting file...";
-    std::filesystem::path top_dir = path.parent_path();
-    u_int64_t timeout = 0;
-    bool delete_file = true;
+    std::filesystem::path top_dir = config.dec_top_dir == "" ? path.parent_path() : config.dec_top_dir;
     try {
         API api{FILEMODE_BYTES};
         ErrorStruct<bool> err_select = api.selectFile(path);
@@ -93,7 +100,7 @@ ErrorStruct<std::filesystem::path> API::decrypt(std::filesystem::path& path, con
             PLOG_ERROR << "The file could not be selected (errorCode: " << +err_select.errorCode << ", errorInfo: " << err_select.errorInfo << ", what: " << err_select.what << ")";
             return ErrorStruct<std::filesystem::path>{err_select.success, err_select.errorCode, err_select.errorInfo, err_select.what};
         }
-        ErrorStruct<bool> err_dh = api.verifyPassword(password, timeout);
+        ErrorStruct<bool> err_dh = api.verifyPassword(password, config.timeout);
         if (!err_dh.isSuccess()) {
             PLOG_ERROR << "The password could not be verified (errorCode: " << +err_dh.errorCode << ", errorInfo: " << err_dh.errorInfo << ", what: " << err_dh.what << ")";
             return ErrorStruct<std::filesystem::path>{err_dh.success, err_dh.errorCode, err_dh.errorInfo, err_dh.what};
@@ -103,7 +110,7 @@ ErrorStruct<std::filesystem::path> API::decrypt(std::filesystem::path& path, con
             PLOG_ERROR << "The file could not be decrypted (path: " << path.c_str() << ")";
             return err_dec;
         }
-        if (delete_file) {
+        if (config.delete_file) {
             if (!std::filesystem::remove(path)) {
                 PLOG_ERROR << "The file could not be deleted (path: " << path.c_str() << ")";
                 return ErrorStruct<std::filesystem::path>{SuccessType::FAIL, ErrorCode::ERR_FILE_NOT_DELETED, path.c_str()};

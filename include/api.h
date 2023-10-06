@@ -110,6 +110,27 @@ struct DataHeaderHelperStruct {
     Bytes password_hash = Bytes(0);  // contains the password hash
 };
 
+// api config structs
+struct APIConfEncrypt{
+    HModes hash_mode = HASHMODE_SHA512;
+    CHModes chainhash_mode1 = CHAINHASH_CONSTANT_COUNT_SALT;
+    CHModes chainhash_mode2 = CHAINHASH_QUADRATIC;
+    u_int64_t iters1 = 1000000;
+    u_int64_t iters2 = 1000000;
+    bool include_filename = true;
+    bool include_extension = true;
+    bool delete_file = true;
+    u_int64_t timeout = 0;
+    std::filesystem::path enc_filename = "";  // empty means random
+    std::filesystem::path enc_top_dir = "";  // empty means the same as the decrypted file was
+};
+
+struct APIConfDecrypt{
+    u_int64_t timeout = 0;
+    std::filesystem::path dec_top_dir = "";  // empty means the same as the encrypted file was
+    bool delete_file = true;
+};
+
 class API {
     /*
     API class between the front-end and the back-end
@@ -339,8 +360,8 @@ class API {
     // ErrorStruct<bool> runWorkflow2enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
 
     // FILE STREAMS
-    static ErrorStruct<std::filesystem::path> encrypt(std::filesystem::path& path, const std::string& password) noexcept;
-    static ErrorStruct<std::filesystem::path> decrypt(std::filesystem::path& path, const std::string& password) noexcept;
+    static ErrorStruct<std::filesystem::path> encrypt(std::filesystem::path& path, const std::string& password, const APIConfEncrypt& config = APIConfEncrypt()) noexcept;
+    static ErrorStruct<std::filesystem::path> decrypt(std::filesystem::path& path, const std::string& password, const APIConfDecrypt& config = APIConfDecrypt()) noexcept;
 
     // gets the path of the current working directory
     static std::filesystem::path getCurrentDirPath() noexcept;
