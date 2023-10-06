@@ -74,15 +74,13 @@ void createTestFile(std::string filename, u_int64_t size) {
     file.open(filename, std::ios::binary);
     Bytes data(size);
     data.fillrandom();
-    file.write((char *) data.getBytes(), size);
+    file.write((char*)data.getBytes(), size);
     file.close();
 }
 
-void deleteFile(std::string filename) {
-    std::filesystem::remove(filename);
-}
+void deleteFile(std::string filename) { std::filesystem::remove(filename); }
 
-TEST(Benchmark_stream_encrypt, sha256){
+TEST(Benchmark_stream_encrypt, sha256) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
@@ -108,10 +106,9 @@ TEST(Benchmark_stream_encrypt, sha256){
     deleteFile(path);
     deleteFile(enc_path);
     filing("stream_encrypt_sha256", CITERS, 100, timer.getAverageTime(), timer.getSlowest());
-
 }
 
-TEST(Benchmark_stream_encrypt, sha384){
+TEST(Benchmark_stream_encrypt, sha384) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
@@ -137,10 +134,9 @@ TEST(Benchmark_stream_encrypt, sha384){
     deleteFile(path);
     deleteFile(enc_path);
     filing("stream_encrypt_sha384", CITERS, 100, timer.getAverageTime(), timer.getSlowest());
-
 }
 
-TEST(Benchmark_stream_encrypt, sha512){
+TEST(Benchmark_stream_encrypt, sha512) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
@@ -166,10 +162,9 @@ TEST(Benchmark_stream_encrypt, sha512){
     deleteFile(path);
     deleteFile(enc_path);
     filing("stream_encrypt_sha512", CITERS, 100, timer.getAverageTime(), timer.getSlowest());
-
 }
 
-TEST(Benchmark_stream_decrypt, sha256){
+TEST(Benchmark_stream_decrypt, sha256) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
@@ -199,10 +194,9 @@ TEST(Benchmark_stream_decrypt, sha256){
     deleteFile(dec_path);
     deleteFile(enc_path);
     filing("stream_decrypt_sha256", CITERS, 100, timer.getAverageTime(), timer.getSlowest());
-
 }
 
-TEST(Benchmark_stream_decrypt, sha384){
+TEST(Benchmark_stream_decrypt, sha384) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
@@ -232,10 +226,9 @@ TEST(Benchmark_stream_decrypt, sha384){
     deleteFile(dec_path);
     deleteFile(enc_path);
     filing("stream_decrypt_sha384", CITERS, 100, timer.getAverageTime(), timer.getSlowest());
-
 }
 
-TEST(Benchmark_stream_decrypt, sha512){
+TEST(Benchmark_stream_decrypt, sha512) {
     std::string file_name = "testfile";
     std::string file_extension = ".txt";
     std::filesystem::path path = file_name + file_extension;
@@ -265,9 +258,7 @@ TEST(Benchmark_stream_decrypt, sha512){
     deleteFile(dec_path);
     deleteFile(enc_path);
     filing("stream_decrypt_sha512", CITERS, 100, timer.getAverageTime(), timer.getSlowest());
-
 }
-
 
 TEST(Benchmark_write, small_sha256) {
     DataHeaderSettingsIters ds;
