@@ -49,7 +49,9 @@ add_executable(pman_bench main_bench.cpp bench.cpp
     ${SRC_DIR}/chainhash_modes.cpp ${SRC_DIR}/bytes.cpp ${SRC_DIR}/timer.cpp ${SRC_DIR}/chainhash_data.cpp ${SRC_DIR}/format.cpp ${SRC_DIR}/api.cpp
     ${SRC_DIR}/filehandler.cpp ${SRC_DIR}/dataheader.cpp ${SRC_DIR}/file_modes.cpp
     ${SRC_DIR}/pwfunc.cpp ${SRC_DIR}/utility.cpp ${SRC_DIR}/hash_modes.cpp ${SRC_DIR}/rng.cpp ${SRC_DIR}/sha256.cpp ${SRC_DIR}/sha384.cpp ${SRC_DIR}/sha512.cpp
-    ${SRC_DIR}/blockchain.cpp ${SRC_DIR}/blockchain_decrypt.cpp ${SRC_DIR}/blockchain_encrypt.cpp ${SRC_DIR}/block.cpp ${SRC_DIR}/block_encrypt.cpp ${SRC_DIR}/block_decrypt.cpp)
+    ${SRC_DIR}/blockchain.cpp ${SRC_DIR}/blockchain_decrypt.cpp ${SRC_DIR}/blockchain_encrypt.cpp ${SRC_DIR}/block.cpp ${SRC_DIR}/block_encrypt.cpp ${SRC_DIR}/block_decrypt.cpp
+    ${SRC_DIR}/blockchain_stream.cpp ${SRC_DIR}/blockchain_stream_decrypt.cpp ${SRC_DIR}/blockchain_stream_encrypt.cpp)
+
 target_link_libraries(pman_bench gtest_main)
 target_link_libraries(pman_bench ${OPENSSL_LIBRARIES} pthread)
 target_include_directories(pman_bench PUBLIC ${INCLUDE_DIR})
