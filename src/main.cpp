@@ -2,7 +2,6 @@
 
 #include "api.h"
 #include "logger.h"
-
 #include "timer.h"
 
 int main(int argc, char* argv[]) {
@@ -27,19 +26,19 @@ int main(int argc, char* argv[]) {
     // add file logger
     static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("data/log.txt", 1024 * 1024 * 10, 3);
     plog::init(plog::verbose, &consoleAppender).addAppender(&fileAppender);
-    
+
     Timer timer;
     timer.start();
 
-    if(argc >= 3){
+    if (argc >= 3) {
         // 1 argument
         std::filesystem::path path = argv[1];
-        if(std::filesystem::is_regular_file(path)){
+        if (std::filesystem::is_regular_file(path)) {
             std::cout << path << std::endl;
-            if(path.extension() == FileHandler::extension){
+            if (path.extension() == FileHandler::extension) {
                 // decrypt file
                 API::decrypt(path, argv[2]);
-            }else{
+            } else {
                 // encrypt file
                 API::encrypt(path, argv[2]);
             }
@@ -47,7 +46,7 @@ int main(int argc, char* argv[]) {
     }
 
     // deleted part
-    if(false){
+    if (false) {
         // // test constants
         // // std::filesystem::path FILE =  charVecToString(RNG::get_random_bytes(5)) + ".enc";
         // std::filesystem::path FILE = "qqY�7.enc";
