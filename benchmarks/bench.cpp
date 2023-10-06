@@ -348,7 +348,6 @@ TEST(Benchmark_stream_decrypt, sha512_nochain) {
     filing("stream_decrypt_sha512_nochain", CITERS_SMALL, 100, timer.getAverageTime(), timer.getSlowest());
 }
 
-
 TEST(Benchmark_write, small_sha256) {
     DataHeaderSettingsIters ds;
     ds.setFileDataMode(FILEMODE_PASSWORD);

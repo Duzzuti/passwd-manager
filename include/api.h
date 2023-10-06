@@ -111,7 +111,7 @@ struct DataHeaderHelperStruct {
 };
 
 // api config structs
-struct APIConfEncrypt{
+struct APIConfEncrypt {
     HModes hash_mode = HASHMODE_SHA512;
     CHModes chainhash_mode1 = CHAINHASH_CONSTANT_COUNT_SALT;
     CHModes chainhash_mode2 = CHAINHASH_QUADRATIC;
@@ -122,10 +122,10 @@ struct APIConfEncrypt{
     bool delete_file = true;
     u_int64_t timeout = 0;
     std::filesystem::path enc_filename = "";  // empty means random
-    std::filesystem::path enc_top_dir = "";  // empty means the same as the decrypted file was
+    std::filesystem::path enc_top_dir = "";   // empty means the same as the decrypted file was
 };
 
-struct APIConfDecrypt{
+struct APIConfDecrypt {
     u_int64_t timeout = 0;
     std::filesystem::path dec_top_dir = "";  // empty means the same as the encrypted file was
     bool delete_file = true;

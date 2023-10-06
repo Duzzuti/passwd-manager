@@ -24,20 +24,20 @@ ErrorStruct<std::filesystem::path> API::encrypt(std::filesystem::path& path, con
     std::string file_name = path.stem().string();
     std::string file_extension = path.extension().string();
     std::filesystem::path enc_path = RNG::get_random_string(10) + ".enc";
-    if(config.enc_filename == "")
+    if (config.enc_filename == "")
         while (std::filesystem::exists(top_dir / enc_path)) {
             enc_path = RNG::get_random_string(10) + ".enc";
         }
-    else 
+    else
         enc_path = config.enc_filename;
 
-    if(std::filesystem::exists(top_dir / enc_path)){
+    if (std::filesystem::exists(top_dir / enc_path)) {
         PLOG_ERROR << "The given path already exists (path: " << (top_dir / enc_path).c_str() << ")";
         return ErrorStruct<std::filesystem::path>{SuccessType::FAIL, ErrorCode::ERR_FILE_EXISTS, (top_dir / enc_path).c_str()};
     }
 
     std::filesystem::path enc_path_full = top_dir / enc_path;
-    
+
     DataHeaderSettingsIters ds;
     {
         ds.setFileDataMode(FILEMODE_BYTES);
@@ -46,10 +46,8 @@ ErrorStruct<std::filesystem::path> API::encrypt(std::filesystem::path& path, con
         ds.setChainHash2Mode(config.chainhash_mode2);
         ds.setChainHash1Iters(config.iters1);
         ds.setChainHash2Iters(config.iters2);
-        if(config.include_filename)
-            ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
-        if(config.include_extension)
-            ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
+        if (config.include_filename) ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILENAME, stringToBytes(file_name))));
+        if (config.include_extension) ds.enc_data_blocks.push_back(EncDataBlock(DataBlock(DatablockType::FILEEXTENSION, stringToBytes(file_extension))));
     }
 
     API api{FILEMODE_BYTES};
