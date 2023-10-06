@@ -197,8 +197,8 @@ class API {
         };
         // decrypts the data and writes it to a file in the given directory (filename and extension are taken from the dataheader)
         // .dec is default extension and the name is randomized if not specified in the dataheader
-        virtual ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept {
-            return ErrorStruct<bool>{FAIL, ERR_API_STATE_INVALID, "decryptData is only available in the PASSWORD_VERIFIED state"};
+        virtual ErrorStruct<std::filesystem::path> decryptData(std::filesystem::path dest_dir) noexcept {
+            return ErrorStruct<std::filesystem::path>{FAIL, ERR_API_STATE_INVALID, "decryptData is only available in the PASSWORD_VERIFIED state"};
         }
 
         // gets the file data struct
@@ -259,7 +259,7 @@ class API {
        public:
         PASSWORD_VERIFIED(API* x) : WorkflowState(x) { PLOG_DEBUG << "API state changed to PASSWORD_VERIFIED"; };
         ErrorStruct<std::unique_ptr<FileDataStruct>> getDecryptedData() noexcept override;
-        ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept override;
+        ErrorStruct<std::filesystem::path> decryptData(std::filesystem::path dest_dir) noexcept override;
     };
 
     class DECRYPTED : public WorkflowState {
@@ -339,8 +339,8 @@ class API {
     // ErrorStruct<bool> runWorkflow2enc(const std::filesystem::path file_path, const FileDataStruct file_data) noexcept;
 
     // FILE STREAMS
-    static ErrorStruct<bool> encrypt(std::filesystem::path& path, const std::string& password) noexcept;
-    static ErrorStruct<bool> decrypt(std::filesystem::path& path, const std::string& password) noexcept;
+    static ErrorStruct<std::filesystem::path> encrypt(std::filesystem::path& path, const std::string& password) noexcept;
+    static ErrorStruct<std::filesystem::path> decrypt(std::filesystem::path& path, const std::string& password) noexcept;
 
     // gets the path of the current working directory
     static std::filesystem::path getCurrentDirPath() noexcept;
@@ -440,7 +440,7 @@ class API {
         return this->current_state->getDecryptedData();
     }
     // decrypts the data (requires successful verifyPassword run) and writes it to a file in the given directory (filename and extension are taken from the dataheader)
-    ErrorStruct<bool> decryptData(std::filesystem::path dest_dir) noexcept {
+    ErrorStruct<std::filesystem::path> decryptData(std::filesystem::path dest_dir) noexcept {
         PLOG_DEBUG << "API call made (decryptData)";
         return this->current_state->decryptData(dest_dir);
     }
