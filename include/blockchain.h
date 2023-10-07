@@ -26,7 +26,6 @@ class BlockChain {
         he cannot get the next salt or passwordhash (except he knows the inverse hash function :))
     */
    protected:
-    
     std::unique_ptr<Block> current_block = nullptr;  // the current block that is being filled
     std::unique_ptr<Bytes> result = nullptr;         // the result data of the blockchain
     SaltIterator salt_iter;                          // the salt iterator that is used to generate the salts

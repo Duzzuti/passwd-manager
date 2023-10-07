@@ -1,6 +1,6 @@
 #pragma once
-#include "logger.h"
 #include "hash.h"
+#include "logger.h"
 
 class SaltIterator {
     /*
@@ -8,15 +8,15 @@ class SaltIterator {
     it is initialized with the password hash and the encrypted salt
     for every block it generates a new salt with the hash of the last block
     */
-    private:
+   private:
     bool ready;     // is the iterator ready to generate salts
     bool first;     // is this the first salt/block
     Bytes hash{0};  // the current hash (first is the passwordhash)
     Bytes salt{0};  // the current salt (first is the encrypted salt)
-    public:
+   public:
     std::shared_ptr<Hash> hashObj;  // the hash object that provides the hash function
 
-    public:
+   public:
     SaltIterator() {
         // not ready yet, has to be initialized first (with init)
         this->ready = false;
@@ -54,7 +54,7 @@ class SaltIterator {
         }
         if (last_block_hash.getLen() != this->hashObj->getHashSize()) {
             PLOG_FATAL << "last_block_hash has to be the same size as the hash from the hash function (last_block_hash_len: " << last_block_hash.getLen()
-                        << ", hash_size: " << this->hashObj->getHashSize() << ")";
+                       << ", hash_size: " << this->hashObj->getHashSize() << ")";
             throw std::invalid_argument("last_block_hash has to be the same size as the hash");
         }
         if (!this->ready) {
