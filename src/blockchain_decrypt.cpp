@@ -14,8 +14,8 @@ bool DecryptBlockChain::addBlock() {
         // hashes the last block and use it to generate the next salt
         this->current_block->getResult().addcopyToBytes(this->result);
         this->current_block->clear(this->salt_iter.next(this->current_block->getHash()));
-        
-    } else{
+
+    } else {
         // no previous block, generate the next salt without a last block hash
         // create the new block
         // add the new block to the chain

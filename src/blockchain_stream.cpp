@@ -22,9 +22,9 @@ void BlockChainStream::enc_stream(std::ifstream&& in, std::ofstream&& out) noexc
         this->current_block->addData(data);
         free_space = this->current_block->getFreeSpace();
         // write the result data to the output file, but ignore the first written bytes because they already were written to the file
-        
+
         out.write(reinterpret_cast<char*>(this->current_block->getResult().getBytes() + written), this->hash_size - written - free_space);
-            
+
         if (in.peek() != EOF) {
             // more data is available, so create a new block
             assert(free_space == 0);
