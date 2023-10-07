@@ -39,3 +39,15 @@ Bytes Block::getHash() const {
     }
     return this->dec_hash;
 }
+
+void Block::clear(const Bytes&& salt) {
+    // clears the block and sets a new salt
+    if (salt.getLen() != this->block_len) {
+        // block length was not fulfilled by the salt
+        PLOG_ERROR << "length of salt bytes does not match with the given block length (block_len: " << this->block_len << ", salt_len: " << salt.getLen() << ")";
+        throw std::length_error("length of salt bytes does not match with the block length");
+    }
+    this->data.setLen(0);
+    this->dec_hash.setLen(0);
+    this->salt = salt;
+}

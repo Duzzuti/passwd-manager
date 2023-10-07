@@ -15,7 +15,7 @@ class Block {
    protected:
     size_t block_len;            // block len in bytes
     Bytes data;                  // data pushed to the block
-    const Bytes salt;            // salt for encryption/decryption. The salt is added/subtracted from the input data
+    Bytes salt;                  // salt for encryption/decryption. The salt is added/subtracted from the input data
     Bytes dec_hash;              // block hash of the decrypted data
     std::shared_ptr<Hash> hash;  // hash function to calculate the block hash of the decrypted data
 
@@ -30,6 +30,7 @@ class Block {
     virtual void addData(const Bytes& data) = 0;   // adds new data to the block (this data is encrypted/decrypted with the salt)
     virtual Bytes getResult() const noexcept = 0;  // getter for the result data
     Bytes getHash() const;                         // getter for the block hash of the decrypted data (block has to be completed)
+    void clear(const Bytes&& salt);                 // clears the block and sets a new salt
 
     virtual ~Block() = default;  // virtual destructor to make sure the derived class destructor is called
 };
