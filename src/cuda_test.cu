@@ -4,17 +4,11 @@
 
 //#include "cuda_test.h"
 
-// CUDA kernel for matrix multiplication
-__global__ void matrixMultiply(int* A, int* B, int* C, int N) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (row < N && col < N) {
-        int sum = 0;
-        for (int k = 0; k < N; ++k) {
-            sum += A[row * N + k] * B[k * N + col];
-        }
-        C[row * N + col] = sum;
+// CUDA kernel
+__global__ void cudaAdd(unsigned char* a, unsigned char* b, unsigned char* c, int size) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < size) {
+        c[idx] = a[idx] + b[idx] + (a[idx] + b[idx])*(a[idx] + b[idx]);
     }
 }
 int main() {
@@ -38,6 +32,37 @@ int main() {
         std::cout << "  Memory Clock Rate: " << deviceProp.memoryClockRate / 1000 << " MHz" << std::endl;
         std::cout << "  Memory Bus Width: " << deviceProp.memoryBusWidth << " bits" << std::endl;
     }
+    const int size = 1024*1024*1024;    // 10 MB
+    unsigned char* a = new unsigned char[size];
+    unsigned char* b = new unsigned char[size];
+    unsigned char* d_a, *d_b, *d_c;
+
+    // Allocate GPU memory
+    cudaMalloc((void**)&d_a, size);
+    cudaMalloc((void**)&d_b, size);
+    cudaMalloc((void**)&d_c, size);
+    // Copy data from host to GPU
+    cudaMemcpy(d_a, a, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_b, b, size, cudaMemcpyHostToDevice);
+
+    int threadsPerBlock = 32;
+    int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+    
+    for(int i = 0; i < 10; i++){
+    cudaMemcpyAsync(d_a, a, size, cudaMemcpyHostToDevice);
+    cudaMemcpyAsync(d_b, b, size, cudaMemcpyHostToDevice);
+    cudaAdd<<<blocksPerGrid, threadsPerBlock>>>(d_a, d_b, d_c, size);
+
+    std::cout << "Matrix multiplication completed." << std::endl;
+    }
+    // Free GPU memory
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+
+    // Do something with the result in 'c'
+    delete[] a;
+    delete[] b;
 
     return 0;
 }
