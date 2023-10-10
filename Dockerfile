@@ -2,14 +2,7 @@ from ubuntu:latest
 
 ARG USERNAME 
 
-RUN apt-get update && apt-get install git -y
-RUN apt-get update && apt-get install openssl -y
-RUN apt-get update && apt-get install libssl-dev -y
-RUN apt-get update && apt-get install g++ -y
-RUN apt-get update && apt-get install cmake -y
-RUN apt-get update && apt-get install gdb -y
-RUN apt-get update && apt-get install locales -y
-
+RUN apt-get update && apt-get install -y git openssl libssl-dev g++ cmake gdb locales
 
 # Change locale here to your preferred locale:
 # Run `locale -a` in your machine to list possible locales
