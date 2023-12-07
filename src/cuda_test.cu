@@ -1,15 +1,199 @@
 #include <iostream>
 #include <cuda_runtime_api.h>
 #include <cuda.h>
+#include <unistd.h>
 
-//#include "cuda_test.h"
+#define SHA256_BLOCK_SIZE 32            // SHA256 outputs a 32 unsigned char digest
 
-// CUDA kernel
-__global__ void cudaAdd(unsigned char* a, unsigned char* b, unsigned char* c, int size) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size) {
-        c[idx] = a[idx] + b[idx] + (a[idx] + b[idx])*(a[idx] + b[idx]);
-    }
+/**************************** DATA TYPES ****************************/
+
+typedef struct {
+	unsigned char data[64];
+	unsigned int datalen;
+	unsigned long long bitlen;
+	unsigned int state[8];
+} CUDA_SHA256_CTX;
+
+/****************************** MACROS ******************************/
+#ifndef ROTLEFT
+#define ROTLEFT(a,b) (((a) << (b)) | ((a) >> (32-(b))))
+#endif
+
+#define ROTRIGHT(a,b) (((a) >> (b)) | ((a) << (32-(b))))
+
+#define CH(x,y,z) (((x) & (y)) ^ (~(x) & (z)))
+#define MAJ(x,y,z) (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
+#define EP0(x) (ROTRIGHT(x,2) ^ ROTRIGHT(x,13) ^ ROTRIGHT(x,22))
+#define EP1(x) (ROTRIGHT(x,6) ^ ROTRIGHT(x,11) ^ ROTRIGHT(x,25))
+#define SIG0(x) (ROTRIGHT(x,7) ^ ROTRIGHT(x,18) ^ ((x) >> 3))
+#define SIG1(x) (ROTRIGHT(x,17) ^ ROTRIGHT(x,19) ^ ((x) >> 10))
+
+/**************************** VARIABLES *****************************/
+__constant__ unsigned int k[64] = {
+	0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+	0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+	0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+	0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+	0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+	0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+	0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+	0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+};
+
+/*********************** FUNCTION DEFINITIONS ***********************/
+__device__  __forceinline__ void cuda_sha256_transform(CUDA_SHA256_CTX *ctx, const unsigned char data[])
+{
+	unsigned int a, b, c, d, e, f, g, h, i, j, t1, t2, m[64];
+
+	for (i = 0, j = 0; i < 16; ++i, j += 4)
+		m[i] = (data[j] << 24) | (data[j + 1] << 16) | (data[j + 2] << 8) | (data[j + 3]);
+	for ( ; i < 64; ++i)
+		m[i] = SIG1(m[i - 2]) + m[i - 7] + SIG0(m[i - 15]) + m[i - 16];
+
+	a = ctx->state[0];
+	b = ctx->state[1];
+	c = ctx->state[2];
+	d = ctx->state[3];
+	e = ctx->state[4];
+	f = ctx->state[5];
+	g = ctx->state[6];
+	h = ctx->state[7];
+
+	for (i = 0; i < 64; ++i) {
+		t1 = h + EP1(e) + CH(e,f,g) + k[i] + m[i];
+		t2 = EP0(a) + MAJ(a,b,c);
+		h = g;
+		g = f;
+		f = e;
+		e = d + t1;
+		d = c;
+		c = b;
+		b = a;
+		a = t1 + t2;
+	}
+
+	ctx->state[0] += a;
+	ctx->state[1] += b;
+	ctx->state[2] += c;
+	ctx->state[3] += d;
+	ctx->state[4] += e;
+	ctx->state[5] += f;
+	ctx->state[6] += g;
+	ctx->state[7] += h;
+}
+
+__device__ void cuda_sha256_init(CUDA_SHA256_CTX *ctx)
+{
+	ctx->datalen = 0;
+	ctx->bitlen = 0;
+	ctx->state[0] = 0x6a09e667;
+	ctx->state[1] = 0xbb67ae85;
+	ctx->state[2] = 0x3c6ef372;
+	ctx->state[3] = 0xa54ff53a;
+	ctx->state[4] = 0x510e527f;
+	ctx->state[5] = 0x9b05688c;
+	ctx->state[6] = 0x1f83d9ab;
+	ctx->state[7] = 0x5be0cd19;
+}
+
+__device__ void cuda_sha256_update(CUDA_SHA256_CTX *ctx, const unsigned char data[], size_t len)
+{
+	unsigned int i;
+
+	for (i = 0; i < len; ++i) {
+		ctx->data[ctx->datalen] = data[i];
+		ctx->datalen++;
+		if (ctx->datalen == 64) {
+			cuda_sha256_transform(ctx, ctx->data);
+			ctx->bitlen += 512;
+			ctx->datalen = 0;
+		}
+	}
+}
+
+__device__ void cuda_sha256_final(CUDA_SHA256_CTX *ctx, unsigned char hash[])
+{
+	unsigned int i;
+
+	i = ctx->datalen;
+
+	// Pad whatever data is left in the buffer.
+	if (ctx->datalen < 56) {
+		ctx->data[i++] = 0x80;
+		while (i < 56)
+			ctx->data[i++] = 0x00;
+	}
+	else {
+		ctx->data[i++] = 0x80;
+		while (i < 64)
+			ctx->data[i++] = 0x00;
+		cuda_sha256_transform(ctx, ctx->data);
+		memset(ctx->data, 0, 56);
+	}
+
+	// Append to the padding the total message's length in bits and transform.
+	ctx->bitlen += ctx->datalen * 8;
+	ctx->data[63] = ctx->bitlen;
+	ctx->data[62] = ctx->bitlen >> 8;
+	ctx->data[61] = ctx->bitlen >> 16;
+	ctx->data[60] = ctx->bitlen >> 24;
+	ctx->data[59] = ctx->bitlen >> 32;
+	ctx->data[58] = ctx->bitlen >> 40;
+	ctx->data[57] = ctx->bitlen >> 48;
+	ctx->data[56] = ctx->bitlen >> 56;
+	cuda_sha256_transform(ctx, ctx->data);
+
+	// Since this implementation uses little endian unsigned char ordering and SHA uses big endian,
+	// reverse all the unsigned chars when copying the final state to the output hash.
+	for (i = 0; i < 4; ++i) {
+		hash[i]      = (ctx->state[0] >> (24 - i * 8)) & 0x000000ff;
+		hash[i + 4]  = (ctx->state[1] >> (24 - i * 8)) & 0x000000ff;
+		hash[i + 8]  = (ctx->state[2] >> (24 - i * 8)) & 0x000000ff;
+		hash[i + 12] = (ctx->state[3] >> (24 - i * 8)) & 0x000000ff;
+		hash[i + 16] = (ctx->state[4] >> (24 - i * 8)) & 0x000000ff;
+		hash[i + 20] = (ctx->state[5] >> (24 - i * 8)) & 0x000000ff;
+		hash[i + 24] = (ctx->state[6] >> (24 - i * 8)) & 0x000000ff;
+		hash[i + 28] = (ctx->state[7] >> (24 - i * 8)) & 0x000000ff;
+	}
+}
+
+__global__ void kernel_sha256_hash(unsigned char* indata, unsigned int inlen, unsigned char* outdata, unsigned int n_batch)
+{
+	unsigned int thread = blockIdx.x * blockDim.x + threadIdx.x;
+	if (thread >= n_batch)
+	{
+		return;
+	}
+	unsigned char* in = indata  + thread * inlen;
+	unsigned char* out = outdata  + thread * SHA256_BLOCK_SIZE;
+	CUDA_SHA256_CTX ctx;
+	cuda_sha256_init(&ctx);
+	cuda_sha256_update(&ctx, in, inlen);
+	cuda_sha256_final(&ctx, out);
+}
+
+extern "C"
+{
+void mcm_cuda_sha256_hash_batch(unsigned char* in, unsigned int inlen, unsigned char* out, unsigned int n_batch)
+{
+	unsigned char *cuda_indata;
+	unsigned char *cuda_outdata;
+	cudaMalloc(&cuda_indata, inlen * n_batch);
+	cudaMalloc(&cuda_outdata, SHA256_BLOCK_SIZE * n_batch);
+	cudaMemcpy(cuda_indata, in, inlen * n_batch, cudaMemcpyHostToDevice);
+	unsigned int thread = 256;
+	unsigned int block = (n_batch + thread - 1) / thread;
+
+	kernel_sha256_hash << < block, thread >> > (cuda_indata, inlen, cuda_outdata, n_batch);
+	cudaMemcpy(out, cuda_outdata, SHA256_BLOCK_SIZE * n_batch, cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
+	cudaError_t error = cudaGetLastError();
+	if (error != cudaSuccess) {
+		printf("Error cuda sha256 hash: %s \n", cudaGetErrorString(error));
+	}
+	cudaFree(cuda_indata);
+	cudaFree(cuda_outdata);
+}
 }
 int main() {
     int deviceCount = 0;
@@ -26,43 +210,62 @@ int main() {
 
         std::cout << "GPU Device " << i << ": " << deviceProp.name << std::endl;
         std::cout << "  Compute Capability: " << deviceProp.major << "." << deviceProp.minor << std::endl;
-        std::cout << "  Total Global Memory: " << deviceProp.totalGlobalMem << " bytes" << std::endl;
+        std::cout << "  Total Global Memory: " << deviceProp.totalGlobalMem << " unsigned chars" << std::endl;
         std::cout << "  Multiprocessors: " << deviceProp.multiProcessorCount << std::endl;
         std::cout << "  Clock Rate: " << deviceProp.clockRate / 1000 << " MHz" << std::endl;
         std::cout << "  Memory Clock Rate: " << deviceProp.memoryClockRate / 1000 << " MHz" << std::endl;
         std::cout << "  Memory Bus Width: " << deviceProp.memoryBusWidth << " bits" << std::endl;
     }
-    const int size = 1024*1024*1024;    // 10 MB
-    unsigned char* a = new unsigned char[size];
-    unsigned char* b = new unsigned char[size];
-    unsigned char* d_a, *d_b, *d_c;
+    unsigned int num = 1;
+    unsigned long size = 512;    // 1 GB
+    unsigned char* in = new unsigned char[size];
+    unsigned char* out = new unsigned char[SHA256_BLOCK_SIZE*num];
 
-    // Allocate GPU memory
-    cudaMalloc((void**)&d_a, size);
-    cudaMalloc((void**)&d_b, size);
-    cudaMalloc((void**)&d_c, size);
-    // Copy data from host to GPU
-    cudaMemcpy(d_a, a, size, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_b, b, size, cudaMemcpyHostToDevice);
+    unsigned char *cuda_indata;
+	unsigned char *cuda_outdata;
+	cudaMalloc(&cuda_indata, size);
+	cudaMalloc(&cuda_outdata, SHA256_BLOCK_SIZE * num);
+	cudaMemcpy(cuda_indata, in, size, cudaMemcpyHostToDevice);
+    unsigned int thread = 512;
+	unsigned int block = (num + thread - 1) / thread;
 
-    int threadsPerBlock = 32;
-    int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
-    
-    for(int i = 0; i < 10; i++){
-    cudaMemcpyAsync(d_a, a, size, cudaMemcpyHostToDevice);
-    cudaMemcpyAsync(d_b, b, size, cudaMemcpyHostToDevice);
-    cudaAdd<<<blocksPerGrid, threadsPerBlock>>>(d_a, d_b, d_c, size);
-
-    std::cout << "Matrix multiplication completed." << std::endl;
+    for(int i = 0; i < 100000; i++){
+        kernel_sha256_hash <<< block, thread >>> (cuda_indata, size/num, cuda_outdata, num);
     }
-    // Free GPU memory
-    cudaFree(d_a);
-    cudaFree(d_b);
-    cudaFree(d_c);
+    std::cout << "Success!";
+    delete[] in;
+    delete[] out;
+    // const int size = 1024*1024*1024;    // 10 MB
+    // unsigned char* a = new unsigned char[size];
+    // unsigned char* b = new unsigned char[size];
+    // unsigned char* d_a, *d_b, *d_c;
 
-    // Do something with the result in 'c'
-    delete[] a;
-    delete[] b;
+    // // Allocate GPU memory
+    // cudaMalloc((void**)&d_a, size);
+    // cudaMalloc((void**)&d_b, size);
+    // cudaMalloc((void**)&d_c, size);
+    // // Copy data from host to GPU
+    // cudaMemcpy(d_a, a, size, cudaMemcpyHostToDevice);
+    // cudaMemcpy(d_b, b, size, cudaMemcpyHostToDevice);
+
+    // int threadsPerBlock = 32;
+    // int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+    
+    // for(int i = 0; i < 10; i++){
+    // cudaMemcpyAsync(d_a, a, size, cudaMemcpyHostToDevice);
+    // cudaMemcpyAsync(d_b, b, size, cudaMemcpyHostToDevice);
+    // cudaAdd<<<blocksPerGrid, threadsPerBlock>>>(d_a, d_b, d_c, size);
+
+    // std::cout << "Matrix multiplication completed." << std::endl;
+    // }
+    // // Free GPU memory
+    // cudaFree(d_a);
+    // cudaFree(d_b);
+    // cudaFree(d_c);
+
+    // // Do something with the result in 'c'
+    // delete[] a;
+    // delete[] b;
 
     return 0;
 }

@@ -1,4 +1,5 @@
 find_package(OpenSSL REQUIRED)
+find_package(CUDA REQUIRED)
 
 #executable
 #[[
