@@ -26,6 +26,9 @@ def get_path():
 if(os.path.exists(os.getcwd()+"/outputs.txt")):
     print("Error occured, file already exists")
     exit(1)
+if(os.path.exists(os.getcwd()+"/"+sys.argv[1].split(".")[0]+".enc")):
+    print("Error occured, enc file already exists")
+    exit(1)
 
 # get password
 if(len(sys.argv) <= 1):
@@ -61,6 +64,9 @@ os.remove(os.getcwd()+"/outputs.txt")
 if(decName.split(".")[-1] == "enc"):
     os.system("docker cp "+CONTAINER_ID+":"+CONTAINER_DATA_PATH+decName+" "+os.getcwd()+"/"+sys.argv[1].split(".")[0]+".enc")
 else:
+    if(os.path.exists(os.getcwd()+"/"+decName)):
+        print("Error occured, dec file already exists")
+        exit(1)
     os.system("docker cp "+CONTAINER_ID+":"+CONTAINER_DATA_PATH+decName+" "+os.getcwd()+"/")
 # remove file from container
 os.system("docker exec "+CONTAINER_ID+" /bin/python3 "+CONTAINER_CLEAR_PATH)
