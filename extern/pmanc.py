@@ -3,7 +3,7 @@ import sys
 import getpass
 
 DELETE_DEC_FILE = True
-CONTAINER_ID = 
+CONTAINER_ID = open("container_id.txt", "r").read().strip()
 CONTAINER_CLEAR_PATH = "/home/duzzuti/passwd-manager/extern/clear_files.py"
 CONTAINER_OUTPUT_PATH = "/home/duzzuti/passwd-manager/data/outputs.txt"
 CONTAINER_DATA_PATH = "/home/duzzuti/passwd-manager/data/files/"
@@ -25,9 +25,6 @@ def get_path():
 
 if(os.path.exists(os.getcwd()+"/outputs.txt")):
     print("Error occured, file already exists")
-    exit(1)
-if(os.path.exists(os.getcwd()+"/"+sys.argv[1].split(".")[0]+".enc")):
-    print("Error occured, enc file already exists")
     exit(1)
 
 # get password
@@ -62,6 +59,9 @@ with open(os.getcwd()+"/outputs.txt") as f:
 os.remove(os.getcwd()+"/outputs.txt")
 # copy from container (rename) (docker cp)
 if(decName.split(".")[-1] == "enc"):
+    if(os.path.exists(os.getcwd()+"/"+sys.argv[1].split(".")[0]+".enc")):
+        print("Error occured, enc file already exists")
+        exit(1)
     os.system("docker cp "+CONTAINER_ID+":"+CONTAINER_DATA_PATH+decName+" "+os.getcwd()+"/"+sys.argv[1].split(".")[0]+".enc")
 else:
     if(os.path.exists(os.getcwd()+"/"+decName)):
