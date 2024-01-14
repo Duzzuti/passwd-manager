@@ -3,7 +3,7 @@ import sys
 import getpass
 
 DELETE_DEC_FILE = True
-CONTAINER_ID = open("container_id.txt", "r").read().strip()
+CONTAINER_ID = open("/".join(__file__.split("\\")[:-1])+"/container_id.txt", "r").readline().strip()
 CONTAINER_CLEAR_PATH = "/home/duzzuti/passwd-manager/extern/clear_files.py"
 CONTAINER_OUTPUT_PATH = "/home/duzzuti/passwd-manager/data/outputs.txt"
 CONTAINER_DATA_PATH = "/home/duzzuti/passwd-manager/data/files/"
