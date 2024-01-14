@@ -24,24 +24,35 @@ int main(int argc, char* argv[]) {
     // init logger
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
     // add file logger
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("data/log.txt", 1024 * 1024 * 10, 3);
+    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("log.txt", 1024 * 1024, 3);
     plog::init(plog::verbose, &consoleAppender).addAppender(&fileAppender);
+
+    std::string USERNAME = "duzzuti";
 
     Timer timer;
     timer.start();
 
     if (argc >= 3) {
         // 1 argument
+        std::cout << "1 argument" << std::endl;
+        std::cout << std::filesystem::current_path() << std::endl;
+        std::cout << argv[1] << std::endl;
         std::filesystem::path path = argv[1];
+        std::filesystem::path outputPath;
         if (std::filesystem::is_regular_file(path)) {
-            std::cout << path << std::endl;
+            std::cout << "is valid" << std::endl;
             if (path.extension() == FileHandler::extension) {
                 // decrypt file
-                API::decrypt(path, argv[2]);
+                outputPath = API::decrypt(path, argv[2]).returnMove();
             } else {
                 // encrypt file
-                API::encrypt(path, argv[2]);
+                outputPath = API::encrypt(path, argv[2]).returnMove();
             }
+            std::ofstream outfile;
+            outfile.open("/home/"+USERNAME+"/passwd-manager/data/outputs.txt", std::ios::app); // append instead of overwrite
+            std::cout << outputPath << std::endl;
+            outfile << outputPath.string() << std::endl;
+            outfile.close();
         }
     }
 
