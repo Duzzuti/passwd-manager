@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
                 outputPath = API::encrypt(path, argv[2]).returnMove();
             }
             std::ofstream outfile;
-            outfile.open("/home/"+USERNAME+"/passwd-manager/data/outputs.txt", std::ios::app); // append instead of overwrite
+            outfile.open("/home/" + USERNAME + "/passwd-manager/data/outputs.txt", std::ios::app);  // append instead of overwrite
             std::cout << outputPath << std::endl;
             outfile << outputPath.string() << std::endl;
             outfile.close();
