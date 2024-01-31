@@ -89,13 +89,12 @@ bool readData(std::istream& stream, Bytes& data, const unsigned int& size) noexc
         read += stream.readsome(reinterpret_cast<char*>(data.getBytes() + data.getLen() + read), size - read);
         if (read != size && (stream.eof() || stream.peek() == EOF)) {
             PLOG_WARNING << "end of file reached before the given size was read";
+            data.setLen(data.getLen() + read);
             return false;
-        }
-        if (read == size) {
+        } else if (read == size) {
             data.setLen(data.getLen() + read);
             return true;
-        }
-        if (stream.fail() || stream.bad()) {
+        } else if (stream.fail() || stream.bad()) {
             PLOG_WARNING << "failed to read data from stream";
             return false;
         }

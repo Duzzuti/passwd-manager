@@ -103,8 +103,7 @@ void DataHeader::addEncDataBlock(const EncDataBlock encdatablock) {
         PLOG_ERROR << "there are already 255 encrypted datablocks";
         throw std::length_error("there are already 255 encrypted datablocks");
     }
-    // should be the same as 257
-    this->datablocks_len += 2 + encdatablock.getEnc().getLen();  // 1 for type, 1 for len, len for data (255)
+    this->datablocks_len += 257;  // 1 for type, 1 for len, len for data (255)
     this->dh.enc_data_blocks.push_back(encdatablock);
     this->header_bytes.setLen(0);  // clear header bytes because they have to be recalculated
 }
@@ -163,9 +162,9 @@ Bytes DataHeader::getHeaderBytes() const {
     return this->header_bytes;
 }
 
-void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
+void DataHeader::calcHeaderBytes(const Bytes& passwordhash, const bool verify) {
     // calculates the header
-    PLOG_VERBOSE << "calculating header bytes " << (passwordhash.isEmpty() ? "without verifying" : "with verifying");
+    PLOG_VERBOSE << "calculating header bytes " << (verify ? "with verifying" : "without verifying");
     if (!this->isComplete()) {
         // header bytes cannot be calculated (data is missing)
         PLOG_ERROR << "not all required data is set to calculate the header bytes";
@@ -182,7 +181,7 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
         PLOG_ERROR << "file size is to small (file_size: " << this->file_size.value() << ", header_length: " << this->getHeaderLength() << ")";
         throw std::invalid_argument("file size is to small");
     }
-    if (!passwordhash.isEmpty()) {
+    if (verify && !passwordhash.isEmpty()) {
         // verifies the given pwhash with the currently set validator
         std::unique_ptr<Hash> hash = std::move(HashModes::getHash(this->dh.getHashMode()));  // gets the right hash function
         // is the chainhash from the given hash equal to the validator
@@ -225,9 +224,17 @@ void DataHeader::calcHeaderBytes(const Bytes& passwordhash) {
 
         dataheader.addByte((unsigned char)this->dh.enc_data_blocks.size());  // add encrypted data block count byte
         for (EncDataBlock& encdatablock : this->dh.enc_data_blocks) {        // add all encrypted data blocks
-            dataheader.addByte(encdatablock.getEncType());                   // add type byte
-            dataheader.addByte((unsigned char)encdatablock.getEncLen());     // add data length byte
-            encdatablock.getEnc().addcopyToBytes(dataheader);                // add data
+            if (!encdatablock.isEncrypted()) {
+                if (passwordhash.isEmpty()) {
+                    PLOG_ERROR << "trying to add an unencrypted datablock without providing a passwordhash";
+                    throw std::logic_error("trying to add an unencrypted datablock without providing a passwordhash");
+                }
+                encdatablock.getEnc(HashModes::getHash(this->dh.getHashMode()), passwordhash, this->dh.getEncSalt(), true);  // encrypt data
+            }
+
+            dataheader.addByte(encdatablock.getEncType());                // add type byte
+            dataheader.addByte((unsigned char)encdatablock.getEncLen());  // add data length byte
+            encdatablock.getEnc().addcopyToBytes(dataheader);             // add data
         }
     } catch (std::length_error& ex) {
         // trying to add more bytes than previously calculated
@@ -600,7 +607,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(Bytes& fileB
             return err;
         }
         try {
-            dh->calcHeaderBytes();
+            dh->calcHeaderBytes(Bytes(0));
         } catch (const std::exception& ex) {
             // some other error occurred
             PLOG_ERROR << "An error occurred while calculating the header bytes (error msg: " << ex.what() << ")";
@@ -1129,7 +1136,7 @@ ErrorStruct<std::unique_ptr<DataHeader>> DataHeader::setHeaderBytes(std::ifstrea
         dh->addEncDataBlock(EncDataBlock::createEncBlock(type, data, len));
     }
     try {
-        dh->calcHeaderBytes();
+        dh->calcHeaderBytes(Bytes(0));
     } catch (const std::exception& ex) {
         // some other error occurred
         PLOG_ERROR << "An error occurred while calculating the header bytes (error msg: " << ex.what() << ")";

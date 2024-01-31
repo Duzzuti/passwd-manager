@@ -41,7 +41,8 @@ struct DataBlock {
 struct EncDataBlock {
    private:
     DataBlock data_block;  // the enc data
-    unsigned char enc_len;
+    unsigned char len;
+    bool encrypted;
     EncDataBlock() = default;
 
    public:
@@ -52,9 +53,10 @@ struct EncDataBlock {
             throw std::invalid_argument("data has an invalid length");
         }
         EncDataBlock enc_block;
-        enc_block.enc_len = enc_len;
+        enc_block.len = enc_len;
         enc_block.data_block.type = DatablockType(enc_type);
         enc_block.data_block.setData(enc_data);
+        enc_block.encrypted = true;
         return enc_block;
     }
 
@@ -62,7 +64,7 @@ struct EncDataBlock {
         // basic constructor
         pwhash = hash->hash(pwhash);
         this->data_block.type = DatablockType((unsigned char)(datablock.type + pwhash.copySubBytes(0, 1).toLong()));
-        this->enc_len = (unsigned char)(datablock.getData().getLen() + pwhash.copySubBytes(1, 2).toLong());
+        this->len = (unsigned char)(datablock.getData().getLen() + pwhash.copySubBytes(1, 2).toLong());
         u_int16_t written = 0;
         u_int16_t end;
         Bytes enc_data(255);
@@ -73,21 +75,69 @@ struct EncDataBlock {
             (datablock.getData().copySubBytes(written, end) + enc_salt.copySubBytes(0, end - written)).addcopyToBytes(enc_data);
             written = end;
         }
-        enc_data.addSize(255 - enc_data.getLen());  // fill the rest with random data
+        // fill the rest with random data
         enc_data.fillrandom();
         datablock.setData(enc_data);
         this->data_block = datablock;
+        this->encrypted = true;
     }
 
-    Bytes getEnc() const noexcept {
+    EncDataBlock(DataBlock datablock) {
+        // basic constructor
+        this->data_block = datablock;
+        this->len = datablock.getData().getLen();
+        this->encrypted = false;
+    }
+
+    bool isEncrypted() const noexcept {
+        // checks if the data is encrypted
+        return this->encrypted;
+    }
+
+    Bytes getEnc() const {
         // gets the data
-        return this->data_block.getData();
+        if (this->isEncrypted()) return this->data_block.getData();
+        PLOG_WARNING << "the data is not encrypted, please use getEnc(const std::unique_ptr<Hash>&&, Bytes, Bytes) instead";
+        throw std::logic_error("the data is not encrypted");
     }
 
-    Bytes getDec(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) const noexcept {
+    Bytes getEnc(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt, bool encrypt = true) {
+        if (this->isEncrypted()) {
+            PLOG_WARNING << "the data is encrypted, please use getEnc() instead";
+            throw std::logic_error("the data is encrypted");
+        }
+        pwhash = hash->hash(pwhash);
+        if (encrypt) {
+            this->data_block.type = DatablockType((unsigned char)(this->data_block.type + pwhash.copySubBytes(0, 1).toLong()));
+            this->len = (unsigned char)(this->data_block.getData().getLen() + pwhash.copySubBytes(1, 2).toLong());
+        }
+        u_int16_t written = 0;
+        u_int16_t end;
+        Bytes enc_data(255);
+        while (enc_data.getLen() != this->data_block.getData().getLen()) {
+            // encrypt the data
+            enc_salt = hash->hash(enc_salt - pwhash);
+            end = std::min<int>(written + enc_salt.getLen(), this->data_block.getData().getLen());
+            (this->data_block.getData().copySubBytes(written, end) + enc_salt.copySubBytes(0, end - written)).addcopyToBytes(enc_data);
+            written = end;
+        }
+        // fill the rest with random data
+        enc_data.fillrandom();
+        if (encrypt) {
+            this->data_block.setData(enc_data);
+            this->encrypted = true;
+        }
+        return enc_data;
+    }
+
+    Bytes getDec(const std::unique_ptr<Hash>&& hash, Bytes pwhash, Bytes enc_salt) const {
+        if (!this->isEncrypted()) {
+            PLOG_WARNING << "the data is not encrypted, please use getDec() instead";
+            throw std::logic_error("the data is not encrypted");
+        }
         // decrypts the data
         pwhash = hash->hash(pwhash);
-        unsigned char len = (unsigned char)(this->enc_len - pwhash.copySubBytes(1, 2).toLong());
+        unsigned char len = (unsigned char)(this->len - pwhash.copySubBytes(1, 2).toLong());
         u_int16_t written = 0;
         u_int16_t end;
         Bytes dec_data(len);
@@ -101,20 +151,54 @@ struct EncDataBlock {
         return dec_data;
     }
 
-    DatablockType getEncType() const noexcept {
-        // gets the type
-        return this->data_block.type;
+    Bytes getDec() const {
+        if (this->isEncrypted()) {
+            PLOG_WARNING << "the data is encrypted, please use getDec(const std::unique_ptr<Hash>&&, Bytes, Bytes) instead";
+            throw std::logic_error("the data is encrypted");
+        }
+        return this->data_block.getData();
     }
 
-    DatablockType getDecType(const std::unique_ptr<Hash>&& hash, Bytes pwhash) const noexcept {
+    DatablockType getEncType() const {
         // gets the type
+        if (this->isEncrypted()) return this->data_block.type;
+        PLOG_WARNING << "the data is not encrypted, please use getEncType(const std::unique_ptr<Hash>&&, Bytes) instead";
+        throw std::logic_error("the data is not encrypted");
+    }
+
+    DatablockType getEncType(const std::unique_ptr<Hash>&& hash, Bytes pwhash) const {
+        if (this->isEncrypted()) {
+            PLOG_WARNING << "the data is encrypted, please use getEncType() instead";
+            throw std::logic_error("the data is encrypted");
+        }
+        // gets the type
+        pwhash = hash->hash(pwhash);
+        return DatablockType((unsigned char)(this->data_block.type + pwhash.copySubBytes(0, 1).toLong()));
+    }
+
+    DatablockType getDecType(const std::unique_ptr<Hash>&& hash, Bytes pwhash) const {
+        // gets the type
+        if (!this->isEncrypted()) {
+            PLOG_WARNING << "the data is not encrypted, please use getDecType() instead";
+            throw std::logic_error("the data is not encrypted");
+        }
         pwhash = hash->hash(pwhash);
         return DatablockType((unsigned char)(this->data_block.type - pwhash.copySubBytes(0, 1).toLong()));
     }
 
-    unsigned char getEncLen() const noexcept {
+    DatablockType getDecType() const {
+        if (this->isEncrypted()) {
+            PLOG_WARNING << "the data is encrypted, please use getDecType(const std::unique_ptr<Hash>&&, Bytes) instead";
+            throw std::logic_error("the data is encrypted");
+        }
+        return this->data_block.type;
+    }
+
+    unsigned char getEncLen() const {
         // gets the length
-        return this->enc_len;
+        if (this->isEncrypted()) return this->len;
+        PLOG_WARNING << "the data is not encrypted, please use getEncLen(const std::unique_ptr<Hash>&&, Bytes) instead";
+        throw std::logic_error("the data is not encrypted");
     }
 };
 
@@ -644,7 +728,7 @@ class DataHeader {
     std::optional<u_int64_t> getFileSize() const noexcept;  // gets the file size
     // calculates the header bytes with all information that is set, throws if not enough information is set (or not valid)
     // verifies the pwhash with the previous set pwhash validator
-    void calcHeaderBytes(const Bytes& passwordhash = Bytes(0));
+    void calcHeaderBytes(const Bytes& passwordhash, const bool verify = false);
     Bytes getHeaderBytes() const;  // gets the current set header bytes, calcHeaderBytes overwrites this variable
 
     // creates a new DataHeader object with the given header bytes

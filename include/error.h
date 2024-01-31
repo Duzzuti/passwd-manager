@@ -52,6 +52,8 @@ enum ErrorCode {
     ERR_FILESIZE_INVALID,
     ERR_HEADERSIZE_FILESIZE_MISMATCH,
     ERR_FILEHANDLER_CREATION,
+    ERR_DATAHEADER_INVALID,
+    ERR_DATA_NOT_ENCRYPTED,
 };
 
 // used in a function that could fail, it returns a success type, a value and an error message
@@ -307,6 +309,12 @@ std::string getErrorMessage(ErrorStruct<T>& err, bool verbose_err_msg = true) no
 
         case ERR_FILEHANDLER_CREATION:
             return "FileHandler could not be created: " + err.errorInfo + err_msg;
+
+        case ERR_DATAHEADER_INVALID:
+            return "DataHeader is invalid: " + err.errorInfo + err_msg;
+
+        case ERR_DATA_NOT_ENCRYPTED:
+            return "Data is not encrypted: " + err.errorInfo + err_msg;
 
         case ERR:
             if (err.errorInfo.empty()) return "An error occurred" + err_msg;

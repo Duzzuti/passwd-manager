@@ -25,6 +25,7 @@ enum HModes {
 // enum which holds the file data modes
 enum FModes {
     FILEMODE_PASSWORD = 1,  // password filemode
+    FILEMODE_BYTES,         // bytes filemode
 };
 
 // enum which describes a success type, an success type can be a success, fail or timeout
